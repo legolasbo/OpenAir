@@ -1,38 +1,39 @@
 #include <Arduino.h>
+#include <vector>
 
 #include "constants.h"
 #include "ModeSelect.h"
 #include "SHT20Reader.h"
 #include "speedCalculators/ModeSelectSpeedCalculator.h"
+#include "speedCalculators/SHT20SpeedCalculator.h"
 
-ModeSelectSwitch modeSelect(S2_SDA, S2_SCL);
-SHT20Reader sht20(S1_SDA, S1_SCL);
+TwoWire *bus1 = &Wire;
+TwoWire *bus2 = &Wire1;
 
-SpeedCalculator calculators[1];
+std::vector<SpeedCalculator *> calculators;
 
 void setup() {
-  calculators[0] = ModeSelectSpeedCalculator(&modeSelect, 50, 100);
   Serial.begin(9600);
   Serial.println("Booting...");
+
+  bus1->begin(S2_SDA, S2_SCL);
+  bus2->begin(S1_SDA, S1_SCL);
+
+  calculators.push_back(new ModeSelectSpeedCalculator(new  ModeSelectSwitch(bus1), 50, 100));
+  calculators.push_back(new SHT20SpeedCalculator(new SHT20Reader(bus2)));
 }
 
 void loop() {
-  for (int i = 0; i < sizeof(calculators); i++) {
-    calculators[i].print();
+  int calculatedSpeed = 0;
+  for (auto&& c : calculators) {
+    int speed = c->calculate();
+    Serial.printf("Speed: %d\n", speed);
+    if (speed > calculatedSpeed) {
+      calculatedSpeed = speed;
+    }
   }
 
-  Serial.println(modeSelect.read());
-  SHT20Reading reading = sht20.takeReading();
+  Serial.printf("Calculated speed: %d \n", calculatedSpeed);
 
-  Serial.print("Temperature: ");
-  Serial.println(reading.temperatureDegC);
-  Serial.print("Humidity: ");
-  Serial.print(reading.humidity);
-  Serial.println("%");
-  Serial.print("Pressure: ");
-  Serial.println(reading.pressure);
-  Serial.print("Dew point: ");
-  Serial.println(reading.dewPointDegC);
-
-  delay(1000);   
+  delay(5000);   
 }

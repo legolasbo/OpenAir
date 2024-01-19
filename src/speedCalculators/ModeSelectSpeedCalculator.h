@@ -28,6 +28,16 @@ class ModeSelectSpeedCalculator : public SpeedCalculator {
             }
         }
 
-        virtual int calculate();
-        virtual std::string name();
+        int calculate() {
+            switch (selectSwitch->read()) {
+                case MODE_MEDIUM: return medium;
+                case MODE_HIGH: return high;
+                default: return 0;
+            }
+        }
+
+        std::string name() {
+            return "ModeSelectSpeedCalculator";
+        }
+
 };

@@ -3,13 +3,13 @@
 #include "ModeSelect.h"
 
 SelectedMode ModeSelectSwitch::read() {
-    Wire.begin(sda, scl);
+    i2cBus->begin();
     SelectedMode mode = MODE_LOW;
     
     try {
-        Wire.requestFrom(4, 1);
-        if (Wire.available()) {
-        mode = (SelectedMode) Wire.read();
+        i2cBus->requestFrom(4, 1);
+        if (i2cBus->available()) {
+        mode = (SelectedMode) i2cBus->read();
         }
 
     }
@@ -17,6 +17,6 @@ SelectedMode ModeSelectSwitch::read() {
         Serial.println(e.what());
     }
     
-    Wire.end();
+    i2cBus->end();
     return mode;
 }

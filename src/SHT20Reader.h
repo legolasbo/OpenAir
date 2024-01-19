@@ -1,4 +1,8 @@
+#ifndef SHT20Reader_H
+#define SHT20Reader_H
+
 #include <uFire_SHT20.h>
+#include <Wire.h>
 
 struct SHT20Reading {
     float humidity;
@@ -11,14 +15,16 @@ struct SHT20Reading {
 
 class SHT20Reader {
     private:
-        int sda, scl;
+        TwoWire *i2cBus;
         uFire_SHT20 sht20;
 
     public:
-        SHT20Reader(int sdaPin, int sclPin) {
-            sda = sdaPin;
-            scl = sclPin;
+        SHT20Reader(TwoWire *bus) {
+            i2cBus = bus;
+            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *i2cBus);
         }
 
         SHT20Reading takeReading();
 };
+
+#endif

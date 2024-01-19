@@ -1,6 +1,8 @@
 #ifndef ModeSelect_H
 #define ModeSelect_H
 
+#include <Wire.h>
+
 enum SelectedMode {
   MODE_LOW = 1,
   MODE_MEDIUM = 2,
@@ -9,12 +11,11 @@ enum SelectedMode {
 
 class ModeSelectSwitch {
     private:
-        int sda, scl;
+        TwoWire *i2cBus;
 
     public:
-        ModeSelectSwitch(int sdaPin, int sclPin) {
-            sda = sdaPin;
-            scl = sclPin;
+        ModeSelectSwitch(TwoWire *bus) {
+            i2cBus = bus;
         }
         SelectedMode read();
 };
