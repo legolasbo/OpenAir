@@ -17,4 +17,4 @@
 
 #define PWM_MOTOR_SPEED 15
 
-#define TACHOGRAPH 14
+#define TACHOMETER 14
