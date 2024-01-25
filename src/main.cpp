@@ -16,10 +16,6 @@ Fan fan(PWM_MOTOR_SPEED, tachometer);
 
 std::vector<SpeedCalculator *> calculators;
 
-int minimumSpeed = 10;
-int currentSpeed = 0;
-int maximumSpeed = 100;
-
 void setup() {
   Serial.begin(9600);
   Serial.println("Booting...");
