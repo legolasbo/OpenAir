@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "../inputs/tachometer.h"
 
+const int maximumMinimumSpeed = 25;
+
 class Fan {
     private:
         int min = 10;
@@ -61,19 +63,31 @@ class Fan {
         }
 
         void increaseMinimumSpeed() {
-            this->min = constrain(this->min+1, 10, 25);
+            this->min = constrain(this->min+1, 10, maximumMinimumSpeed);
         }
 
     public:
         Fan(int pin, Tachometer &tach, int startSpeed = 100) {
             this->pin = pin;
             this->tach = &tach;
-            this->startSpeed = constrain(startSpeed, 25, 100);
+            this->startSpeed = constrain(startSpeed, maximumMinimumSpeed, 100);
         }
 
         void begin() {
             this->configurePWM();
             this->calibrate();
+
+            do {
+                this->setFanSpeed(this->max);
+                delay(10000);
+                this->setFanSpeed(this->min);
+                delay(10000);
+
+                if (this->tach->RPS() == 0) {
+                    this->increaseMinimumSpeed();
+                }
+            }
+            while (this->min < maximumMinimumSpeed);
         }
 
         void loop() {

@@ -11,7 +11,7 @@ class SHT20SpeedCalculator : public SpeedCalculator {
         }
 
         int calculate() {
-            return (int) this->sensor->takeReading().humidity;
+            return (int) this->sensor->takeReading().humidity - 40;
         }
 
         std::string name() {
