@@ -1,4 +1,5 @@
-
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 /**************************/
 /****      PINOUT      ****/
@@ -19,10 +20,10 @@
 
 #define TACHOMETER 14
 
-#define MCU_PROGRAM 25
-
 /**************************/
 /****       WIFI       ****/
 /**************************/
 #define HOSTNAME "OpenAir"
 #define AP_PASSWORD "AirOpen"
+
+#endif
