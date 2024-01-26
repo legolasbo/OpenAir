@@ -24,7 +24,21 @@ class SHT20Reader {
             sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *i2cBus);
         }
 
-        SHT20Reading takeReading();
+        SHT20Reading takeReading() {
+            sht20.measure_all();
+            
+            SHT20Reading result = {
+                humidity: sht20.RH, 
+                temperatureDegC: sht20.tempC, 
+                temperatureDegF: sht20.tempF, 
+                dewPointDegC: sht20.dew_pointC, 
+                dewPointDegF: sht20.dew_pointF, 
+                pressure: sht20.vpd_kPa
+            };
+
+            return result;
+        }
+
 };
 
 #endif

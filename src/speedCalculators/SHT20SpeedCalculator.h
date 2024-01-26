@@ -1,5 +1,5 @@
 #include "SpeedCalculator.h"
-#include "SHT20Reader.h"
+#include "../sensors/SHT20Reader.h"
   
 class SHT20SpeedCalculator : public SpeedCalculator {
     private:

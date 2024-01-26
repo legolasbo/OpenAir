@@ -1,5 +1,5 @@
 #include "SpeedCalculator.h"
-#include "../ModeSelect.h"
+#include "../sensors/ModeSelect.h"
 
 class ModeSelectSpeedCalculator : public SpeedCalculator {
     private:
