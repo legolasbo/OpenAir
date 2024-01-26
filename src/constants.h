@@ -18,3 +18,11 @@
 #define PWM_MOTOR_SPEED 15
 
 #define TACHOMETER 14
+
+#define MCU_PROGRAM 25
+
+/**************************/
+/****       WIFI       ****/
+/**************************/
+#define HOSTNAME "OpenAir"
+#define AP_PASSWORD "AirOpen"
