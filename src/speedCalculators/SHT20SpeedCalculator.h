@@ -6,6 +6,13 @@ class SHT20SpeedCalculator : public SpeedCalculator {
         SHT20Reader * sensor;
 
     public:
+        SHT20SpeedCalculator(I2CSensor *sensor) {
+            if (sensor->getType() != SHT20Sensor) {
+                throw std::invalid_argument("Incorrect sensor type. Only SHT20Sensor is supported");
+            }
+            SHT20SpeedCalculator((SHT20Reader*)sensor);
+        }
+
         SHT20SpeedCalculator(SHT20Reader *sensor) {
             this->sensor = sensor;
         }

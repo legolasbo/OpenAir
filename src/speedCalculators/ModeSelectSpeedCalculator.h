@@ -1,31 +1,24 @@
 #include "SpeedCalculator.h"
-#include "../sensors/ModeSelect.h"
+#include "../sensors/ThreePositionSwitch.h"
 
-class ModeSelectSpeedCalculator : public SpeedCalculator {
+class ThreePositionCalculator : public SpeedCalculator {
     private:
-        ModeSelectSwitch *selectSwitch;
+        ThreePositionSwitch *selectSwitch;
         int high, medium;
 
     public:
-        ModeSelectSpeedCalculator(ModeSelectSwitch *select, int mediumSpeed = 50, int highSpeed = 100) {
-            selectSwitch = select;
+        ThreePositionCalculator(I2CSensor *sensor, int mediumSpeed = 50, int highSpeed = 100) {
+            if (sensor->getType() != ThreePositionSwitchSensor) {
+                throw std::invalid_argument("Incorrect sensor type. Only ThreePositionSwitch is supported");
+            }
+            ThreePositionCalculator((ThreePositionSwitch*)sensor, mediumSpeed, highSpeed);
+        }
 
-            if (highSpeed > 100) {
-                high = 100;
-            }
-            else if (highSpeed < 10) {
-                high = 10;
-            }
-            else {
-                high = highSpeed;
-            }
+        ThreePositionCalculator(ThreePositionSwitch *select, int mediumSpeed = 50, int highSpeed = 100) {
+            this->selectSwitch = select;
 
-            if (mediumSpeed < 0 || mediumSpeed > high) {
-                medium = high / 2;
-            }
-            else {
-                medium = mediumSpeed;
-            }
+            high = constrain(highSpeed, 0, 100);
+            medium = constrain(mediumSpeed, 0, highSpeed);
         }
 
         int calculate() {
@@ -37,7 +30,7 @@ class ModeSelectSpeedCalculator : public SpeedCalculator {
         }
 
         std::string name() {
-            return "ModeSelectSpeedCalculator";
+            return "ThreePositionCalculator";
         }
 
 };
