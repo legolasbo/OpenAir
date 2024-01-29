@@ -1,7 +1,7 @@
 #ifndef SHT20Reader_H
 #define SHT20Reader_H
 
-#include "I2CSensor.h"
+#include "../I2CSensor.h"
 #include <uFire_SHT20.h>
 #include <Wire.h>
 
@@ -19,8 +19,13 @@ class SHT20Reader : public I2CSensor {
         uFire_SHT20 sht20;
 
     public:
+        static const SensorType sensorType = SHT20Sensor;
+        SensorType getSensorType() { 
+            return SHT20Reader::sensorType;
+        }
+
         SHT20Reader(TwoWire *bus) : I2CSensor(bus) {
-            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *this->i2cBus);
+            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *bus);
         }
 
         SHT20Reading takeReading() {
@@ -38,9 +43,7 @@ class SHT20Reader : public I2CSensor {
             return result;
         }
 
-        SensorType getType() {
-            return SHT20Sensor;
-        }
+
 };
 
 #endif

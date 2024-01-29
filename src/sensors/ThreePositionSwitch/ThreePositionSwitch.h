@@ -1,10 +1,9 @@
-#ifndef ModeSelect_H
-#define ModeSelect_H
+#ifndef THREE_POSITION_SWITCH_H
+#define THREE_POSITION_SWITCH_H
 
 #include <Arduino.h>
-#include "I2CSensor.h"
+#include "../I2CSensor.h"
 #include <Wire.h>
-#include "SensorTypes.h"
 
 enum SelectedMode {
   MODE_LOW = 1,
@@ -16,6 +15,11 @@ enum SelectedMode {
 
 class ThreePositionSwitch : public I2CSensor {
     public:
+        static const SensorType sensorType = ThreePositionSwitchSensor;
+        SensorType getSensorType() {
+            return ThreePositionSwitch::sensorType;
+        }
+
         ThreePositionSwitch(TwoWire *i2cBus) : I2CSensor(i2cBus) {}
 
         SelectedMode read() {
@@ -35,10 +39,6 @@ class ThreePositionSwitch : public I2CSensor {
             
             this->i2cBus->end();
             return mode;
-        }
-
-        SensorType getType() {
-            return ThreePositionSwitchSensor;
         }
 };
 
