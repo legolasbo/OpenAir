@@ -52,17 +52,16 @@ class SensorConfiguration {
         return this->equals(&other);
     }
 
-    const char* getMachineName() {
+    std::string getMachineName() {
         std::ostringstream out;
 
-        out << ToString(this->connector);
+        out << ToMachineName(this->connector);
         out << "_";
-        out << ToString(this->connectionType);
+        out << ToMachineName(this->connectionType);
         out << "_";
-        out << ToString(this->sensorType);
-        out << "_";
+        out << ToMachineName(this->sensorType);
 
-        return out.str().c_str();
+        return out.str();
     }
 };
 

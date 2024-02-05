@@ -11,12 +11,13 @@ class I2CSensor : public Sensor {
 
     public:
         static const ConnectionType connectionType = I2C;
+
         ConnectionType getConnectionType() {
             return I2CSensor::connectionType;
         }
 
         I2CSensor(TwoWire *bus) : Sensor() {
-            i2cBus = bus;
+            this->i2cBus = bus;
         }
 
 };

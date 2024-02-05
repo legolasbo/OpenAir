@@ -12,34 +12,48 @@
 
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
-I2CManager i2cManager(Wire, Wire1);
-SensorFactory sensorFactory(&i2cManager);
-SensorConfigurations sensorConfigs;
+I2CManager *i2cManager;
+SensorFactory *sensorFactory;
+SensorConfigurations *sensorConfigs;
 
 std::vector<SpeedCalculator *> calculators;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
-  
+
+  i2cManager = new I2CManager();
+  sensorFactory = new SensorFactory(i2cManager);
+  sensorConfigs = new SensorConfigurations();
+
   startInterface(sensorFactory, sensorConfigs);
+  SensorConfiguration * sht20 = new SensorConfiguration(X4, I2C, SHT20Sensor);
+  SensorConfiguration * threepos = new SensorConfiguration(X6, I2C, ThreePositionSwitchSensor);
 
-  calculators.push_back(new SHT20SpeedCalculator(sensorFactory.createI2CSensor(SHT20Sensor, i2cManager.fromConnector(X4))));
-  calculators.push_back(new ThreePositionCalculator(sensorFactory.createI2CSensor(ThreePositionSwitchSensor, i2cManager.fromConnector(X6))));
+  sensorConfigs->add(sht20);
+  sensorConfigs->add(threepos);
 
-  tachometer.begin();
-  fan.begin();
+  calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(sht20)));
+  calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(threepos)));
+
+  // tachometer.begin();
+  // fan.begin();
 }
 
+int calculatedSpeed = 0;
 void loop() {
   loopInterface();
-  fan.loop();
 
-  int calculatedSpeed = 0;
+  int newSpeed = 0;
   for (auto&& c : calculators) {
-    calculatedSpeed = max(c->calculate(), calculatedSpeed);
+    newSpeed = max(c->calculate(), newSpeed);
   }
 
-  Serial.printf("Calculated speed: %d \n", calculatedSpeed);
-  fan.setFanSpeed(calculatedSpeed);
+  if (newSpeed != calculatedSpeed) {
+    calculatedSpeed = newSpeed;
+    Serial.printf("Calculated speed: %d \n", calculatedSpeed);
+  }
+
+  // fan.setFanSpeed(calculatedSpeed);
+  // fan.loop();
 }

@@ -7,9 +7,12 @@
 class Sensor {
 
     public:
-
-        virtual SensorType getSensorType();
-        virtual ConnectionType getConnectionType();
+        virtual SensorType getSensorType() {
+            return SensorType::UNKNOWN_SENSOR_TYPE;
+        }
+        virtual ConnectionType getConnectionType() {
+            return ConnectionType::UNKNOWN_CONNECTION_TYPE;
+        }
 };
 
 

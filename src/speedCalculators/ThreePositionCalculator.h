@@ -16,7 +16,7 @@ class ThreePositionCalculator : public SpeedCalculator {
             this->selectSwitch = select;
         }
 
-        ThreePositionCalculator(I2CSensor *sensor, int mediumSpeed = 50, int highSpeed = 100) : ThreePositionCalculator(mediumSpeed, highSpeed) {
+        ThreePositionCalculator(Sensor *sensor, int mediumSpeed = 50, int highSpeed = 100) : ThreePositionCalculator(mediumSpeed, highSpeed) {
             if (sensor->getSensorType() != ThreePositionSwitchSensor) {
                 throw std::invalid_argument("Incorrect sensor type. Only ThreePositionSwitch is supported");
             }

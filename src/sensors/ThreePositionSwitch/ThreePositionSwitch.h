@@ -15,31 +15,12 @@ enum SelectedMode {
 
 class ThreePositionSwitch : public I2CSensor {
     public:
-        static const SensorType sensorType = ThreePositionSwitchSensor;
-        SensorType getSensorType() {
-            return ThreePositionSwitch::sensorType;
-        }
-
         ThreePositionSwitch(TwoWire *i2cBus) : I2CSensor(i2cBus) {}
 
-        SelectedMode read() {
-            this->i2cBus->begin();
-            SelectedMode mode = MODE_LOW;
-            
-            try {
-                this->i2cBus->requestFrom(THREE_POSITION_SWITCH_ADDRESS, 1);
-                if (this->i2cBus->available()) {
-                mode = (SelectedMode) this->i2cBus->read();
-                }
+        static const SensorType sensorType = ThreePositionSwitchSensor;
+        SensorType getSensorType();
 
-            }
-            catch(const std::exception& e) {
-                Serial.println(e.what());
-            }
-            
-            this->i2cBus->end();
-            return mode;
-        }
+        SelectedMode read();
 };
 
 #endif

@@ -1,5 +1,3 @@
-
-
 #include <Arduino.h>
 
 #include <WiFi.h>
@@ -9,6 +7,8 @@
 #include <ElegantOTA.h>
 #include "SPIFFS.h"
 
+#include "sensors/SensorFactory.h"
+#include "configuration/SensorConfigurations.h"
 #include "constants.h"
 
 AsyncWebServer server(80);
@@ -71,17 +71,16 @@ String createConfigurableSensorList() {
   return out.str().c_str();
 }
 
-
 void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfiguration> sensors) {
   out << "<table>\n";
-  out << "<thead><th>";
-  out << "<td>sensor type</td>";
-  out << "<td>connection type</td>";
-  out << "</th></thead><tbody>";
+  out << "<thead><tr>";
+  out << "<th>sensor type</th>";
+  out << "<th>connection type</th>";
+  out << "</tr></thead><tbody>";
   for (SensorConfiguration c : sensors) {
     out << "<tr>";
     out << "<td>" << ToString(c.getSensorType()) << "</td>";
-    out << "<td>" << c.getConnectionType() << "</td>";
+    out << "<td>" << ToString(c.getConnectionType()) << "</td>";
     out << "</tr>";
   }
   out << "</tbody></table>\n";
@@ -117,7 +116,7 @@ String processor(const String& var) {
 void internalServerErrorResponse(AsyncWebServerRequest * request, String text) {
     Serial.print("ERROR: ");
     Serial.println(text);
-    request->send(500, text);
+    request->send(500, "text/html", text);
 }
 
 void addSensorRequestHandler(AsyncWebServerRequest * request) {
@@ -146,9 +145,9 @@ void addSensorRequestHandler(AsyncWebServerRequest * request) {
   request->redirect("/config/sensors");
 }
 
-void startInterface(SensorFactory &factory, SensorConfigurations &sensorConfigs) {
-  webResources.factory = &factory;
-  webResources.sensorConfigurations = &sensorConfigs;
+void startInterface(SensorFactory *factory, SensorConfigurations *sensorConfigs) {
+  webResources.factory = factory;
+  webResources.sensorConfigurations = sensorConfigs;
 
   if (!SPIFFS.begin(true)) {
     Serial.println("SPIFFS MOUNT FAILED!");
