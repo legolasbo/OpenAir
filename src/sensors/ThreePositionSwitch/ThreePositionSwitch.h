@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "../I2CSensor.h"
+#include "../SensorTypes.h"
 #include <Wire.h>
 
 enum SelectedMode {

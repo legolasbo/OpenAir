@@ -2,6 +2,7 @@
 #define SHT20Reader_H
 
 #include "../I2CSensor.h"
+#include "../SensorTypes.h"
 #include <uFire_SHT20.h>
 #include <Wire.h>
 

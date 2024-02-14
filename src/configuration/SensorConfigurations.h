@@ -6,6 +6,7 @@
 #include "../sensors/SensorFactory.h"
 #include "SensorConfiguration.h"
 #include <vector>
+#include <ArduinoJson.h>
 
 class SensorConfigurations {
     private:
@@ -14,7 +15,10 @@ class SensorConfigurations {
     public:
 
     SensorConfigurations() {
+    }
 
+    SensorConfigurations(std::vector<SensorConfiguration> configs) {
+        this->configs = configs;
     }
 
     bool identicalConfigExists(SensorConfiguration &config) {
@@ -36,7 +40,7 @@ class SensorConfigurations {
         }
 
         Serial.print("Inserting config: ");
-        Serial.println(config.getMachineName().c_str());
+        Serial.println(config.getMachineName());
         this->configs.push_back(config);
         return;
     }
@@ -52,11 +56,11 @@ class SensorConfigurations {
 
         for(SensorConfiguration config : this->configs) {
             Serial.print("Checking: ");
-            Serial.println(config.getMachineName().c_str());
+            Serial.println(config.getMachineName());
 
             if(config.getSensorConnector() == connector) {
                 Serial.print("Selecting: ");
-                Serial.println(config.getMachineName().c_str());
+                Serial.println(config.getMachineName());
                 sensors.push_back(config);
             }
         }
@@ -68,15 +72,56 @@ class SensorConfigurations {
         return this->configs;
     }
 
-    SensorConfiguration get(std::string machineName) {
+    SensorConfiguration *get(std::string machineName) {
         for (size_t i = 0; i < this->configs.size(); i++)
         {
             if (this->configs.at(i).getMachineName() == machineName) {
-                return this->configs.at(i);
+                return &this->configs.at(i);
             }
         }
 
         throw std::invalid_argument("Unknown machine name: " + machineName);        
+    }
+
+    JsonDocument toJson() {
+        JsonDocument doc;
+
+        for (size_t i = 0; i < this->configs.size(); i++)
+        {
+            doc[i] = this->configs.at(i).toJson();
+        }
+
+        return doc;
+    }
+
+    static SensorConfigurations * fromJson(JsonArray sensors) {
+        if (sensors.size() == 0) {
+            return new SensorConfigurations();
+        }
+
+        std::vector<SensorConfiguration> configs;
+        for (int i = 0; i < sensors.size(); i++) {
+            try
+            {
+                SensorConfiguration sens = SensorConfiguration::fromJson(sensors[i].as<JsonObject>());
+                configs.push_back(sens);
+            }
+            catch(const std::exception& e)
+            {
+                Serial.println(e.what());
+            }
+        }
+        return new SensorConfigurations(configs);
+    }
+
+    bool exists(const char * machineName) {
+        for (size_t i = 0; i < this->configs.size(); i++) {
+            if(strcmp(this->configs.at(i).getMachineName(), machineName) == 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };
 

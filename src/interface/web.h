@@ -7,16 +7,13 @@
 #include <ElegantOTA.h>
 #include "SPIFFS.h"
 
-#include "sensors/SensorFactory.h"
-#include "configuration/SensorConfigurations.h"
+#include "configuration/Configuration.h"
+#include "../speedCalculators/CalculatorTypes.h"
 #include "constants.h"
 
 AsyncWebServer server(80);
 DNSServer dns;
-struct {
-  SensorFactory *factory;
-  SensorConfigurations *sensorConfigurations;
-} webResources;
+Configuration * theConfig;
 
 void appendHtmlAttributeTo(std::ostringstream &out, const char * attributeName, const char * attributeValue) {
   out << " ";
@@ -56,6 +53,14 @@ void appendSensorListItemTo(std::ostringstream &out, ConnectionType conn, Sensor
   out << "</li>";
 }
 
+String createSaveSettingsFormTo() {
+  std::ostringstream out;
+  out << "<form action=\"/config/save\" method=\"post\">";
+  out << "<input type=\"submit\" value=\"Save settings\">";
+  out << "</form>";
+  return out.str().c_str();
+}
+
 String createConfigurableSensorList() {
   std::ostringstream out;
   out << "<h3>Physical sensors</h3>";
@@ -88,7 +93,7 @@ void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfigur
 
 void appendSensorListTableForConnector(std::ostringstream &out, SensorConnector connector) {
   out << "<h2>Connector: " << ToString(connector) << "</h2>";
-  std::vector<SensorConfiguration> sensors = webResources.sensorConfigurations->getConfigurationsFor(connector);
+  std::vector<SensorConfiguration> sensors = theConfig->getSensors()->getConfigurationsFor(connector);
   appendSensorListTableTo(out, sensors);
 }
 
@@ -101,6 +106,44 @@ String createConfiguredSensorsHTML() {
   return out.str().c_str();
 }
 
+void appendAddCalculatorForm(std::ostringstream &out, CalculatorType type) {
+  out << "<form method=\"post\" action=\"/config/calculators/add\">";
+  out << "<input type=\"hidden\" name=\"machineName\" value=\"" << ToMachineName(type) << "\" />";
+  out << ToString(type);
+  out << "<input type=\"submit\" value=\"Add\" />";
+  out << "</form>";
+}
+
+
+String createConfigurableCalculatorList() {
+  std::ostringstream out;
+
+  out << "<ul>";
+
+  out << "<li>";
+  appendAddCalculatorForm(out, SHT20Calculator);
+  out << "</li>";
+  out << "<li>";
+  appendAddCalculatorForm(out, ThreePositionSwitchCalculator);
+  out << "</li>";
+  
+  out << "</ul>";
+
+  return out.str().c_str();
+}
+
+String createConfiguredCalculatorsList() {
+  std::ostringstream out;
+
+  std::vector<CalculatorConfiguration *> calculators = theConfig->getCalculators()->all();
+
+  for (size_t i = 0; i < calculators.size(); i++) {
+    out << calculators.at(i)->editForm();
+  }
+
+  return out.str().c_str();
+}
+
 String processor(const String& var) {
   if (var == "CONFIGURABLE_SENSOR_LIST") {
     return createConfigurableSensorList();
@@ -108,6 +151,18 @@ String processor(const String& var) {
 
   if (var == "CONFIGURED_SENSORS") {
     return createConfiguredSensorsHTML();
+  }
+
+  if (var == "CONFIGURABLE_CALCULATOR_LIST") {
+    return createConfigurableCalculatorList();
+  }
+
+  if (var == "CONFIGURED_CALCULATORS") {
+    return createConfiguredCalculatorsList();
+  }
+
+  if (var == "SAVE_SETTINGS") {
+    return createSaveSettingsFormTo();
   }
 
   return "OOPS!?";
@@ -137,21 +192,42 @@ void addSensorRequestHandler(AsyncWebServerRequest * request) {
 
   SensorConfiguration config(connector, connType, sensType);
 
-  if (webResources.sensorConfigurations->identicalConfigExists(config)) {
+  if (theConfig->getSensors()->identicalConfigExists(config)) {
     return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
   }
 
-  webResources.sensorConfigurations->add(config);
+  theConfig->getSensors()->add(config);
   request->redirect("/config/sensors");
 }
 
-void startInterface(SensorFactory *factory, SensorConfigurations *sensorConfigs) {
-  webResources.factory = factory;
-  webResources.sensorConfigurations = sensorConfigs;
+void addCalculatorRequestHandler(AsyncWebServerRequest * request) {
+  Serial.println("Add calculator handler");
 
-  if (!SPIFFS.begin(true)) {
-    Serial.println("SPIFFS MOUNT FAILED!");
+  if (!request->hasArg("machineName")) {
+    return internalServerErrorResponse(request, "Missing calculator machine name");
   }
+
+
+  CalculatorType theType = CalculatorTypeFromMachineName(request->arg("machineName").c_str());
+  switch(theType) {
+    case ThreePositionSwitchCalculator:
+    case SHT20Calculator:
+      theConfig->getCalculators()->addNew(theType);
+      Serial.println(theConfig->getCalculators()->all().size());
+      request->redirect("/config/calculators");
+      break;
+    default:
+      return internalServerErrorResponse(request, "unknown calculator type");
+  }
+}
+
+void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
+  Serial.println("Saving settings");
+  theConfig->save();
+}
+
+void startInterface(Configuration *config) {
+  theConfig = config;
 
   AsyncWiFiManager wifiManager(&server,&dns);
   wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
@@ -165,8 +241,15 @@ void startInterface(SensorFactory *factory, SensorConfigurations *sensorConfigs)
   server.on("/config/sensors", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/sensors.html", "text/html", false, processor);
   });
-
   server.on("/config/sensors/add", HTTP_POST, addSensorRequestHandler);
+
+  server.on("/config/calculators", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/calculators.html", "text/html", false, processor);
+  });
+  server.on("/config/calculators/add", HTTP_POST, addCalculatorRequestHandler);
+
+  server.on("/config/save", HTTP_POST, saveSettingsRequestHandler);
+
   server.serveStatic("/", SPIFFS, "/");
 
   ElegantOTA.begin(&server);

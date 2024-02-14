@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "constants.h"
-#include "configuration/SensorConfigurations.h"
+#include "configuration/Configuration.h"
 #include "sensors/SensorFactory.h"
 #include "speedCalculators/ThreePositionCalculator.h"
 #include "speedCalculators/SHT20SpeedCalculator.h"
@@ -14,7 +14,6 @@ Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 I2CManager *i2cManager;
 SensorFactory *sensorFactory;
-SensorConfigurations *sensorConfigs;
 
 std::vector<SpeedCalculator *> calculators;
 
@@ -24,17 +23,13 @@ void setup() {
 
   i2cManager = new I2CManager();
   sensorFactory = new SensorFactory(i2cManager);
-  sensorConfigs = new SensorConfigurations();
+  
+  Configuration * config = Configuration::fromFile("/config.json");
+  startInterface(config);
+  serializeJsonPretty(config->toJson(), Serial);
 
-  startInterface(sensorFactory, sensorConfigs);
-  SensorConfiguration * sht20 = new SensorConfiguration(X4, I2C, SHT20Sensor);
-  SensorConfiguration * threepos = new SensorConfiguration(X6, I2C, ThreePositionSwitchSensor);
-
-  sensorConfigs->add(sht20);
-  sensorConfigs->add(threepos);
-
-  calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(sht20)));
-  calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(threepos)));
+  calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x4_i2c_sht20"))));
+  calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x6_i2c_3possw"))));
 
   // tachometer.begin();
   // fan.begin();

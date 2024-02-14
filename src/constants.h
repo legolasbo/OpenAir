@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define CONFIGURATION_FILE_PATH "/config.json"
+
 /**************************/
 /****      PINOUT      ****/
 /**************************/

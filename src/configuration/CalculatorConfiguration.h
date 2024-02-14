@@ -4,31 +4,60 @@
 #include <string>
 #include <vector>
 #include "../sensors/SensorTypes.h"
+#include "GenericConfiguration.h"
+#include "UUID.h"
 
-class CalculatorConfiguration {
+class CalculatorConfiguration : public GenericConfiguration {
     private:
-        std::string sensorMachineName;
+        std::string uuid;
+        std::string sensorMachineName = "";
 
     public:
-    CalculatorConfiguration(std::string sensorMachineName) {
+    CalculatorConfiguration() {
+        UUID uuid;
+        uuid.seed(esp_random(), esp_random());
+        uuid.setRandomMode();
+        uuid.generate();
+        this->uuid = std::string(uuid.toCharArray());
+    }
+
+    CalculatorConfiguration(std::string sensorMachineName) : CalculatorConfiguration() {
         this->sensorMachineName = sensorMachineName;
+    }
+
+    CalculatorConfiguration(std::string sensorMachineName, char * uuid) {
+        this->sensorMachineName = sensorMachineName;
+        this->uuid = uuid;
+    }
+
+    std::string getUuid() {
+        return this->uuid;
     }
 
     std::string getSensorMachineName() {
         return this->sensorMachineName;
     }
 
-    bool equals(CalculatorConfiguration * other) {
-        if (this->sensorMachineName != other->getSensorMachineName()) {
+    virtual bool equals(GenericConfiguration * other) {
+        CalculatorConfiguration * c = static_cast<CalculatorConfiguration *>(other);
+        return this->equals(other);
+    }
+
+    virtual bool equals(CalculatorConfiguration * other) {
+        if (!GenericConfiguration::equals(other)) {
             return false;
         }
 
-        return true;
+        return this->uuid == other->uuid;
     }
 
     virtual std::vector<SensorType> supportedSensorTypes() {
         std::vector<SensorType> types;
         return types;
+    }
+
+    virtual std::string editForm() {
+        return "Calculator config for " + this->uuid + "<br>";
     }
 };
 

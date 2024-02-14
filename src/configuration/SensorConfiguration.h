@@ -4,6 +4,7 @@
 #include "../sensors/SensorConnectors.h"
 #include "../sensors/SensorTypes.h"
 #include "../sensors/ConnectionTypes.h"
+#include <ArduinoJson.h>
 #include <sstream>
 
 class SensorConfiguration {
@@ -14,6 +15,7 @@ class SensorConfiguration {
 
 
     public:
+    SensorConfiguration() {}
     SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType) {
         this->connector = connector;
         this->connectionType = connectionType;
@@ -30,6 +32,12 @@ class SensorConfiguration {
 
     ConnectionType getConnectionType() {
         return this->connectionType;
+    }
+
+    bool isValid() {
+        return this->connector != UNKNOWN_CONNECTOR
+            && this->connectionType != UNKNOWN_CONNECTION_TYPE
+            && this->sensorType != UNKNOWN_SENSOR_TYPE;
     }
 
     bool equals(SensorConfiguration *other) {
@@ -52,7 +60,7 @@ class SensorConfiguration {
         return this->equals(&other);
     }
 
-    std::string getMachineName() {
+    const char * getMachineName() {
         std::ostringstream out;
 
         out << ToMachineName(this->connector);
@@ -61,7 +69,29 @@ class SensorConfiguration {
         out << "_";
         out << ToMachineName(this->sensorType);
 
-        return out.str();
+        return out.str().c_str();
+    }
+
+    JsonDocument toJson() {
+        JsonDocument doc;
+        doc["connector"] = ToMachineName(this->connector);
+        doc["connectionType"] = ToMachineName(this->connectionType);
+        doc["sensorType"] = ToMachineName(this->sensorType);
+        return doc;
+    }
+
+    static SensorConfiguration fromJson(JsonObject doc) {
+        const char * connectorName = doc["connector"].as<const char *>();
+        const char * connectionTypeName = doc["connectionType"].as<const char *>();
+        const char * sensorTypeName = doc["sensorType"].as<const char *>();
+        if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr) {  
+            return SensorConfiguration();
+        }
+
+        SensorConnector connector = SensorConnectorFromMachineName(connectorName);
+        ConnectionType connectionType = ConnectionTypeFromMachineName(connectionTypeName);
+        SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
+        return SensorConfiguration(connector, connectionType, sensorType);
     }
 };
 

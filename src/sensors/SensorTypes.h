@@ -7,22 +7,10 @@ enum SensorType {
     SHT20Sensor,
 };
 
-inline const char* ToString(SensorType v) {
-    switch (v)
-    {
-        case ThreePositionSwitchSensor:     return "Three position switch";
-        case SHT20Sensor:                   return "SHT20 temperature/humidity sensor";
-        default:                            return "[Unknown sensor]";
-    }
-}
+const char* ToString(SensorType v);
 
-inline const char* ToMachineName(SensorType v) {
-    switch (v)
-    {
-        case ThreePositionSwitchSensor:     return "3possw";
-        case SHT20Sensor:                   return "sht20";
-        default:                            return "unknown";
-    }
-}
+const char* ToMachineName(SensorType v);
+
+SensorType SensorTypeFromMachineName(const char * name);
 
 #endif
