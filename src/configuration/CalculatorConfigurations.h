@@ -23,6 +23,10 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         this->sensors = sensors;
     }
 
+    void setSensors(SensorConfigurations * sensors) {
+        this->sensors = sensors;
+    }
+
     void addNew(CalculatorType type) {
         switch (type) {
         case ThreePositionSwitchCalculator:

@@ -4,34 +4,23 @@
 #include <string>
 #include <vector>
 #include "../sensors/SensorTypes.h"
+#include "../speedCalculators/CalculatorTypes.h"
 #include "GenericConfiguration.h"
-#include "UUID.h"
 
 class CalculatorConfiguration : public GenericConfiguration {
     private:
-        std::string uuid;
         std::string sensorMachineName = "";
 
     public:
     CalculatorConfiguration() {
-        UUID uuid;
-        uuid.seed(esp_random(), esp_random());
-        uuid.setRandomMode();
-        uuid.generate();
-        this->uuid = std::string(uuid.toCharArray());
     }
 
     CalculatorConfiguration(std::string sensorMachineName) : CalculatorConfiguration() {
         this->sensorMachineName = sensorMachineName;
     }
 
-    CalculatorConfiguration(std::string sensorMachineName, char * uuid) {
-        this->sensorMachineName = sensorMachineName;
+    CalculatorConfiguration(std::string sensorMachineName, char * uuid) : CalculatorConfiguration(sensorMachineName) {
         this->uuid = uuid;
-    }
-
-    std::string getUuid() {
-        return this->uuid;
     }
 
     std::string getSensorMachineName() {
@@ -51,6 +40,10 @@ class CalculatorConfiguration : public GenericConfiguration {
         return this->uuid == other->uuid;
     }
 
+    virtual CalculatorType type() {
+        return UNKNOWN_CALCULATOR_TYPE;
+    }
+
     virtual std::vector<SensorType> supportedSensorTypes() {
         std::vector<SensorType> types;
         return types;
@@ -58,6 +51,14 @@ class CalculatorConfiguration : public GenericConfiguration {
 
     virtual std::string editForm() {
         return "Calculator config for " + this->uuid + "<br>";
+    }
+
+    virtual JsonDocument toJson() {
+        JsonDocument doc = GenericConfiguration::toJson();
+
+        doc["type"] = ToMachineName(this->type());
+
+        return doc;
     }
 };
 

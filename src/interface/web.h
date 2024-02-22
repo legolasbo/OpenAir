@@ -14,6 +14,7 @@
 AsyncWebServer server(80);
 DNSServer dns;
 Configuration * theConfig;
+std::vector<std::string> messages;
 
 void appendHtmlAttributeTo(std::ostringstream &out, const char * attributeName, const char * attributeValue) {
   out << " ";
@@ -145,6 +146,16 @@ String createConfiguredCalculatorsList() {
 }
 
 String processor(const String& var) {
+  if (var == "MESSAGES") {
+    String out = "";
+    for (std::string msg : messages) {
+      out.concat(msg.c_str());
+      out.concat("<br>");
+    }
+    messages.clear();
+    return out;
+  }
+
   if (var == "CONFIGURABLE_SENSOR_LIST") {
     return createConfigurableSensorList();
   }
@@ -224,6 +235,9 @@ void addCalculatorRequestHandler(AsyncWebServerRequest * request) {
 void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
   Serial.println("Saving settings");
   theConfig->save();
+  messages.push_back("Configuration saved");
+  messages.push_back("Please reset OpenAir for thenew configuration to take effect.");
+  request->redirect("/");
 }
 
 void startInterface(Configuration *config) {

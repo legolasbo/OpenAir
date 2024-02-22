@@ -2,34 +2,43 @@
 #ifndef GENERIC_CONFIGURATIONS_H
 #define GENERIC_CONFIGURATIONS_H
 
-
+#include <string>
 #include <vector>
 #include <ArduinoJson.h>
+#include "UUID.h"
 
 class GenericConfiguration {
-    private:
+    protected:
+        std::string uuid;
 
     public:
-    GenericConfiguration() {}
+    GenericConfiguration() {
+        UUID uuid;
+        uuid.seed(esp_random(), esp_random());
+        uuid.setRandomMode();
+        uuid.generate();
+        this->uuid = std::string(uuid.toCharArray());
+    }
+    
+
+    std::string getUuid() {
+        return this->uuid;
+    }
+
     bool isValid() {
         return false;
     }
 
     virtual bool equals(GenericConfiguration * other) {
-        return this->machineName() == other->machineName();
+        return this->uuid == other->uuid;
     }
 
-    JsonDocument toJson() {
+    virtual JsonDocument toJson() {
         JsonDocument doc;
+
+        doc["uuid"] = this->uuid.c_str();
+
         return doc;
-    }
-
-    GenericConfiguration * fromJson() {
-        return nullptr;
-    }
-
-    virtual const char * machineName() {
-        return "";
     }
 
     virtual std::string editForm() {

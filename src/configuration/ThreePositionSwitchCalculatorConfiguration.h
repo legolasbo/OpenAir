@@ -2,6 +2,7 @@
 #define THREE_POSITION_SWITCH_CALCULATOR_CONFIGURATION
 
 #include "CalculatorConfiguration.h"
+#include "../speedCalculators/CalculatorTypes.h"
 #include <vector>
 #include "../sensors/SensorTypes.h"
 
@@ -18,8 +19,8 @@ class ThreePositionSwitchCalculatorConfiguration : public CalculatorConfiguratio
         };
     }
 
-    virtual const char * machineName() {
-        return "3possw";
+    virtual CalculatorType type() {
+        return ThreePositionSwitchCalculator;
     }
 
     virtual std::string editForm() {

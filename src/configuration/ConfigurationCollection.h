@@ -34,7 +34,7 @@ class ConfigurationCollection {
             return;
         }
 
-        Serial.printf("Inserting config: %s\n", config->machineName());
+        Serial.printf("Inserting config: %s\n", config->getUuid());
         this->configs.push_back(config);
     }
 
@@ -56,7 +56,10 @@ class ConfigurationCollection {
     JsonDocument toJson() {
         JsonDocument doc;
 
+        Serial.printf("Serializing %d calculators\n", this->configs.size());
+
         for (size_t i = 0; i < this->configs.size(); i++) {
+            Serial.printf("Serializing %s\n", this->configs.at(i)->getUuid().c_str());
             doc[i] = this->configs.at(i)->toJson();
         }
 

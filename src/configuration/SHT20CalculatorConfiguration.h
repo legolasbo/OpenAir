@@ -2,6 +2,7 @@
 #define SHT20_CALCULATOR_CONFIGURATION
 
 #include "CalculatorConfiguration.h"
+#include "../speedCalculators/CalculatorTypes.h"
 #include <vector>
 #include "../sensors/SensorTypes.h"
 
@@ -19,8 +20,8 @@ class SHT20CalculatorConfiguration : public CalculatorConfiguration {
         };
     }
 
-    virtual const char * machineName() {
-        return "sht20";
+    virtual CalculatorType type() {
+        return SHT20Calculator;
     }
 
     virtual std::string editForm() {

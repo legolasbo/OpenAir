@@ -27,18 +27,20 @@ class Configuration {
     }
 
     void save() {
-        File f = SPIFFS.open(CONFIGURATION_FILE_PATH);
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
             return;
         }
 
+        File f = SPIFFS.open(CONFIGURATION_FILE_PATH, FILE_WRITE);
         if (!f || f.isDirectory()) {
             Serial.printf("Failed to open file: %s\n", CONFIGURATION_FILE_PATH);
             return;
         }
-        
+
         serializeJson(this->toJson(), f);
+
+        f.close();
     }
 
     static Configuration * fromFile(const char * name) {
@@ -55,8 +57,10 @@ class Configuration {
 
         JsonDocument doc;
         DeserializationError err = deserializeJson(doc, file);
+
+        file.close();
         if (err != err.Ok) {
-            Serial.printf("Failed to deserialize %s because of %s\n", name, err);
+            Serial.printf("Failed to deserialize %s because of %d\n", name, err);
             return new Configuration();
         }
 
