@@ -77,16 +77,16 @@ String createConfigurableSensorList() {
   return out.str().c_str();
 }
 
-void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfiguration> sensors) {
+void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfiguration*> sensors) {
   out << "<table>\n";
   out << "<thead><tr>";
   out << "<th>sensor type</th>";
   out << "<th>connection type</th>";
   out << "</tr></thead><tbody>";
-  for (SensorConfiguration c : sensors) {
+  for (SensorConfiguration * c : sensors) {
     out << "<tr>";
-    out << "<td>" << ToString(c.getSensorType()) << "</td>";
-    out << "<td>" << ToString(c.getConnectionType()) << "</td>";
+    out << "<td>" << ToString(c->getSensorType()) << "</td>";
+    out << "<td>" << ToString(c->getConnectionType()) << "</td>";
     out << "</tr>";
   }
   out << "</tbody></table>\n";
@@ -94,7 +94,7 @@ void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfigur
 
 void appendSensorListTableForConnector(std::ostringstream &out, SensorConnector connector) {
   out << "<h2>Connector: " << ToString(connector) << "</h2>";
-  std::vector<SensorConfiguration> sensors = theConfig->getSensors()->getConfigurationsFor(connector);
+  std::vector<SensorConfiguration*> sensors = theConfig->getSensors()->getConfigurationsFor(connector);
   appendSensorListTableTo(out, sensors);
 }
 
@@ -136,10 +136,10 @@ String createConfigurableCalculatorList() {
 String createConfiguredCalculatorsList() {
   std::ostringstream out;
 
-  std::vector<CalculatorConfiguration *> calculators = theConfig->getCalculators()->all();
+  std::vector<std::string> uuids = theConfig->getCalculators()->getUuids();
 
-  for (size_t i = 0; i < calculators.size(); i++) {
-    out << calculators.at(i)->editForm();
+  for (auto uuid : uuids) {
+    out << theConfig->getCalculators()->get(uuid.c_str())->editForm();
   }
 
   return out.str().c_str();
@@ -201,7 +201,7 @@ void addSensorRequestHandler(AsyncWebServerRequest * request) {
   ConnectionType connType = ConnectionType(request->arg("connectionType").toInt());
   SensorConnector connector = SensorConnector(request->arg("connection").toInt());
 
-  SensorConfiguration config(connector, connType, sensType);
+  SensorConfiguration * config = new SensorConfiguration(connector, connType, sensType);
 
   if (theConfig->getSensors()->identicalConfigExists(config)) {
     return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
@@ -224,7 +224,6 @@ void addCalculatorRequestHandler(AsyncWebServerRequest * request) {
     case ThreePositionSwitchCalculator:
     case SHT20Calculator:
       theConfig->getCalculators()->addNew(theType);
-      Serial.println(theConfig->getCalculators()->all().size());
       request->redirect("/config/calculators");
       break;
     default:

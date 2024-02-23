@@ -26,6 +26,6 @@
 /****       WIFI       ****/
 /**************************/
 #define HOSTNAME "OpenAir"
-#define AP_PASSWORD "AirOpen"
+#define AP_PASSWORD "OpenUpAir"
 
 #endif

@@ -38,11 +38,11 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         }
     }
 
-    static CalculatorConfigurations * fromJson(JsonArray calculators, SensorConfigurations * sensorConfig) {
+    static CalculatorConfigurations * fromJson(JsonObject calculators, SensorConfigurations * sensorConfig) {
         CalculatorConfigurations * instance = new CalculatorConfigurations(sensorConfig);
         
-        for (size_t i = 0; i < calculators.size(); i++) {
-            JsonObject json = calculators[i].as<JsonObject>();
+        for (JsonPair p : calculators) {
+            JsonObject json = p.value().as<JsonObject>();
             if (!json.containsKey("type")) {
                 deSerializationFailed(json, "Missing type key in json: ");
                 continue;
@@ -65,7 +65,6 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
             }
 
             try {
-
                 if (sensorConfig->exists(config->getSensorMachineName().c_str())) {
                     Serial.printf("Skipping calculator config for non-existing sensor: %s\n", config->getSensorMachineName());
                     delete sensorConfig;

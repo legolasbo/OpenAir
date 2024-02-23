@@ -2,27 +2,26 @@
 #define CONFIGURATION_COLLECTION_H
 
 #include <vector>
+#include <map>
 #include "GenericConfiguration.h"
 
 template <typename ConfigurationType>
 
 class ConfigurationCollection {
     protected:
-    std::vector<ConfigurationType*> configs;
+    std::map<std::string, ConfigurationType*> configs;
+    std::vector<std::string> uuids;
 
     public:
     ConfigurationCollection() {}
-    ConfigurationCollection(std::vector<ConfigurationType*> configs) {
-        this->configs = configs;
-    }
 
     bool identicalConfigExists(ConfigurationType *config) {
         if (this->configs.size() == 0) {
             return false;
         }
 
-        for (ConfigurationType * c : this->configs) {
-            if (c->equals(config)) {
+        for (auto & c : this->configs) {
+            if (c.second->equals(config)) {
                 return true;
             }
         }
@@ -34,33 +33,29 @@ class ConfigurationCollection {
             return;
         }
 
-        Serial.printf("Inserting config: %s\n", config->getUuid());
-        this->configs.push_back(config);
+        std::string uuid = config->getUuid();
+        this->uuids.push_back(uuid);
+        this->configs.insert(std::make_pair(uuid, config));
     }
 
-    std::vector<ConfigurationType *> all() {
-        return this->configs;
+    std::vector<std::string> getUuids() {
+        return this->uuids;
     }
 
-    ConfigurationType * get(char * machineName) {
-        for (size_t i = 0; i < this->configs.size(); i++) {
-            if (strcmp(this->configs.at(i)->machineName(), machineName) == 0) {
-                return this->configs.at(i);
-            }
+    ConfigurationType * get(std::string uuid) {
+        auto search = this->configs.find(uuid);
+        if (search != this->configs.end()) {
+            return search->second;
         }
 
-
-        throw std::invalid_argument("Unknown machine name: " + std::string(machineName));
+        throw std::invalid_argument("Unknown uuid: " + std::string(uuid));
     }
 
     JsonDocument toJson() {
         JsonDocument doc;
 
-        Serial.printf("Serializing %d calculators\n", this->configs.size());
-
-        for (size_t i = 0; i < this->configs.size(); i++) {
-            Serial.printf("Serializing %s\n", this->configs.at(i)->getUuid().c_str());
-            doc[i] = this->configs.at(i)->toJson();
+        for (std::string uuid : this->uuids) {
+            doc[uuid] = this->configs.at(uuid)->toJson();
         }
 
         return doc;

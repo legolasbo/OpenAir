@@ -50,7 +50,7 @@ class CalculatorConfiguration : public GenericConfiguration {
     }
 
     virtual std::string editForm() {
-        return "Calculator config for " + this->uuid + "<br>";
+        return "Calculator config for " + std::string(this->uuid) + "<br>";
     }
 
     virtual JsonDocument toJson() {

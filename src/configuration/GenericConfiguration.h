@@ -19,9 +19,11 @@ class GenericConfiguration {
         uuid.generate();
         this->uuid = std::string(uuid.toCharArray());
     }
-    
+    GenericConfiguration(std::string uuid) {
+        this->uuid = uuid;
+    }
 
-    std::string getUuid() {
+    virtual std::string getUuid() {
         return this->uuid;
     }
 
@@ -36,7 +38,7 @@ class GenericConfiguration {
     virtual JsonDocument toJson() {
         JsonDocument doc;
 
-        doc["uuid"] = this->uuid.c_str();
+        doc["uuid"] = this->uuid;
 
         return doc;
     }

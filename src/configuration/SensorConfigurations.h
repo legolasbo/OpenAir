@@ -5,118 +5,55 @@
 #include "../sensors/SensorTypes.h"
 #include "../sensors/SensorFactory.h"
 #include "SensorConfiguration.h"
+#include "ConfigurationCollection.h"
 #include <vector>
+#include <map>
 #include <ArduinoJson.h>
 
-class SensorConfigurations {
+class SensorConfigurations : public ConfigurationCollection<SensorConfiguration> {
     private:
-    std::vector<SensorConfiguration> configs;
 
     public:
 
-    SensorConfigurations() {
-    }
-
-    SensorConfigurations(std::vector<SensorConfiguration> configs) {
-        this->configs = configs;
-    }
-
-    bool identicalConfigExists(SensorConfiguration &config) {
-        if (this->configs.size() == 0) {
-            return false;
-        }
-
-        for(SensorConfiguration c : this->configs) {
-            if (c.equals(config)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void add(SensorConfiguration &config) {
-        if (this->identicalConfigExists(config)) {
-            throw std::invalid_argument("Unable to add configuration it already exists");
-        }
-
-        Serial.print("Inserting config: ");
-        Serial.println(config.getMachineName());
-        this->configs.push_back(config);
-        return;
-    }
-
-    void add(SensorConfiguration *config) {
-        this->add(*config);
-    }
-
-    std::vector<SensorConfiguration> getConfigurationsFor(SensorConnector connector) {
+    std::vector<SensorConfiguration *> getConfigurationsFor(SensorConnector connector) {
         Serial.print("Getting configurations for ");
         Serial.println(ToString(connector));
-        std::vector<SensorConfiguration> sensors;
+        std::vector<SensorConfiguration *> sensors;
 
-        for(SensorConfiguration config : this->configs) {
+        for (auto &pair : this->configs) {
             Serial.print("Checking: ");
-            Serial.println(config.getMachineName());
+            Serial.println(pair.second->machineName());
 
-            if(config.getSensorConnector() == connector) {
+            if(pair.second->getSensorConnector() == connector) {
                 Serial.print("Selecting: ");
-                Serial.println(config.getMachineName());
-                sensors.push_back(config);
+                Serial.println(pair.second->machineName());
+                sensors.push_back(pair.second);
             }
         }
 
         return sensors;
     }
 
-    std::vector<SensorConfiguration> all() {
-        return this->configs;
-    }
+    static SensorConfigurations * fromJson(JsonObject sensors) {
+        SensorConfigurations * instance = new SensorConfigurations();
 
-    SensorConfiguration *get(std::string machineName) {
-        for (size_t i = 0; i < this->configs.size(); i++)
-        {
-            if (this->configs.at(i).getMachineName() == machineName) {
-                return &this->configs.at(i);
-            }
-        }
-
-        throw std::invalid_argument("Unknown machine name: " + machineName);        
-    }
-
-    JsonDocument toJson() {
-        JsonDocument doc;
-
-        for (size_t i = 0; i < this->configs.size(); i++)
-        {
-            doc[i] = this->configs.at(i).toJson();
-        }
-
-        return doc;
-    }
-
-    static SensorConfigurations * fromJson(JsonArray sensors) {
-        if (sensors.size() == 0) {
-            return new SensorConfigurations();
-        }
-
-        std::vector<SensorConfiguration> configs;
-        for (int i = 0; i < sensors.size(); i++) {
+        for (JsonPair p : sensors) {
             try
             {
-                SensorConfiguration sens = SensorConfiguration::fromJson(sensors[i].as<JsonObject>());
-                configs.push_back(sens);
+                instance->add(SensorConfiguration::fromJson(p.value().as<JsonObject>()));
             }
             catch(const std::exception& e)
             {
                 Serial.println(e.what());
             }
         }
-        return new SensorConfigurations(configs);
+
+        return instance;
     }
 
     bool exists(const char * machineName) {
-        for (size_t i = 0; i < this->configs.size(); i++) {
-            if(strcmp(this->configs.at(i).getMachineName(), machineName) == 0) {
+        for (auto & pair : this->configs) {
+            if (strcmp(pair.second->machineName(), machineName) == 0) {
                 return true;
             }
         }

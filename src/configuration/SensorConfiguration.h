@@ -4,10 +4,11 @@
 #include "../sensors/SensorConnectors.h"
 #include "../sensors/SensorTypes.h"
 #include "../sensors/ConnectionTypes.h"
+#include "GenericConfiguration.h"
 #include <ArduinoJson.h>
 #include <sstream>
 
-class SensorConfiguration {
+class SensorConfiguration : public GenericConfiguration {
     private:
         SensorConnector    connector;
         SensorType          sensorType;
@@ -16,7 +17,12 @@ class SensorConfiguration {
 
     public:
     SensorConfiguration() {}
-    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType) {
+    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType) : GenericConfiguration() {
+        this->connector = connector;
+        this->connectionType = connectionType;
+        this->sensorType = sensorType;
+    }
+    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid) : GenericConfiguration(uuid) {
         this->connector = connector;
         this->connectionType = connectionType;
         this->sensorType = sensorType;
@@ -41,6 +47,10 @@ class SensorConfiguration {
     }
 
     bool equals(SensorConfiguration *other) {
+        if (!GenericConfiguration::equals(other)) {
+            return false;
+        }
+
         if (this->sensorType != other->sensorType) {
             return false;
         }
@@ -60,7 +70,7 @@ class SensorConfiguration {
         return this->equals(&other);
     }
 
-    const char * getMachineName() {
+    const char * machineName() {
         std::ostringstream out;
 
         out << ToMachineName(this->connector);
@@ -72,26 +82,28 @@ class SensorConfiguration {
         return out.str().c_str();
     }
 
-    JsonDocument toJson() {
-        JsonDocument doc;
+    virtual JsonDocument toJson() {
+        JsonDocument doc = GenericConfiguration::toJson();
         doc["connector"] = ToMachineName(this->connector);
-        doc["connectionType"] = ToMachineName(this->connectionType);
-        doc["sensorType"] = ToMachineName(this->sensorType);
+        doc["connection"] = ToMachineName(this->connectionType);
+        doc["sensor"] = ToMachineName(this->sensorType);
         return doc;
     }
 
-    static SensorConfiguration fromJson(JsonObject doc) {
+    static SensorConfiguration * fromJson(JsonObject doc) {
+        const char * uuid = doc["uuid"].as<const char *>();
         const char * connectorName = doc["connector"].as<const char *>();
-        const char * connectionTypeName = doc["connectionType"].as<const char *>();
-        const char * sensorTypeName = doc["sensorType"].as<const char *>();
-        if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr) {  
-            return SensorConfiguration();
+        const char * connectionTypeName = doc["connection"].as<const char *>();
+        const char * sensorTypeName = doc["sensor"].as<const char *>();
+        if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr || uuid == nullptr) {  
+            Serial.println("Skipping sensor");
+            return new SensorConfiguration();
         }
 
         SensorConnector connector = SensorConnectorFromMachineName(connectorName);
         ConnectionType connectionType = ConnectionTypeFromMachineName(connectionTypeName);
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
-        return SensorConfiguration(connector, connectionType, sensorType);
+        return new SensorConfiguration(connector, connectionType, sensorType, uuid);
     }
 };
 

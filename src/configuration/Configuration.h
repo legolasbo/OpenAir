@@ -76,8 +76,8 @@ class Configuration {
     }
 
     static Configuration * fromJson(JsonDocument &json) {
-        JsonArray sensorsJson = json["sensors"].as<JsonArray>();
-        JsonArray calculatorsJson = json["calculators"].as<JsonArray>();
+        JsonObject sensorsJson = json["sensors"].as<JsonObject>();
+        JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 
         SensorConfigurations * sensors = SensorConfigurations::fromJson(sensorsJson);
         CalculatorConfigurations * calculators = CalculatorConfigurations::fromJson(calculatorsJson, sensors);
