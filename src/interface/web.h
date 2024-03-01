@@ -9,12 +9,14 @@
 
 #include "configuration/Configuration.h"
 #include "../speedCalculators/CalculatorTypes.h"
-#include "constants.h"
+#include "sensors.h"
 
 AsyncWebServer server(80);
 DNSServer dns;
+AsyncWiFiManager wifiManager(&server,&dns);
 Configuration * theConfig;
 std::vector<std::string> messages;
+SensorApi sensorApi;
 
 void appendHtmlAttributeTo(std::ostringstream &out, const char * attributeName, const char * attributeValue) {
   out << " ";
@@ -37,73 +39,11 @@ void appendRadioButton(std::ostringstream &out, const char* elementName, const c
   out << "</label>";
 }
 
-void appendAddSensorFormTo(std::ostringstream &out, ConnectionType conn, SensorType sens) {
-  out << "<form action=\"/config/sensors/add\" method=\"post\">";
-  out << ToString(sens);
-  out << "<input type=\"hidden\" name=\"connectionType\" value=\"" << conn << "\" />";
-  out << "<input type=\"hidden\" name=\"sensorType\" value=\"" << sens << "\" />";
-  appendRadioButton(out, "connection", ToMachineName(X4), String(X4).c_str(), ToString(X4));
-  appendRadioButton(out, "connection", ToMachineName(X6), String(X6).c_str(), ToString(X6));
-  out << "<input type=\"submit\" value=\"Add\">";
-  out << "</form>";
-}
-
-void appendSensorListItemTo(std::ostringstream &out, ConnectionType conn, SensorType sens) {
-  out << "<li>";
-  appendAddSensorFormTo(out, conn, sens);
-  out << "</li>";
-}
-
 String createSaveSettingsFormTo() {
   std::ostringstream out;
   out << "<form action=\"/config/save\" method=\"post\">";
   out << "<input type=\"submit\" value=\"Save settings\">";
   out << "</form>";
-  return out.str().c_str();
-}
-
-String createConfigurableSensorList() {
-  std::ostringstream out;
-  out << "<h3>Physical sensors</h3>";
-  out << "<ul>";
-  appendSensorListItemTo(out, I2C, ThreePositionSwitchSensor);
-  appendSensorListItemTo(out, I2C, SHT20Sensor);
-  out << "</ul>";
-
-  out << "<h3>Virtual sensors</h3>";
-  out << "<ul>";
-  out << "</ul>";
-
-  return out.str().c_str();
-}
-
-void appendSensorListTableTo(std::ostringstream &out, std::vector<SensorConfiguration*> sensors) {
-  out << "<table>\n";
-  out << "<thead><tr>";
-  out << "<th>sensor type</th>";
-  out << "<th>connection type</th>";
-  out << "</tr></thead><tbody>";
-  for (SensorConfiguration * c : sensors) {
-    out << "<tr>";
-    out << "<td>" << ToString(c->getSensorType()) << "</td>";
-    out << "<td>" << ToString(c->getConnectionType()) << "</td>";
-    out << "</tr>";
-  }
-  out << "</tbody></table>\n";
-}
-
-void appendSensorListTableForConnector(std::ostringstream &out, SensorConnector connector) {
-  out << "<h2>Connector: " << ToString(connector) << "</h2>";
-  std::vector<SensorConfiguration*> sensors = theConfig->getSensors()->getConfigurationsFor(connector);
-  appendSensorListTableTo(out, sensors);
-}
-
-String createConfiguredSensorsHTML() {
-  std::ostringstream out;
-
-  appendSensorListTableForConnector(out, X4);
-  appendSensorListTableForConnector(out, X6);
-
   return out.str().c_str();
 }
 
@@ -156,14 +96,6 @@ String processor(const String& var) {
     return out;
   }
 
-  if (var == "CONFIGURABLE_SENSOR_LIST") {
-    return createConfigurableSensorList();
-  }
-
-  if (var == "CONFIGURED_SENSORS") {
-    return createConfiguredSensorsHTML();
-  }
-
   if (var == "CONFIGURABLE_CALCULATOR_LIST") {
     return createConfigurableCalculatorList();
   }
@@ -177,12 +109,6 @@ String processor(const String& var) {
   }
 
   return "OOPS!?";
-}
-
-void internalServerErrorResponse(AsyncWebServerRequest * request, String text) {
-    Serial.print("ERROR: ");
-    Serial.println(text);
-    request->send(500, "text/html", text);
 }
 
 void addSensorRequestHandler(AsyncWebServerRequest * request) {
@@ -242,7 +168,6 @@ void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
 void startInterface(Configuration *config) {
   theConfig = config;
 
-  AsyncWiFiManager wifiManager(&server,&dns);
   wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
 
   Serial.println("Wifi connected");
@@ -251,10 +176,7 @@ void startInterface(Configuration *config) {
     request->send(SPIFFS, "/index.html", "text/html", false, processor);
   });
 
-  server.on("/config/sensors", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send(SPIFFS, "/sensors.html", "text/html", false, processor);
-  });
-  server.on("/config/sensors/add", HTTP_POST, addSensorRequestHandler);
+  sensorApi.initialize(&server, config);
 
   server.on("/config/calculators", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/calculators.html", "text/html", false, processor);

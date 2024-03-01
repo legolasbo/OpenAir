@@ -70,11 +70,29 @@ class SensorFactory {
         Sensor* fromConfiguration(SensorConfiguration* config) {
             std::map<SensorConfiguration*, Sensor*>::iterator it = this->sensors.find(config);
             if (it != this->sensors.end()) {
-                Serial.println("Returning second");
                 return it->second;
             }
 
             return this->registerSensor(config, this->createSensorFromConfiguration(config));
+        }
+
+        static JsonDocument knownConnections() {
+            JsonDocument doc;
+
+            doc[ToMachineName(I2C)] = ToString(I2C);
+
+            return doc;
+        }
+
+        static JsonDocument knownSensorTypesJson() {
+            JsonDocument doc;
+            
+            doc[ToMachineName(SHT20Sensor)]["name"] = ToString(SHT20Sensor);
+            doc[ToMachineName(SHT20Sensor)]["connections"] = SensorFactory::knownConnections();
+            doc[ToMachineName(ThreePositionSwitchSensor)]["name"] = ToString(ThreePositionSwitchSensor);
+            doc[ToMachineName(ThreePositionSwitchSensor)]["connections"] = SensorFactory::knownConnections();
+
+            return doc;
         }
 
 };

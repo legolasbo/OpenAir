@@ -51,14 +51,8 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return instance;
     }
 
-    bool exists(const char * machineName) {
-        for (auto & pair : this->configs) {
-            if (strcmp(pair.second->machineName(), machineName) == 0) {
-                return true;
-            }
-        }
-
-        return false;
+    bool exists(std::string uuid) {
+        return this->get(uuid) != nullptr;
     }
 };
 

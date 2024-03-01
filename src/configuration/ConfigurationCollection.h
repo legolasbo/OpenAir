@@ -12,6 +12,19 @@ class ConfigurationCollection {
     std::map<std::string, ConfigurationType*> configs;
     std::vector<std::string> uuids;
 
+    void eraseUuid(std::string uuid) {
+        std::vector<std::string> remaining;
+
+        for (auto u : this->uuids)
+        {
+            if (u != uuid) {
+                remaining.push_back(u);
+            }
+        }
+
+        this->uuids = remaining;
+    }
+
     public:
     ConfigurationCollection() {}
 
@@ -48,7 +61,15 @@ class ConfigurationCollection {
             return search->second;
         }
 
-        throw std::invalid_argument("Unknown uuid: " + std::string(uuid));
+        return nullptr;
+    }
+
+    void erase(std::string uuid) {
+        ConfigurationType * item = this->get(uuid);
+        this->configs.erase(uuid);
+        this->eraseUuid(uuid);
+        delete(item);
+        Serial.printf("Deleted: %s\n", uuid.c_str());
     }
 
     JsonDocument toJson() {

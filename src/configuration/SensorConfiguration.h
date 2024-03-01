@@ -47,10 +47,6 @@ class SensorConfiguration : public GenericConfiguration {
     }
 
     bool equals(SensorConfiguration *other) {
-        if (!GenericConfiguration::equals(other)) {
-            return false;
-        }
-
         if (this->sensorType != other->sensorType) {
             return false;
         }
@@ -87,6 +83,67 @@ class SensorConfiguration : public GenericConfiguration {
         doc["connector"] = ToMachineName(this->connector);
         doc["connection"] = ToMachineName(this->connectionType);
         doc["sensor"] = ToMachineName(this->sensorType);
+        return doc;
+    }
+
+    virtual bool hasOption(std::string name) {
+        if (name == "connector") {
+            return true;
+        }
+
+        if (name == "connection") {
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool setOption(std::string name, std::string value) {
+        if (name == "connector") {
+            return this->setConnector(value);
+        }
+
+        if (name == "connection") {
+            return this->setConnection(value);
+        }
+
+        return false;
+    }
+
+    virtual bool setConnection(ConnectionType connection) {
+        if (connection == UNKNOWN_CONNECTION_TYPE) {
+            return false;
+        }
+
+        this->connectionType = connection;
+        return true;
+    }
+
+    virtual bool setConnection(std::string connection) {
+        return this->setConnection(ConnectionTypeFromMachineName(connection.c_str()));
+    }
+
+    virtual bool setConnector(SensorConnector connector) {
+        if (connector == UNKNOWN_CONNECTOR) {
+            return false;
+        }
+        this->connector = connector;
+        return true;
+    }
+
+    virtual bool setConnector(std::string value) {
+        return this->setConnector(SensorConnectorFromMachineName(value.c_str()));
+    }
+
+    virtual JsonDocument getConfigurationOptions() {
+        JsonDocument doc;
+
+        doc["connector"][ToMachineName(X4)] = ToString(X4);
+        doc["connector"][ToMachineName(X6)] = ToString(X6);
+        
+        doc["connection"][ToMachineName(I2C)] = ToString(I2C);
+        doc["connection"][ToMachineName(UART)] = ToString(UART);
+
         return doc;
     }
 
