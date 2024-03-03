@@ -1,8 +1,3 @@
-const connectors = {
-    x4: "X4",
-    x6: "X6",
-}
-const configurableSensors = document.createElement("ul");
 const contentElement = document.getElementById("content");
 
 async function fetchJson(url) {
@@ -12,25 +7,9 @@ async function fetchJson(url) {
     return json != null ? json : {};
 }
 
-function createAddSensorForm(sensorType, options) {
-    const wrapper = document.createElement("div");
-    wrapper.append(options.name);
-    const form = createElement(
-        "form",
-        {action: "/api/sensors/add", method: "post"},
-        createHiddenInput("sensorType", sensorType),
-        createRadioButtons("connectionType", options.connections, sensorType, true),
-        createRadioButtons("connection", connectors, sensorType, true),
-        createSubmitButton("add")
-    )
-    wrapper.append(form);
-
-    return wrapper;
-}
-
 const createSubmitButton = (value) => createInput({type: "submit", value: value});
 
-function createRadioButtons(name, options, idPrefix = "", required = false) {
+function createRadioButtons(name, options, idPrefix = "", selected = "") {
     const wrapper = document.createElement("div");
     
     for (const opt in options) {
@@ -40,13 +19,17 @@ function createRadioButtons(name, options, idPrefix = "", required = false) {
 
         const buttonId = idPrefix ? `${idPrefix}_${name}_${opt}` : `${name}_${opt}`;
 
+        const checked = Object.values(options).length == 1 || selected === opt ? {checked: true} : {};
+
         wrapper.appendChild(createInput({
-            type: "radio",
-            name: name,
-            value: opt,
-            id: buttonId,
-            required: required,
-            selected: options.length == 1,
+            ...{
+                type: "radio",
+                name: name,
+                value: opt,
+                id: buttonId,
+                required: true,
+            },
+            ...checked,
         }));
         wrapper.appendChild(createElement("label", {for: buttonId}, options[opt]));
     }
@@ -73,6 +56,11 @@ function createElement(type, attributes, ...children) {
 
 const createInput = (attributes) => createElement("input", attributes);
 
+const createTextInput = (name, value) => createInput({
+    type: "text",
+    name: name,
+    value: value,
+});
 const createHiddenInput = (name, value) => createInput({
         type: "hidden",
         name: name,
