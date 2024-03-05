@@ -15,14 +15,14 @@ class Factory {
 
     public:
     Type* fromConfiguration(ConfigType * conf) {
-        std::map<ConfigType*, Type*>::iterator it = this->instances.find(conf);
-        if (it != this->instances.end())) {
-            Serial.Printf("Found instance for configuration: %s\n", conf->getMachineName());
+        auto it = this->instances.find(conf);
+        if (it != this->instances.end()) {
+            Serial.printf("Found instance for configuration: %s\n", conf->getMachineName());
             return it->second;
         }
 
         Type* instance = this->createInstanceFromConfiguration(conf);
-        this->sensors.insert(std::pair<SensorConfiguration*, Sensor*>(conf, instance));
+        this->instances.insert(std::pair<SensorConfiguration*, Sensor*>(conf, instance));
         return instance;
     }
 };

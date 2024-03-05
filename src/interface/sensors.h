@@ -1,56 +1,20 @@
 #ifndef INTERFACE_SENSORS_H
 #define INTERFACE_SENSORS_H
 
-#include <ESPAsyncWebServer.h>
+#include "api.h"
 #include "../sensors/SensorFactory.h"
 #include "../configuration/Configuration.h"
 #include "../configuration/SensorConfiguration.h"
-#include "responses.h"
 
-class SensorApi {
-    private:
-    Configuration * config;
-    AsyncWebServer * server;
-    
-    std::string extractValidUuid(AsyncWebServerRequest * request) {
-        if (!request->hasParam("uuid") && !request->hasArg("uuid")) {
-            internalServerErrorResponse(request, "uuid is required to configure a sensor");
-            return "";
-        }
-
-        std::string uuid;
-        if (request->hasParam("uuid")) {
-            uuid = request->getParam("uuid")->value().c_str();
-        }
-        else {
-            uuid = request->arg("uuid").c_str();
-        }
-
-        if (!this->config->getSensors()->exists(uuid)) {
-            internalServerErrorResponse(request, "Unknown uuid");
-            return "";
-        }
-
-        return uuid;
-    }
-
-    void respondJson(JsonDocument doc, AsyncWebServerRequest * request) {
-        String json;
-        serializeJsonPretty(doc, json);
-        request->send(200, String("text/json"), json);
-    }
-
+class SensorApi : public API {
     public:
-    SensorApi() {}
 
     void initialize(AsyncWebServer * server, Configuration * config) {
         this->server = server;
         this->config = config;
 
-        server->on("/api/sensors/configurable", HTTP_GET, [](AsyncWebServerRequest * request) {
-            String json;
-            serializeJsonPretty(SensorFactory::knownSensorTypesJson(), json);
-            request->send(200, String("text/json"), json);
+        server->on("/api/sensors/configurable", HTTP_GET, [this](AsyncWebServerRequest * request) {
+            this->respondJson(SensorFactory::knownSensorTypesJson(), request);
         });
 
         server->on("/api/sensors/add", HTTP_POST, [this](AsyncWebServerRequest * request){
@@ -150,8 +114,6 @@ void SensorApi::sensorOptions(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
-    Serial.println("Delete sensor handler");
-    
     if (!request->hasArg("uuid")) {
         Serial.println("No uuid param present");
         return request->redirect("/");

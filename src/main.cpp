@@ -30,6 +30,8 @@ void setup() {
 
   // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x4_i2c_sht20"))));
   // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x6_i2c_3possw"))));
+  // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(new SensorConfiguration(X6, I2C, SHT20Sensor))));
+  // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(new SensorConfiguration(X4, I2C, ThreePositionSwitchSensor))));
 
   // tachometer.begin();
   // fan.begin();

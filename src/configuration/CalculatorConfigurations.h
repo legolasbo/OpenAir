@@ -64,17 +64,19 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
                 continue;
             }
 
-            try {
-                if (sensorConfig->exists(config->getSensorMachineName().c_str())) {
-                    Serial.printf("Skipping calculator config for non-existing sensor: %s\n", config->getSensorMachineName());
-                    delete sensorConfig;
-                    continue;
+            bool missingDependency = false;
+            for (auto uuid : config->getSensorDependencies()) {
+                if (!sensorConfig->exists(uuid)) {
+                    missingDependency = true;
+                    delete(config);
+                    break;
                 }
-                instance->add(config);
             }
-            catch (const std::exception& e) {
-                Serial.println(e.what());
+
+            if (missingDependency) {
+                break;
             }
+            instance->add(config);
         }
 
         return instance;

@@ -10,6 +10,7 @@
 #include "configuration/Configuration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include "sensors.h"
+#include "calculators.h"
 
 AsyncWebServer server(80);
 DNSServer dns;
@@ -17,6 +18,7 @@ AsyncWiFiManager wifiManager(&server,&dns);
 Configuration * theConfig;
 std::vector<std::string> messages;
 SensorApi sensorApi;
+CalculatorApi calculatorApi;
 
 void appendHtmlAttributeTo(std::ostringstream &out, const char * attributeName, const char * attributeValue) {
   out << " ";
@@ -177,6 +179,7 @@ void startInterface(Configuration *config) {
   });
 
   sensorApi.initialize(&server, config);
+  calculatorApi.initialize(&server, config);
 
   server.on("/config/calculators", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/calculators.html", "text/html", false, processor);

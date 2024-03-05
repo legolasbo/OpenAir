@@ -1,4 +1,5 @@
 const contentElement = document.getElementById("content");
+const navigationElement = document.getElementById("nav");
 
 async function fetchJson(url) {
     const json = await fetch(url)
@@ -7,65 +8,19 @@ async function fetchJson(url) {
     return json != null ? json : {};
 }
 
-const createSubmitButton = (value) => createInput({type: "submit", value: value});
 
-function createRadioButtons(name, options, idPrefix = "", selected = "") {
-    const wrapper = document.createElement("div");
-    
-    for (const opt in options) {
-        if (!Object.hasOwnProperty.call(options, opt)) {
-            continue;
-        }
-
-        const buttonId = idPrefix ? `${idPrefix}_${name}_${opt}` : `${name}_${opt}`;
-
-        const checked = Object.values(options).length == 1 || selected === opt ? {checked: true} : {};
-
-        wrapper.appendChild(createInput({
-            ...{
-                type: "radio",
-                name: name,
-                value: opt,
-                id: buttonId,
-                required: true,
-            },
-            ...checked,
-        }));
-        wrapper.appendChild(createElement("label", {for: buttonId}, options[opt]));
-    }
-
-    return wrapper;
+const createNavigationLink = (label, callback) => {
+    const link = createElement("a", {href: "#"}, label);
+    link.onclick = callback;
+    return link;
 }
 
-function createElement(type, attributes, ...children) {
-    const element = document.createElement(type);
-    for (const attribute in attributes) {
-        if (!Object.hasOwnProperty.call(attributes, attribute)) {
-            continue;
-        }
-
-        element.setAttribute(attribute, attributes[attribute])
-    }
-
-    for (const child of children) {
-        element.append(child);
-    }
-    
-    return element;
+const buildNavigation = () => {
+    navigationElement.append(createElement("ui", {}, 
+        createElement("li", {}, createNavigationLink("Sensors", sensorsScreen)),
+        createElement("li", {}, createNavigationLink("Calculators", calculatorScreen)),
+    ))
 }
 
-const createInput = (attributes) => createElement("input", attributes);
-
-const createTextInput = (name, value) => createInput({
-    type: "text",
-    name: name,
-    value: value,
-});
-const createHiddenInput = (name, value) => createInput({
-        type: "hidden",
-        name: name,
-        value: value,
-    });
-
-
+buildNavigation();
 sensorsScreen();

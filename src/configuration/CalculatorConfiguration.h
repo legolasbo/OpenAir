@@ -9,22 +9,20 @@
 
 class CalculatorConfiguration : public GenericConfiguration {
     private:
-        std::string sensorMachineName = "";
+        std::string name = "";
+    
+    protected:
+        std::vector<std::string> sensorDependencies;
 
     public:
-    CalculatorConfiguration() {
+    CalculatorConfiguration() : GenericConfiguration() {}
+    CalculatorConfiguration(const char * uuid): GenericConfiguration(uuid) {}
+    CalculatorConfiguration(const char * name, const char * uuid) : CalculatorConfiguration(uuid) {
+        this->name = name;
     }
 
-    CalculatorConfiguration(std::string sensorMachineName) : CalculatorConfiguration() {
-        this->sensorMachineName = sensorMachineName;
-    }
-
-    CalculatorConfiguration(std::string sensorMachineName, char * uuid) : CalculatorConfiguration(sensorMachineName) {
-        this->uuid = uuid;
-    }
-
-    std::string getSensorMachineName() {
-        return this->sensorMachineName;
+    std::vector<std::string> getSensorDependencies() {
+        return this->sensorDependencies;
     }
 
     virtual bool equals(GenericConfiguration * other) {
@@ -37,7 +35,11 @@ class CalculatorConfiguration : public GenericConfiguration {
             return false;
         }
 
-        return this->uuid == other->uuid;
+        return this->name == other->name;
+    }
+
+    std::string getName() {
+        return this->name;
     }
 
     virtual CalculatorType type() {
@@ -49,14 +51,11 @@ class CalculatorConfiguration : public GenericConfiguration {
         return types;
     }
 
-    virtual std::string editForm() {
-        return "Calculator config for " + std::string(this->uuid) + "<br>";
-    }
-
     virtual JsonDocument toJson() {
         JsonDocument doc = GenericConfiguration::toJson();
 
         doc["type"] = ToMachineName(this->type());
+        doc["name"] = this->name;
 
         return doc;
     }

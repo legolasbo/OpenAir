@@ -7,9 +7,20 @@
 
 class CalculatorFactory : Factory<SpeedCalculator, CalculatorConfiguration> {
     protected:
-    CalculatorConfiguration * createInstanceFromConfiguration(CalculatorConfiguration * conf) {
+    SpeedCalculator * createInstanceFromConfiguration(CalculatorConfiguration * conf) {
 
     }
+
+    public:
+    static JsonDocument knownCalculatorTypesJson() {
+        JsonDocument doc;
+
+        doc[ToMachineName(SHT20Calculator)]["name"] = ToString(SHT20Calculator);
+        doc[ToMachineName(ThreePositionSwitchCalculator)]["name"] = ToString(ThreePositionSwitchCalculator);
+
+        return doc;
+    }
+
 };
 
 #endif

@@ -47,12 +47,6 @@ async function configureSensorScreen(uuid) {
     form.append(createSubmitButton("Submit"));
 }
 
-function createEditSensorButton(uuid) {
-    const button = createElement("button", {type: "button"}, "Edit");
-    button.onclick = () => {configureSensorScreen(uuid)};
-    return button;
-}
-
 function createAddSensorForm(sensorType, options) {
     const wrapper = document.createElement("div");
     wrapper.append(options.name);
@@ -68,16 +62,6 @@ function createAddSensorForm(sensorType, options) {
 
     return wrapper;
 }
-
-const createDeleteSensorButton = (uuid) => createElement(
-    "form",
-    {
-        action: "/api/sensors/delete",
-        method: "post",
-    }, 
-    createHiddenInput("uuid", uuid),
-    createSubmitButton("delete")
-);
 
 async function loadSensors() {
     const sensors = await fetchJson("/api/sensors");
@@ -95,8 +79,8 @@ async function loadSensors() {
         tr.appendChild(createElement("td", {}, sensor.connection));
         tr.appendChild(createElement("td", {}, sensor.type));
         const td = createElement("td", {});
-        td.append(createEditSensorButton(sensor.uuid));
-        td.append(createDeleteSensorButton(sensor.uuid));
+        td.append(createButton("Edit", () => {configureSensorScreen(sensor.uuid)}));
+        td.append(createDeleteButton("/api/sensors/delete", sensor.uuid));
         tr.appendChild(td);
     }
 
