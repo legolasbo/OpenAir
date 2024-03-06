@@ -10,15 +10,15 @@ async function fetchJson(url) {
 
 
 const createNavigationLink = (label, callback) => {
-    const link = createElement("a", {href: "#"}, label);
+    const link = createElementWithAttributes("a", {href: "#"}, label);
     link.onclick = callback;
     return link;
 }
 
 const buildNavigation = () => {
-    navigationElement.append(createElement("ui", {}, 
-        createElement("li", {}, createNavigationLink("Sensors", sensorsScreen)),
-        createElement("li", {}, createNavigationLink("Calculators", calculatorScreen)),
+    navigationElement.append(createElementWithAttributes("ui", {}, 
+        createElementWithAttributes("li", {}, createNavigationLink("Sensors", sensorsScreen)),
+        createElementWithAttributes("li", {}, createNavigationLink("Calculators", calculatorScreen)),
     ))
 }
 

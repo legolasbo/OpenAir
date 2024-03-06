@@ -9,10 +9,10 @@ async function sensorsScreen() {
     const sensors = await loadSensors();
 
     contentElement.innerHTML = "";
-    contentElement.appendChild(createElement("h3", {}, "Configured sensors"));
+    contentElement.appendChild(createElement("h3", "Configured sensors"));
     contentElement.appendChild(sensors);
 
-    contentElement.appendChild(createElement("h3", {}, "Add sensor"));
+    contentElement.appendChild(createElement("h3", "Add sensor"));
     contentElement.appendChild(configurableSensors);
 }
 
@@ -21,14 +21,14 @@ async function configureSensorScreen(uuid) {
     const jsonConfig = await fetchJson(`/api/sensors/get?uuid=${uuid}`);
 
     contentElement.innerHTML = "";
-    contentElement.append(createElement("h3", {}, `Configure ${jsonConfig.name}`));
+    contentElement.append(createElement("h3", `Configure ${jsonConfig.name}`));
 
-    const form = createElement("form", {action:"/api/sensors/configure", method: "post"});
+    const form = createElementWithAttributes("form", {action:"/api/sensors/configure", method: "post"});
     contentElement.append(form);
 
     for (const [name, info] of Object.entries(jsonOptions)) {
         if (info.type !== "hidden") {
-            form.append(createElement("h4", {}, info.label));
+            form.append(createElement("h4", info.label));
         }
 
         switch (info.type) {
@@ -50,7 +50,7 @@ async function configureSensorScreen(uuid) {
 function createAddSensorForm(sensorType, options) {
     const wrapper = document.createElement("div");
     wrapper.append(options.name);
-    const form = createElement(
+    const form = createElementWithAttributes(
         "form",
         {action: "/api/sensors/add", method: "post"},
         createHiddenInput("sensorType", sensorType),
@@ -74,11 +74,11 @@ async function loadSensors() {
         const tr = document.createElement("tr");
         tbody.appendChild(tr);
 
-        tr.appendChild(createElement("td", {}, sensor.name ? sensor.name : "Unnamed"));
-        tr.appendChild(createElement("td", {}, sensor.connector));
-        tr.appendChild(createElement("td", {}, sensor.connection));
-        tr.appendChild(createElement("td", {}, sensor.type));
-        const td = createElement("td", {});
+        tr.appendChild(createElement("td", sensor.name ? sensor.name : "Unnamed"));
+        tr.appendChild(createElement("td", sensor.connector));
+        tr.appendChild(createElement("td", sensor.connection));
+        tr.appendChild(createElement("td", sensor.type));
+        const td = createElement("td");
         td.append(createButton("Edit", () => {configureSensorScreen(sensor.uuid)}));
         td.append(createDeleteButton("/api/sensors/delete", sensor.uuid));
         tr.appendChild(td);

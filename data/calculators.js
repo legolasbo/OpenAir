@@ -12,7 +12,7 @@ async function editCalculatorScreen(uuid) {
     contentElement.innerText = uuid;
 }
 
-const createAddCalculatorForm = (calculatorType, options) => createElement(
+const createAddCalculatorForm = (calculatorType, options) => createElementWithAttributes(
         "form",
         {action: "/api/calculators/add", method: "post"},
         options.name,
@@ -23,24 +23,24 @@ const createAddCalculatorForm = (calculatorType, options) => createElement(
 async function listCalculators() {
     const calculators = await fetchJson("/api/calculators");
     const tbody = createElement("tbody");
-    const table = createElement("table", {},
-        createElement("thead", {}, 
-            createElement("tr", {}, 
-                createElement("td", {}, "Name"),
-                createElement("td", {}, "Type"),
-                createElement("td", {}, "Status"),
-                createElement("td", {}, "Actions"),
+    const table = createElement("table",
+        createElement("thead", 
+            createElement("tr", 
+                createElement("td", "Name"),
+                createElement("td", "Type"),
+                createElement("td", "Status"),
+                createElement("td", "Actions"),
             )
         ),
         tbody,    
     );
 
     for (const [id, calculator] of Object.entries(calculators)) {
-        const tr = createElement("tr", {},
-            createElement("td", {}, calculator.name),
-            createElement("td", {}, calculator.type),
-            createElement("td", {}, calculator.valid),
-            createElement("td", {}, 
+        const tr = createElement("tr",
+            createElement("td", calculator.name),
+            createElement("td", calculator.type),
+            createElement("td", calculator.valid),
+            createElement("td", 
                 createButton("Edit", () => {editCalculatorScreen(id)}),
                 createDeleteButton("/api/calculators/delete", id)
             ),

@@ -2,12 +2,12 @@
 const createSubmitButton = (value) => createInput({type: "submit", value: value});
 
 function createButton(label, callback) {
-    const button = createElement("button", {type: "button"}, label);
+    const button = createElementWithAttributes("button", {type: "button"}, label);
     button.onclick = callback;
     return button;
 }
 
-const createDeleteButton = (action, uuid) => createElement(
+const createDeleteButton = (action, uuid) => createElementWithAttributes(
     "form",
     {
         action: action,
@@ -39,13 +39,13 @@ function createRadioButtons(name, options, idPrefix = "", selected = "") {
             },
             ...checked,
         }));
-        wrapper.appendChild(createElement("label", {for: buttonId}, options[opt]));
+        wrapper.appendChild(createElementWithAttributes("label", {for: buttonId}, options[opt]));
     }
 
     return wrapper;
 }
 
-function createElement(type, attributes, ...children) {
+function createElementWithAttributes(type, attributes, ...children) {
     const element = document.createElement(type);
     for (const attribute in attributes) {
         if (!Object.hasOwnProperty.call(attributes, attribute)) {
@@ -62,7 +62,9 @@ function createElement(type, attributes, ...children) {
     return element;
 }
 
-const createInput = (attributes) => createElement("input", attributes);
+const createElement = (type, ...children) => createElementWithAttributes(type, {}, ...children);
+
+const createInput = (attributes) => createElementWithAttributes("input", attributes);
 
 const createTextInput = (name, value) => createInput({
     type: "text",
