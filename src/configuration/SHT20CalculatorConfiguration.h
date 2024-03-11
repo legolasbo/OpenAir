@@ -8,14 +8,11 @@
 
 class SHT20CalculatorConfiguration : public CalculatorConfiguration {
     public:
-    SHT20CalculatorConfiguration() : CalculatorConfiguration() {
-    }
 
-    SHT20CalculatorConfiguration(const char * uuid) : CalculatorConfiguration(uuid) {
-    }
+    SHT20CalculatorConfiguration(SensorConfigurations * sensorConfigs) : CalculatorConfiguration(sensorConfigs){}
 
-    virtual std::vector<SensorType> supportedSensorTypes() {
-        return std::vector<SensorType> {
+    SensorTypeList supportedSensorTypes() {
+        return SensorTypeList {
             SHT20Sensor,
         };
     }
@@ -24,21 +21,14 @@ class SHT20CalculatorConfiguration : public CalculatorConfiguration {
         return SHT20Calculator;
     }
 
-    virtual std::string editForm() {
-        std::string out = "SHT20 ";
-        out.append(CalculatorConfiguration::editForm());
-        return out;
+    virtual JsonDocument toDetails() {
+        JsonDocument doc = CalculatorConfiguration::toDetails();
+
+        
+
+        return doc;
     }
 
-    static SHT20CalculatorConfiguration * fromJson(JsonObject json) {
-        if (!json.containsKey("uuid")) {
-            return nullptr;
-        }
-
-        const char * uuid = json["uuid"].as<const char *>();
-        return new SHT20CalculatorConfiguration(uuid);
-
-    }
 };
 
 #endif

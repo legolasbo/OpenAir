@@ -28,6 +28,20 @@ void setup() {
   startInterface(config);
   serializeJsonPretty(config->toJson(), Serial);
 
+  SensorConfiguration * defaultSensor = new SensorConfiguration(X4, I2C, SHT20Sensor);
+  defaultSensor->setName("Default sensor");
+  if (config->getSensors()->getUuids().size() == 0) {
+    config->getSensors()->add(defaultSensor);
+    Serial.println("Added default sensor");
+  }
+
+  CalculatorConfiguration * defaultCalculator = new SHT20CalculatorConfiguration(config->getSensors());
+  defaultCalculator->setName("Default calculator");
+  if (config->getCalculators()->getUuids().size() == 0) {
+    config->getCalculators()->add(defaultCalculator);
+    Serial.println("Added default calculator");
+  }
+
   // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x4_i2c_sht20"))));
   // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x6_i2c_3possw"))));
   // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(new SensorConfiguration(X6, I2C, SHT20Sensor))));

@@ -1,4 +1,4 @@
-const contentElement = document.getElementById("content");
+const contentElement = document.getElementById("app");
 const navigationElement = document.getElementById("nav");
 
 async function fetchJson(url) {

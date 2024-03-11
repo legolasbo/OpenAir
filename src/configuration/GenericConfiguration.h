@@ -10,6 +10,7 @@
 class GenericConfiguration {
     protected:
         std::string uuid;
+        std::string name;
 
     public:
     GenericConfiguration() {
@@ -20,6 +21,31 @@ class GenericConfiguration {
         this->uuid = std::string(uuid.toCharArray());
     }
     GenericConfiguration(std::string uuid) {
+        this->uuid = uuid;
+    }
+
+    virtual bool hasOption(std::string name) {
+        return name == "name";
+    }
+
+    virtual bool setOption(std::string name, std::string value) {
+        if (name == "name") {
+            return this->setName(value);
+        }
+
+        return false;
+    }
+
+    std::string getName() {
+        return this->name;
+    }
+
+    bool setName(std::string name) {
+        this->name = name;
+        return true;
+    }
+
+    virtual void setUuid(std::string uuid) {
         this->uuid = uuid;
     }
 
@@ -39,6 +65,7 @@ class GenericConfiguration {
         JsonDocument doc;
 
         doc["uuid"] = this->uuid;
+        doc["name"] = this->name;
 
         return doc;
     }

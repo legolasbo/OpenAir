@@ -8,13 +8,10 @@
 
 class ThreePositionSwitchCalculatorConfiguration : public CalculatorConfiguration {
     public:
-    ThreePositionSwitchCalculatorConfiguration() : CalculatorConfiguration() {
-    }
-    ThreePositionSwitchCalculatorConfiguration(const char * uuid) : CalculatorConfiguration(uuid) {
-    }
+    ThreePositionSwitchCalculatorConfiguration(SensorConfigurations * sensorConfigs) : CalculatorConfiguration(sensorConfigs) {}
 
-    virtual std::vector<SensorType> supportedSensorTypes() {
-        return std::vector<SensorType>{
+    virtual SensorTypeList supportedSensorTypes() {
+        return SensorTypeList {
             ThreePositionSwitchSensor,
         };
     }
@@ -23,21 +20,13 @@ class ThreePositionSwitchCalculatorConfiguration : public CalculatorConfiguratio
         return ThreePositionSwitchCalculator;
     }
 
-    virtual std::string editForm() {
-        std::string out = "Three Position Switch ";
-        out.append(CalculatorConfiguration::editForm());
-        return out;
+    virtual JsonDocument toDetails() {
+        JsonDocument doc = CalculatorConfiguration::toDetails();
+
+        
+
+        return doc;
     }
-
-    static ThreePositionSwitchCalculatorConfiguration * fromJson(JsonObject json) {
-        if (!json.containsKey("uuid")) {
-            return nullptr;
-        }
-
-        const char * uuid = json["uuid"].as<const char*>();
-        return new ThreePositionSwitchCalculatorConfiguration(uuid);
-    }
-
 };
 
 #endif

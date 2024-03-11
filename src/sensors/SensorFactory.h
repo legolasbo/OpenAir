@@ -76,21 +76,19 @@ class SensorFactory {
             return this->registerSensor(config, this->createSensorFromConfiguration(config));
         }
 
-        static JsonDocument knownConnections() {
-            JsonDocument doc;
-
-            doc[ToMachineName(I2C)] = ToString(I2C);
-
-            return doc;
+        static std::vector<SensorType> knownSensorTypes() {
+            return std::vector<SensorType>{
+                SHT20Sensor, 
+                ThreePositionSwitchSensor
+                };
         }
 
         static JsonDocument knownSensorTypesJson() {
             JsonDocument doc;
-            
-            doc[ToMachineName(SHT20Sensor)]["name"] = ToString(SHT20Sensor);
-            doc[ToMachineName(SHT20Sensor)]["connections"] = SensorFactory::knownConnections();
-            doc[ToMachineName(ThreePositionSwitchSensor)]["name"] = ToString(ThreePositionSwitchSensor);
-            doc[ToMachineName(ThreePositionSwitchSensor)]["connections"] = SensorFactory::knownConnections();
+
+            for (auto t : knownSensorTypes()) {
+                doc[ToMachineName(t)] = ToString(t);
+            }
 
             return doc;
         }

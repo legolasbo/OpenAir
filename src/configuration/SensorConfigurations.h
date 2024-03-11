@@ -54,6 +54,35 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
     bool exists(std::string uuid) {
         return this->get(uuid) != nullptr;
     }
+
+    SensorTypeList getConfiguredSensorTypes() {
+        SensorTypeList types;
+
+        for (auto config : this->configs) {
+            SensorType t = config.second->getSensorType();
+            if (!types.includes(t)) {
+                types.push_back(t);
+            }
+        }
+
+        return types;
+    }
+
+    std::map<std::string, SensorType> getUuidsForTypes(std::vector<SensorType> types) {
+        std::map<std::string, SensorType> uuids;
+
+        for (auto uuid : this->uuids) {
+            SensorType t = this->get(uuid)->getSensorType();
+
+            for (SensorType targetType : types) {
+                if (t == targetType) {
+                    uuids.insert(std::pair<std::string, SensorType>(uuid, t));
+                }   
+            }
+        }
+
+        return uuids;
+    }
 };
 
 #endif

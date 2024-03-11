@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Welcome to OpenAir!</title>
+        <link rel="stylesheet" href="/static/main.css">
     </head>
     <body>
-        %MESSAGES%
-        <h1>Welcome to OpenAir!</h1>
-        <div>This is your entry point for OpenAir configuration and status.</div>
-        <h2>Configuration</h2>
-        <nav id="nav"></nav>
-        <div id="content"></div>
-        <ul>
-            <li><a href="/config/calculators">speed calculators</a></li>
-        </ul>
+        <nav class="nav" id="nav">
+            <a href="/" class="nav__link" data-link>Dashboard</a>
+            <a href="/sensors" class="nav__link" data-link>Sensors</a>
+            <a href="/calculators" class="nav__link" data-link>Calculators</a>
+        </nav>
+        <div id="app"></div>
     </body>
-    <script type="text/javascript" src="/dom-helpers.js"></script>
-    <script type="text/javascript" src="/sensors.js"></script>
-    <script type="text/javascript" src="/calculators.js"></script>
-    <script type="text/javascript" src="/app.js"></script>
+    <script type="module" src="/static/main.js"></script>
 </html>

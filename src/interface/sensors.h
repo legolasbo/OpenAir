@@ -28,11 +28,11 @@ class SensorApi : public API {
             this->sensorJson(request);
         });
         server->on("/api/sensors/options", HTTP_GET, [this](AsyncWebServerRequest * request){
-            this->sensorOptions(request);
+           this->respondJson(SensorConfiguration::getConfigurationOptions(), request);
         });
 
-        server->on("/api/sensors/configure", HTTP_POST, [this](AsyncWebServerRequest * request){
-            this->configureSensor(request);
+        server->on("/api/sensors/edit", HTTP_POST, [this](AsyncWebServerRequest * request){
+            this->editSensor(request);
         });
 
         server->on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest * request){
@@ -48,8 +48,7 @@ class SensorApi : public API {
     void addSensor(AsyncWebServerRequest * request);
     void deleteSensor(AsyncWebServerRequest * request);
     void sensorJson(AsyncWebServerRequest * request);
-    void sensorOptions(AsyncWebServerRequest * request);
-    void configureSensor(AsyncWebServerRequest * request);
+    void editSensor(AsyncWebServerRequest * request);
 };
 
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
@@ -70,19 +69,19 @@ void SensorApi::listSensors(AsyncWebServerRequest * request) {
 
 void SensorApi::addSensor(AsyncWebServerRequest * request) {
     Serial.println("Add sensor handler");
-    if (!request->hasArg("connectionType")) {
-        return internalServerErrorResponse(request, "missing connectionType parameter");
-    };
-    if (!request->hasArg("sensorType")) {
-        return internalServerErrorResponse(request, "missing sensorType parameter");
-    }
     if (!request->hasArg("connection")) {
         return internalServerErrorResponse(request, "missing connection parameter");
+    };
+    if (!request->hasArg("type")) {
+        return internalServerErrorResponse(request, "missing type parameter");
+    }
+    if (!request->hasArg("connector")) {
+        return internalServerErrorResponse(request, "missing connector parameter");
     }
 
-    SensorType sensType = SensorType(SensorTypeFromMachineName(request->arg("sensorType").c_str()));
-    ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connectionType").c_str()));
-    SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connection").c_str()));
+    SensorType sensType = SensorType(SensorTypeFromMachineName(request->arg("type").c_str()));
+    ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
+    SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
     SensorConfiguration * config = new SensorConfiguration(connector, connType, sensType);
 
@@ -90,8 +89,12 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
     }
 
+    if (request->hasArg("name")) {
+        config->setOption("name", request->arg("name").c_str());
+    }
+
     this->config->getSensors()->add(config);
-    request->redirect("/");
+    request->redirect("/sensors");
     this->config->save();
 }
 
@@ -104,15 +107,6 @@ void SensorApi::sensorJson(AsyncWebServerRequest * request) {
     this->respondJson(this->config->getSensors()->get(uuid)->toJson(), request);
 }
 
-void SensorApi::sensorOptions(AsyncWebServerRequest * request) {
-    std::string uuid = this->extractValidUuid(request);
-    if (uuid == "") {
-        return;
-    }
-    
-    this->respondJson(this->config->getSensors()->get(uuid)->getConfigurationOptions(), request);
-}
-
 void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
     if (!request->hasArg("uuid")) {
         Serial.println("No uuid param present");
@@ -120,10 +114,10 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
     }
 
     this->config->getSensors()->erase(request->arg("uuid").c_str());
-    request->redirect("/");
+    request->redirect("/sensors");
 }
 
-void SensorApi::configureSensor(AsyncWebServerRequest * request) {
+void SensorApi::editSensor(AsyncWebServerRequest * request) {
     std::string uuid = this->extractValidUuid(request);
     if (uuid == "") {
         return;
@@ -156,7 +150,7 @@ void SensorApi::configureSensor(AsyncWebServerRequest * request) {
     }
 
     this->config->save();
-    request->redirect("/");
+    request->redirect("/sensors");
 }
 
 #endif

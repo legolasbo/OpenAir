@@ -7,16 +7,25 @@
 
 class CalculatorFactory : Factory<SpeedCalculator, CalculatorConfiguration> {
     protected:
-    SpeedCalculator * createInstanceFromConfiguration(CalculatorConfiguration * conf) {
+    static SpeedCalculator * createInstanceFromConfiguration(CalculatorConfiguration * conf) {
 
     }
 
     public:
+    static std::vector<CalculatorType> knownCalculatorTypes() {
+        return std::vector<CalculatorType> {
+            SHT20Calculator,
+            ThreePositionSwitchCalculator,
+        };
+    }
+
     static JsonDocument knownCalculatorTypesJson() {
         JsonDocument doc;
 
-        doc[ToMachineName(SHT20Calculator)]["name"] = ToString(SHT20Calculator);
-        doc[ToMachineName(ThreePositionSwitchCalculator)]["name"] = ToString(ThreePositionSwitchCalculator);
+        for (auto t : knownCalculatorTypes()) {
+            doc[ToMachineName(t)] = ToString(t);
+
+        }
 
         return doc;
     }

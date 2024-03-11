@@ -13,7 +13,6 @@ class SensorConfiguration : public GenericConfiguration {
         SensorConnector     connector;
         SensorType          sensorType;
         ConnectionType      connectionType;
-        std::string         name;
 
 
     public:
@@ -91,27 +90,17 @@ class SensorConfiguration : public GenericConfiguration {
 
     virtual JsonDocument toJson() {
         JsonDocument doc = GenericConfiguration::toJson();
-        doc["name"] = this->name;
         doc["connector"] = ToMachineName(this->connector);
         doc["connection"] = ToMachineName(this->connectionType);
-        doc["sensor"] = ToMachineName(this->sensorType);
+        doc["type"] = ToMachineName(this->sensorType);
         return doc;
     }
 
     virtual bool hasOption(std::string name) {
-        if (name == "connector") {
-            return true;
-        }
-
-        if (name == "connection") {
-            return true;
-        }
-
-        if (name == "name") {
-            return true;
-        }
-
-        return false;
+        return
+          name == "connector" ||
+          name == "connection" ||
+          GenericConfiguration::hasOption(name);
     }
 
     virtual bool setOption(std::string name, std::string value) {
@@ -123,12 +112,7 @@ class SensorConfiguration : public GenericConfiguration {
             return this->setConnection(value);
         }
 
-        if (name == "name") {
-            this->name = value;
-            return true;
-        }
-
-        return false;
+        return GenericConfiguration::setOption(name, value);
     }
 
     virtual bool setConnection(ConnectionType connection) {
@@ -156,13 +140,15 @@ class SensorConfiguration : public GenericConfiguration {
         return this->setConnector(SensorConnectorFromMachineName(value.c_str()));
     }
 
-    virtual JsonDocument getConfigurationOptions() {
+    static JsonDocument getConfigurationOptions() {
         JsonDocument doc;
 
         doc["name"]["type"] = "text";
         doc["name"]["label"] = "Name";
 
         doc["uuid"]["type"] = "hidden";
+
+        doc["type"]["type"] = "hidden";
 
         doc["connector"]["type"] = "select";
         doc["connector"]["label"] = "Connector";
@@ -182,7 +168,7 @@ class SensorConfiguration : public GenericConfiguration {
         const char * name = doc["name"].as<const char *>();
         const char * connectorName = doc["connector"].as<const char *>();
         const char * connectionTypeName = doc["connection"].as<const char *>();
-        const char * sensorTypeName = doc["sensor"].as<const char *>();
+        const char * sensorTypeName = doc["type"].as<const char *>();
         if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr || uuid == nullptr) {  
             Serial.println("Skipping sensor");
             return new SensorConfiguration();

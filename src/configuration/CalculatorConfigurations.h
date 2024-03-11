@@ -7,6 +7,7 @@
 #include "ThreePositionSwitchCalculatorConfiguration.h"
 #include "SHT20CalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
+#include "../speedCalculators/CalculatorFactory.h"
 
 class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfiguration> {
     private:
@@ -27,15 +28,36 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         this->sensors = sensors;
     }
 
-    void addNew(CalculatorType type) {
+    CalculatorConfiguration * create(CalculatorType type) {
         switch (type) {
-        case ThreePositionSwitchCalculator:
-            return this->add(new ThreePositionSwitchCalculatorConfiguration());
-        case SHT20Calculator:
-            return this->add(new SHT20CalculatorConfiguration());
-        default:
-            break;
+            case SHT20Calculator: return new SHT20CalculatorConfiguration(this->sensors);
+            case ThreePositionSwitchCalculator: return new ThreePositionSwitchCalculatorConfiguration(this->sensors);
+            default: return nullptr;
         }
+    }
+
+    JsonDocument availableCalculatorTypes() {
+        JsonDocument doc;
+
+        SensorTypeList sensorTypes = this->sensors->getConfiguredSensorTypes();
+        for (auto calculatorType : CalculatorFactory::knownCalculatorTypes()) {
+            CalculatorConfiguration * conf = this->create(calculatorType);
+
+            if(conf->supportedSensorTypes().intersects(sensorTypes)) {
+                doc[ToMachineName(calculatorType)] = ToString(calculatorType);
+            }
+        }
+
+        return doc;
+    }
+
+    JsonDocument getCalculatorOptions(const char * type) {
+        CalculatorConfiguration * conf = this->create(CalculatorTypeFromMachineName(type));
+
+        JsonDocument options = conf->getConfigurationOptions(this->sensors);
+        delete conf;
+
+        return options;
     }
 
     static CalculatorConfigurations * fromJson(JsonObject calculators, SensorConfigurations * sensorConfig) {
@@ -49,33 +71,29 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
             }
             
             CalculatorType type = CalculatorTypeFromMachineName(json["type"].as<const char*>());
-            CalculatorConfiguration * config;
-            switch (type) {
-                case ThreePositionSwitchCalculator:
-                    config = ThreePositionSwitchCalculatorConfiguration::fromJson(json);
-                    break;
-                case SHT20Calculator:
-                    config = SHT20CalculatorConfiguration::fromJson(json);
-                    break;
-            }
+            CalculatorConfiguration * config = instance->create(type);
 
             if (config == nullptr) {
                 deSerializationFailed(json, "Unable to deserialize: ");
                 continue;
             }
 
-            bool missingDependency = false;
-            for (auto uuid : config->getSensorDependencies()) {
-                if (!sensorConfig->exists(uuid)) {
-                    missingDependency = true;
-                    delete(config);
-                    break;
+            for (JsonPair kv : json) {
+                if (kv.key() == "uuid") {
+                    config->setUuid(kv.value().as<const char *>());
+                    continue;
+                }
+
+                if (kv.key() == "type") {
+                    continue;
+                }
+
+                bool success = config->setOption(kv.key().c_str(), kv.value().as<const char *>());
+                if (!success) {
+                    Serial.printf("Failed to set %s", kv.key().c_str());
                 }
             }
 
-            if (missingDependency) {
-                break;
-            }
             instance->add(config);
         }
 

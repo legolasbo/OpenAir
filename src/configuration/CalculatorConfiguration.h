@@ -9,53 +9,73 @@
 
 class CalculatorConfiguration : public GenericConfiguration {
     private:
-        std::string name = "";
-    
-    protected:
-        std::vector<std::string> sensorDependencies;
+        SensorConfigurations * sensorConfigs;
 
     public:
-    CalculatorConfiguration() : GenericConfiguration() {}
-    CalculatorConfiguration(const char * uuid): GenericConfiguration(uuid) {}
-    CalculatorConfiguration(const char * name, const char * uuid) : CalculatorConfiguration(uuid) {
-        this->name = name;
-    }
-
-    std::vector<std::string> getSensorDependencies() {
-        return this->sensorDependencies;
-    }
-
-    virtual bool equals(GenericConfiguration * other) {
-        CalculatorConfiguration * c = static_cast<CalculatorConfiguration *>(other);
-        return this->equals(other);
-    }
-
-    virtual bool equals(CalculatorConfiguration * other) {
-        if (!GenericConfiguration::equals(other)) {
-            return false;
-        }
-
-        return this->name == other->name;
-    }
-
-    std::string getName() {
-        return this->name;
+    CalculatorConfiguration(SensorConfigurations * sensorConfigs) : GenericConfiguration() {
+        this->sensorConfigs = sensorConfigs;
     }
 
     virtual CalculatorType type() {
         return UNKNOWN_CALCULATOR_TYPE;
     }
 
-    virtual std::vector<SensorType> supportedSensorTypes() {
-        std::vector<SensorType> types;
+    virtual SensorTypeList supportedSensorTypes() {
+        SensorTypeList types;
         return types;
+    }
+
+    virtual JsonDocument getConfigurationOptions(SensorConfigurations * sensors) {
+        JsonDocument doc;
+
+        doc["name"]["type"] = "text";
+        doc["name"]["label"] = "name";
+
+        doc["uuid"]["type"] = "hidden";
+        doc["type"]["type"] = "hidden";
+
+        if (this->supportedSensorTypes().size() > 0) {
+            doc["sensor"]["type"] = "select";
+            doc["sensor"]["label"] = "Sensor";
+
+            std::map<std::string, SensorType> uuidMap = sensors->getUuidsForTypes(supportedSensorTypes());
+
+            for (auto entry : uuidMap) {
+                std::string name = sensors->get(entry.first)->getName();
+                if (name == "") {
+                    name.append("Unnamed ");
+                    name.append(ToString(entry.second));
+                }
+
+                doc["sensor"]["options"][entry.first] = name;
+            }
+        }
+
+        return doc;
     }
 
     virtual JsonDocument toJson() {
         JsonDocument doc = GenericConfiguration::toJson();
 
         doc["type"] = ToMachineName(this->type());
-        doc["name"] = this->name;
+
+        return doc;
+    }
+
+    virtual JsonDocument toDetails() {
+        JsonDocument doc;
+
+        doc["uuid"]["label"] = "Uuid";
+        doc["uuid"]["value"] = this->getUuid();
+        doc["uuid"]["type"] = "key/value";
+
+        doc["name"]["label"] = "Name";
+        doc["name"]["value"] = this->getName();
+        doc["name"]["type"] = "key/value";
+
+        doc["type"]["label"] = "Calculator type";
+        doc["type"]["value"] = ToString(this->type());
+        doc["type"]["type"] = "key/value";
 
         return doc;
     }
