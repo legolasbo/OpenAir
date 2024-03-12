@@ -1,5 +1,18 @@
-export const getCalculatorTypes = async () => await fetch("/api/calculators/types")
-    .then(response => response.json());
+const calculatorCache = {
+    types: null,
+}
+
+export const getCalculatorTypes = async () => {
+    if (!calculatorCache.types) {
+        calculatorCache.types = await fetch("/api/calculators/types")
+        .then(response => response.json());
+    }
+    return calculatorCache.types;
+};
+
+export const clearCalculatorCache = () => {
+    calculatorCache.types = null;
+}
 
 export const getCalculatorConfig = async (uuid) => await fetch(`/api/calculators/get?uuid=${uuid}`)
     .then(response => response.json());

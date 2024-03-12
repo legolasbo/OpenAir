@@ -8,7 +8,7 @@
 #include "GenericConfiguration.h"
 
 class CalculatorConfiguration : public GenericConfiguration {
-    private:
+    protected:
         SensorConfigurations * sensorConfigs;
 
     public:
@@ -20,12 +20,16 @@ class CalculatorConfiguration : public GenericConfiguration {
         return UNKNOWN_CALCULATOR_TYPE;
     }
 
+    virtual bool dependsOn(std::string uuid) {
+        return false;
+    }
+
     virtual SensorTypeList supportedSensorTypes() {
         SensorTypeList types;
         return types;
     }
 
-    virtual JsonDocument getConfigurationOptions(SensorConfigurations * sensors) {
+    virtual JsonDocument getConfigurationOptions() {
         JsonDocument doc;
 
         doc["name"]["type"] = "text";
@@ -33,23 +37,6 @@ class CalculatorConfiguration : public GenericConfiguration {
 
         doc["uuid"]["type"] = "hidden";
         doc["type"]["type"] = "hidden";
-
-        if (this->supportedSensorTypes().size() > 0) {
-            doc["sensor"]["type"] = "select";
-            doc["sensor"]["label"] = "Sensor";
-
-            std::map<std::string, SensorType> uuidMap = sensors->getUuidsForTypes(supportedSensorTypes());
-
-            for (auto entry : uuidMap) {
-                std::string name = sensors->get(entry.first)->getName();
-                if (name == "") {
-                    name.append("Unnamed ");
-                    name.append(ToString(entry.second));
-                }
-
-                doc["sensor"]["options"][entry.first] = name;
-            }
-        }
 
         return doc;
     }

@@ -113,7 +113,15 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
         return request->redirect("/");
     }
 
-    this->config->getSensors()->erase(request->arg("uuid").c_str());
+    auto uuid = request->arg("uuid").c_str();
+
+    for (auto calcId : this->config->getCalculators()->getUuids()) {
+        if (this->config->getCalculators()->get(calcId)->dependsOn(uuid)) {
+            this->config->getCalculators()->erase(calcId);
+        }
+    }
+
+    this->config->getSensors()->erase(uuid);
     request->redirect("/sensors");
 }
 

@@ -28,11 +28,19 @@ class GenericConfiguration {
         return name == "name";
     }
 
+    virtual bool setOption(std::string name, int value) {
+        return false;
+    }
+
     virtual bool setOption(std::string name, std::string value) {
         if (name == "name") {
             return this->setName(value);
         }
 
+        return false;
+    }
+
+    virtual bool dependsOn(std::string uuid) {
         return false;
     }
 
@@ -53,7 +61,7 @@ class GenericConfiguration {
         return this->uuid;
     }
 
-    bool isValid() {
+    virtual bool isValid() {
         return false;
     }
 

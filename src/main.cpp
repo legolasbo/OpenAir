@@ -37,6 +37,7 @@ void setup() {
 
   CalculatorConfiguration * defaultCalculator = new SHT20CalculatorConfiguration(config->getSensors());
   defaultCalculator->setName("Default calculator");
+  defaultCalculator->setOption("sensor", defaultSensor->getUuid());
   if (config->getCalculators()->getUuids().size() == 0) {
     config->getCalculators()->add(defaultCalculator);
     Serial.println("Added default calculator");

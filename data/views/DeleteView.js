@@ -1,4 +1,3 @@
-// frontend/static/js/views/Dashboard.js
 import AbstractView from "./AbstractView.js";
 
 const DeleteView = (type) => class extends AbstractView {

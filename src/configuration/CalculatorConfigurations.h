@@ -54,7 +54,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument getCalculatorOptions(const char * type) {
         CalculatorConfiguration * conf = this->create(CalculatorTypeFromMachineName(type));
 
-        JsonDocument options = conf->getConfigurationOptions(this->sensors);
+        JsonDocument options = conf->getConfigurationOptions();
         delete conf;
 
         return options;
@@ -88,7 +88,16 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
                     continue;
                 }
 
-                bool success = config->setOption(kv.key().c_str(), kv.value().as<const char *>());
+                bool success = false;
+                if (kv.value().is<const char *>()) {
+                    Serial.printf("Setting %s to %s\n", kv.key().c_str(), kv.value().as<const char *>());
+                    success = config->setOption(kv.key().c_str(), kv.value().as<const char *>());
+                }
+                if (kv.value().is<int>()) {
+                    Serial.printf("Setting %s to %d\n", kv.key().c_str(), kv.value().as<int>());
+                    success = config->setOption(kv.key().c_str(), kv.value().as<int>());
+                }
+
                 if (!success) {
                     Serial.printf("Failed to set %s", kv.key().c_str());
                 }

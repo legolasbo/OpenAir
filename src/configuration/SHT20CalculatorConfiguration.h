@@ -1,15 +1,15 @@
 #ifndef SHT20_CALCULATOR_CONFIGURATION
 #define SHT20_CALCULATOR_CONFIGURATION
 
-#include "CalculatorConfiguration.h"
+#include "SensorBasedCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include <vector>
 #include "../sensors/SensorTypes.h"
 
-class SHT20CalculatorConfiguration : public CalculatorConfiguration {
+class SHT20CalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
 
-    SHT20CalculatorConfiguration(SensorConfigurations * sensorConfigs) : CalculatorConfiguration(sensorConfigs){}
+    SHT20CalculatorConfiguration(SensorConfigurations * sensorConfigs) : SensorBasedCalculatorConfiguration(sensorConfigs){}
 
     SensorTypeList supportedSensorTypes() {
         return SensorTypeList {
@@ -21,10 +21,24 @@ class SHT20CalculatorConfiguration : public CalculatorConfiguration {
         return SHT20Calculator;
     }
 
-    virtual JsonDocument toDetails() {
-        JsonDocument doc = CalculatorConfiguration::toDetails();
+    virtual bool hasOption(std::string name) {
+        return SensorBasedCalculatorConfiguration::hasOption(name);
+    }
 
-        
+    virtual bool setOption(std::string name, std::string value) {
+        return SensorBasedCalculatorConfiguration::setOption(name, value);
+    }
+
+    virtual JsonDocument getConfigurationOptions() {
+        return SensorBasedCalculatorConfiguration::getConfigurationOptions();
+    }
+
+    virtual JsonDocument toJson() {
+        return SensorBasedCalculatorConfiguration::toJson();
+    }
+
+    virtual JsonDocument toDetails() {
+        JsonDocument doc = SensorBasedCalculatorConfiguration::toDetails();
 
         return doc;
     }

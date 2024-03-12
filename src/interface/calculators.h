@@ -8,7 +8,7 @@ class CalculatorApi : public API {
     private:
     void processFormValues(CalculatorConfiguration * calc, AsyncWebServerRequest * request) {
         for (size_t i = 0; i < request->args(); i++) {
-            Serial.printf("Processing option %d: %s -> %s\n", i, request->argName(i).c_str(), request->arg(request->argName(i)));
+            Serial.printf("Processing option %d: %s -> %s\n", i, request->argName(i).c_str(), request->arg(request->argName(i)).c_str());
             auto argName = request->argName(i).c_str();
             if (calc->hasOption(argName)) {
                 Serial.println("Option present");
@@ -155,6 +155,8 @@ void CalculatorApi::edit(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unknown calculator");
     }
     this->processFormValues(calc, request);
+
+    serializeJsonPretty(calc->toJson(), Serial);
 
     request->redirect("/calculators");
     this->config->save();
