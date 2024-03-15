@@ -1,6 +1,14 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+/**************************/
+/****   Development    ****/
+/**************************/
+#define DEVELOPMENT_MODE true
+
+/**************************/
+/****      SPIFFS      ****/
+/**************************/
 #define CONFIGURATION_FILE_PATH "/config.json"
 
 /**************************/

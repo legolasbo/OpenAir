@@ -8,7 +8,8 @@
 #include "I2CSensor.h"
 #include "SHT20Reader.h"
 #include "ThreePositionSwitch.h"
-#include "configuration/SensorConfiguration.h"
+#include "SensorConnectors.h"
+#include "../configuration/SensorConfigurations.h"
 
 class I2CManager {
     public:
@@ -35,15 +36,14 @@ class I2CManager {
 class SensorFactory {
     private:
         I2CManager * i2cManager;
-        std::map<SensorConfiguration*, Sensor*> sensors;
+        SensorConfigurations * configs;
+        std::map<std::string, Sensor*> sensors;
 
-        Sensor* registerSensor(SensorConfiguration* config, Sensor* sensor) {
-            std::map<SensorConfiguration*, Sensor*>::iterator it = this->sensors.find(config);
-            if (it != this->sensors.end()) {
-                return it->second;
+        void registerSensor(std::string uuid, Sensor* sensor) {
+            if (this->getSensor(uuid) != nullptr) {
+                return;
             }
-            this->sensors.insert(std::pair<SensorConfiguration*, Sensor*>(config, sensor));
-            return sensor;
+            this->sensors.insert(std::pair<std::string, Sensor*>(uuid, sensor));
         }
 
         I2CSensor* createI2CSensor(SensorType type, TwoWire *i2cBus) {
@@ -62,18 +62,42 @@ class SensorFactory {
             }
         }
 
+        Sensor * getSensor(std::string uuid) {
+            for (auto pair : this->sensors) {
+                if (pair.first == uuid) {
+                    return pair.second;
+                }
+            }
+
+            return nullptr;
+        }
+
     public:
-        SensorFactory(I2CManager *i2cManager) {
+        SensorFactory(I2CManager *i2cManager, SensorConfigurations * config) {
             this->i2cManager = i2cManager;
+            this->configs = config;
+        }
+
+        Sensor * fromUuid(std::string uuid) {
+            Sensor * foundSensor = this->getSensor(uuid);
+            if (foundSensor != nullptr) {
+                return foundSensor;
+            }
+
+            if (!this->configs->exists(uuid)) {
+                return nullptr;
+            }
+
+            SensorConfiguration * sensorConfig = this->configs->get(uuid);
+
+            Sensor * createdSensor = this->createSensorFromConfiguration(sensorConfig);
+            this->registerSensor(uuid, createdSensor);
+
+            return createdSensor;
         }
 
         Sensor* fromConfiguration(SensorConfiguration* config) {
-            std::map<SensorConfiguration*, Sensor*>::iterator it = this->sensors.find(config);
-            if (it != this->sensors.end()) {
-                return it->second;
-            }
-
-            return this->registerSensor(config, this->createSensorFromConfiguration(config));
+            return this->fromUuid(config->getUuid());
         }
 
         static std::vector<SensorType> knownSensorTypes() {

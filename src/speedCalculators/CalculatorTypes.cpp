@@ -29,3 +29,10 @@ CalculatorType CalculatorTypeFromMachineName(const char * name) {
 
     return UNKNOWN_CALCULATOR_TYPE;
 }
+
+std::vector<CalculatorType> KnownCalculatorTypes() {
+    return {
+        ThreePositionSwitchCalculator,
+        SHT20Calculator,
+    };
+}

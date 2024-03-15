@@ -7,7 +7,6 @@
 #include "ThreePositionSwitchCalculatorConfiguration.h"
 #include "SHT20CalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
-#include "../speedCalculators/CalculatorFactory.h"
 
 class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfiguration> {
     private:
@@ -40,7 +39,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         JsonDocument doc;
 
         SensorTypeList sensorTypes = this->sensors->getConfiguredSensorTypes();
-        for (auto calculatorType : CalculatorFactory::knownCalculatorTypes()) {
+        for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);
 
             if(conf->supportedSensorTypes().intersects(sensorTypes)) {

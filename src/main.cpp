@@ -20,13 +20,14 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
 
-  i2cManager = new I2CManager();
-  sensorFactory = new SensorFactory(i2cManager);
-  
   Configuration * config = Configuration::fromFile("/config.json");
+  i2cManager = new I2CManager();
+  sensorFactory = new SensorFactory(i2cManager, config->getSensors());
+  
   startInterface(config);
-  serializeJsonPretty(config->toJson(), Serial);
 
+
+#if DEVELOPMENT_MODE == true
   SensorConfiguration * defaultSensor = new SensorConfiguration(X4, I2C, SHT20Sensor);
   defaultSensor->setName("Default sensor");
   if (config->getSensors()->getUuids().size() == 0) {
@@ -41,6 +42,10 @@ void setup() {
     config->getCalculators()->add(defaultCalculator);
     Serial.println("Added default calculator");
   }
+  config->save();
+#endif
+
+  serializeJsonPretty(config->toJson(), Serial);
 
   // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x4_i2c_sht20"))));
   // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x6_i2c_3possw"))));

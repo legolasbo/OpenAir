@@ -2,7 +2,6 @@
 #define INTERFACE_CALCULATORS_H
 
 #include "api.h"
-#include "../speedCalculators/CalculatorFactory.h"
 
 class CalculatorApi : public API {
     private:

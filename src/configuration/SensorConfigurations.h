@@ -3,7 +3,6 @@
 #define SENSOR_CONFIGURATIONS_H
 
 #include "../sensors/SensorTypes.h"
-#include "../sensors/SensorFactory.h"
 #include "SensorConfiguration.h"
 #include "ConfigurationCollection.h"
 #include <vector>
