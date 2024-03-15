@@ -28,8 +28,8 @@ class ThreePositionSwitch : public  I2CSensor,
         return ThreePositionSwitch::sensorType;
     }
 
-    virtual std::vector<Measurements::Type> getMeasurementTypes() {
-      return std::vector<Measurements::Type> {
+    virtual Measurements::MeasurementTypeList getMeasurementTypes() {
+      return Measurements::MeasurementTypeList {
         Measurements::Type::SwitchPositionMeasurement
       };
     }

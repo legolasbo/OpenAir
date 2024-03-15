@@ -46,8 +46,8 @@ class SHT20Reader : public  I2CSensor,
             return SHT20Reader::sensorType;
         }
     
-        virtual std::vector<Measurements::Type> getMeasurementTypes() {
-            return std::vector<Measurements::Type> {
+        virtual Measurements::MeasurementTypeList getMeasurementTypes() {
+            return Measurements::MeasurementTypeList {
                 Measurements::Type::HumidityMeasurement,
                 Measurements::Type::TemperatureMeasurement,
                 Measurements::Type::DewPointMeasurement,

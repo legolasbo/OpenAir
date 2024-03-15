@@ -14,8 +14,8 @@ class Sensor : public Measurements::Measurement {
         virtual ConnectionType getConnectionType() {
             return ConnectionType::UNKNOWN_CONNECTION_TYPE;
         }
-        virtual std::vector<Measurements::Type> getMeasurementTypes() {
-            return std::vector<Measurements::Type> {};
+        virtual Measurements::MeasurementTypeList getMeasurementTypes() {
+            return Measurements::MeasurementTypeList {};
         }
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {

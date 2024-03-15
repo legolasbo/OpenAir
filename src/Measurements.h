@@ -12,13 +12,45 @@ namespace Measurements {
         SwitchPositionMeasurement,
     };
 
+    class MeasurementTypeList : public std::vector<Type> {
+        public:
+        MeasurementTypeList() : std::vector<Type>(){}
+        MeasurementTypeList(std::initializer_list<Type> s) : std::vector<Type>(s) {}
+        
+        bool includes(Type needle) {
+            for (size_t i = 0; i < this->size(); i++) {
+                if (this->at(i) == needle) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool intersects(MeasurementTypeList other) {
+            for(Type t : other) {
+                if (this->includes(t)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
     class Measurement {
         public:
-        virtual std::vector<Type> getMeasurementTypes();
+        virtual MeasurementTypeList getMeasurementTypes();
+
+        bool supportsMeasurementType(Measurements::Type type) {
+            for (Measurements::Type t : this->getMeasurementTypes()) {
+                if (t == type) {
+                    return true;
+                }
+            }
+            return false;
+        }
     };
 
     class Temperature : public Measurement {
-
         public:
         virtual float getTemperature();
     };
