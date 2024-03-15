@@ -77,10 +77,6 @@ class GenericConfiguration {
 
         return doc;
     }
-
-    virtual std::string editForm() {
-        return "Generic config<br>";
-    }
 };
 
 #endif

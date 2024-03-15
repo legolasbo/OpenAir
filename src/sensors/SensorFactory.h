@@ -6,8 +6,8 @@
 #include <vector>
 #include <map>
 #include "I2CSensor.h"
-#include "SHT20Sensor/SHT20Reader.h"
-#include "ThreePositionSwitch/ThreePositionSwitch.h"
+#include "SHT20Reader.h"
+#include "ThreePositionSwitch.h"
 #include "configuration/SensorConfiguration.h"
 
 class I2CManager {

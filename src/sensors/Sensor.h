@@ -1,10 +1,11 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
+#include "Measurements.h"
 #include "SensorTypes.h"
 #include "ConnectionTypes.h"
 
-class Sensor {
+class Sensor : public Measurements::Measurement {
 
     public:
         virtual SensorType getSensorType() {
@@ -12,6 +13,17 @@ class Sensor {
         }
         virtual ConnectionType getConnectionType() {
             return ConnectionType::UNKNOWN_CONNECTION_TYPE;
+        }
+        virtual std::vector<Measurements::Type> getMeasurementTypes() {
+            return std::vector<Measurements::Type> {};
+        }
+        bool supportsMeasurementType(Measurements::Type type) {
+            for (Measurements::Type t : this->getMeasurementTypes()) {
+                if (t == type) {
+                    return true;
+                }
+            }
+            return false;
         }
 };
 
