@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include "../sensors/SensorTypes.h"
+#include "../sensors/SensorFactory.h"
 #include "../speedCalculators/CalculatorTypes.h"
+#include "../speedCalculators/SpeedCalculator.h"
 #include "GenericConfiguration.h"
 
 class CalculatorConfiguration : public GenericConfiguration {
@@ -66,6 +68,8 @@ class CalculatorConfiguration : public GenericConfiguration {
 
         return doc;
     }
+
+    virtual SpeedCalculator * createInstance(SensorFactory * sensorFactory) = 0;
 };
 
 #endif

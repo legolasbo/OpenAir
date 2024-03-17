@@ -8,15 +8,9 @@
 class Sensor : public Measurements::Measurement {
 
     public:
-        virtual SensorType getSensorType() {
-            return SensorType::UNKNOWN_SENSOR_TYPE;
-        }
-        virtual ConnectionType getConnectionType() {
-            return ConnectionType::UNKNOWN_CONNECTION_TYPE;
-        }
-        virtual Measurements::MeasurementTypeList getMeasurementTypes() {
-            return Measurements::MeasurementTypeList {};
-        }
+        virtual SensorType getSensorType() = 0;
+        virtual ConnectionType getConnectionType() = 0;
+        virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {
                 if (t == type) {

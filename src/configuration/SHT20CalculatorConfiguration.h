@@ -18,7 +18,7 @@ class SHT20CalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     }
 
     virtual CalculatorType type() {
-        return SHT20Calculator;
+        return SHT20_CALCULATOR;
     }
 
     virtual bool hasOption(std::string name) {

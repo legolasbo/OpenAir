@@ -11,14 +11,7 @@ class SpeedCalculator {
         Serial.println(this->calculate());
     }
 
-    virtual std::string name() {
-        return "NOT IMPLEMENTED";
-    }
-
-    virtual int calculate() {
-        return 0;
-    }
-
+    virtual int calculate() = 0;
 };
 
 #endif

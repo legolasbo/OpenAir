@@ -6,6 +6,7 @@
 #include "SensorConfigurations.h"
 #include "ThreePositionSwitchCalculatorConfiguration.h"
 #include "SHT20CalculatorConfiguration.h"
+#include "HumidityCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 
 class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfiguration> {
@@ -29,8 +30,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
 
     CalculatorConfiguration * create(CalculatorType type) {
         switch (type) {
-            case SHT20Calculator: return new SHT20CalculatorConfiguration(this->sensors);
-            case ThreePositionSwitchCalculator: return new ThreePositionSwitchCalculatorConfiguration(this->sensors);
+            case HUMIDITY_CALCULATOR: return new HumidityCalculatorConfiguration(this->sensors);
             default: return nullptr;
         }
     }

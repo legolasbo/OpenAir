@@ -28,6 +28,21 @@ class ConfigurationCollection {
     public:
     ConfigurationCollection() {}
 
+    bool isDirty() {
+        for (auto config : this->configs) {
+            if (config.second->isDirty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void markClean() {
+        for (auto config : this->configs) {
+            config.second->markClean();
+        }
+    }
+
     bool identicalConfigExists(ConfigurationType *config) {
         if (this->configs.size() == 0) {
             return false;

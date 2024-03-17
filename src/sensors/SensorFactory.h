@@ -10,6 +10,7 @@
 #include "ThreePositionSwitch.h"
 #include "SensorConnectors.h"
 #include "../configuration/SensorConfigurations.h"
+#include "../factories/Factory.hpp"
 
 class I2CManager {
     public:
@@ -33,18 +34,11 @@ class I2CManager {
         }
 };
 
-class SensorFactory {
+class SensorFactory : public Factory<Sensor> {
     private:
         I2CManager * i2cManager;
         SensorConfigurations * configs;
-        std::map<std::string, Sensor*> sensors;
 
-        void registerSensor(std::string uuid, Sensor* sensor) {
-            if (this->getSensor(uuid) != nullptr) {
-                return;
-            }
-            this->sensors.insert(std::pair<std::string, Sensor*>(uuid, sensor));
-        }
 
         I2CSensor* createI2CSensor(SensorType type, TwoWire *i2cBus) {
             switch (type) {
@@ -62,16 +56,6 @@ class SensorFactory {
             }
         }
 
-        Sensor * getSensor(std::string uuid) {
-            for (auto pair : this->sensors) {
-                if (pair.first == uuid) {
-                    return pair.second;
-                }
-            }
-
-            return nullptr;
-        }
-
     public:
         SensorFactory(I2CManager *i2cManager, SensorConfigurations * config) {
             this->i2cManager = i2cManager;
@@ -79,7 +63,7 @@ class SensorFactory {
         }
 
         Sensor * fromUuid(std::string uuid) {
-            Sensor * foundSensor = this->getSensor(uuid);
+            Sensor * foundSensor = this->getInstance(uuid);
             if (foundSensor != nullptr) {
                 return foundSensor;
             }
@@ -91,7 +75,7 @@ class SensorFactory {
             SensorConfiguration * sensorConfig = this->configs->get(uuid);
 
             Sensor * createdSensor = this->createSensorFromConfiguration(sensorConfig);
-            this->registerSensor(uuid, createdSensor);
+            this->registerInstance(uuid, createdSensor);
 
             return createdSensor;
         }

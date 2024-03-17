@@ -3,26 +3,25 @@
 
 #include "constants.h"
 #include "configuration/Configuration.h"
+#include "factories/CalculatorFactory.hpp"
 #include "sensors/SensorFactory.h"
-#include "speedCalculators/SwitchPositionCalculator.h"
 #include "inputs/tachometer.h"
 #include "outputs/fan.h"
 #include "interface/web.h"
 
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
-I2CManager *i2cManager;
+Configuration * config;
 SensorFactory *sensorFactory;
-
-std::vector<SpeedCalculator *> calculators;
+CalculatorFactory * calculatorFactory;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
 
-  Configuration * config = Configuration::fromFile("/config.json");
-  i2cManager = new I2CManager();
-  sensorFactory = new SensorFactory(i2cManager, config->getSensors());
+  config = Configuration::fromFile("/config.json");
+  sensorFactory = new SensorFactory(new I2CManager(), config->getSensors());
+  calculatorFactory = new CalculatorFactory(sensorFactory, config->getCalculators());
   
   startInterface(config);
 
@@ -35,7 +34,7 @@ void setup() {
     Serial.println("Added default sensor");
   }
 
-  CalculatorConfiguration * defaultCalculator = new SHT20CalculatorConfiguration(config->getSensors());
+  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(config->getSensors());
   defaultCalculator->setName("Default calculator");
   defaultCalculator->setOption("sensor", defaultSensor->getUuid());
   if (config->getCalculators()->getUuids().size() == 0) {
@@ -60,8 +59,16 @@ int calculatedSpeed = 0;
 void loop() {
   loopInterface();
 
+  if (config->isDirty()) {
+    sensorFactory->destroyInstances();
+    calculatorFactory->destroyInstances();
+
+    config->markClean();
+  }
+
   int newSpeed = 0;
-  for (auto&& c : calculators) {
+  for (auto uuid : config->getCalculators()->getUuids()) {
+    SpeedCalculator * c = calculatorFactory->fromUuid(uuid);
     newSpeed = max(c->calculate(), newSpeed);
   }
 

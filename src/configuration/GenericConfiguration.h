@@ -11,6 +11,11 @@ class GenericConfiguration {
     protected:
         std::string uuid;
         std::string name;
+        bool dirty = true;
+
+    void markDirty() {
+        this->dirty = true;
+    }
 
     public:
     GenericConfiguration() {
@@ -22,6 +27,14 @@ class GenericConfiguration {
     }
     GenericConfiguration(std::string uuid) {
         this->uuid = uuid;
+    }
+
+    bool isDirty() {
+        return this->dirty;
+    }
+
+    void markClean() {
+        this->dirty = false;
     }
 
     virtual bool hasOption(std::string name) {
@@ -50,11 +63,13 @@ class GenericConfiguration {
 
     bool setName(std::string name) {
         this->name = name;
+        this->markDirty();
         return true;
     }
 
     virtual void setUuid(std::string uuid) {
         this->uuid = uuid;
+        this->markDirty();
     }
 
     virtual std::string getUuid() {

@@ -37,7 +37,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
     }
 
     virtual CalculatorType type() {
-        return ThreePositionSwitchCalculator;
+        return THREE_POSITION_SWITCH_CALCULATOR;
     }
 
     virtual bool hasOption(std::string name) {
@@ -84,6 +84,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         if (this->med < this->min) {
             this->setMed(this->min);
         }
+        this->markDirty();
         return true;
     }
 
@@ -95,6 +96,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         if (this->max < this->med) {
             this->setMax(this->med);
         }
+        this->markDirty();
         return true;
     }
 
@@ -106,6 +108,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         if (this->min > this->max) {
             this->setMin(this->max);
         }
+        this->markDirty();
         return true;
     }
 

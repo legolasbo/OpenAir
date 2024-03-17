@@ -42,6 +42,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
             return false;
         }
         this->sensorUuid = value;
+        this->markDirty();
         return true;
     }
 

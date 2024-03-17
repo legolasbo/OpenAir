@@ -1,14 +1,16 @@
-#ifndef SHT20_CALCULATOR_CONFIGURATION
-#define SHT20_CALCULATOR_CONFIGURATION
+#ifndef HUMIDITY_CALCULATOR_CONFIGURATION_H
+#define HUMIDITY_CALCULATOR_CONFIGURATION_H
 
 #include "SensorBasedCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
+#include "../speedCalculators/HumidityCalculator.h"
+#include "../sensors/SensorFactory.h"
 #include <vector>
 #include "../Measurements.h"
 
 class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
-    HumidityCalculatorConfiguration(SensorConfigurations * sensorConfigs, SensorFactory * sensorFactory) : SensorBasedCalculatorConfiguration(sensorConfigs, sensorFactory){}
+    HumidityCalculatorConfiguration(SensorConfigurations * sensorConfigs) : SensorBasedCalculatorConfiguration(sensorConfigs){}
 
     Measurements::MeasurementTypeList supportedMeasurementTypes() {
         return Measurements::MeasurementTypeList {
@@ -17,7 +19,7 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
     }
 
     virtual CalculatorType type() {
-        return HumidityCalculator;
+        return HUMIDITY_CALCULATOR;
     }
 
     virtual bool hasOption(std::string name) {
@@ -40,6 +42,10 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
         JsonDocument doc = SensorBasedCalculatorConfiguration::toDetails();
 
         return doc;
+    }
+
+    virtual SpeedCalculator * createInstance(SensorFactory * sensorFactory) {
+        return new HumidityCalculator(sensorFactory->fromUuid(this->uuid));
     }
 
 };

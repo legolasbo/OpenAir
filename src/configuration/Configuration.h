@@ -22,6 +22,15 @@ class Configuration {
         this->calculators = calculators;
     }
 
+    bool isDirty() {
+        return this->sensors->isDirty() || this->calculators->isDirty();
+    }
+
+    void markClean() {
+        this->sensors->markClean();
+        this->calculators->markClean();
+    }
+
     static Configuration * load() {
         return Configuration::fromFile(CONFIGURATION_FILE_PATH);
     }

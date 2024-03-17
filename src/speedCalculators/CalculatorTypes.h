@@ -5,8 +5,10 @@
 
 enum CalculatorType {
     UNKNOWN_CALCULATOR_TYPE,
-    ThreePositionSwitchCalculator,
-    SHT20Calculator,
+    THREE_POSITION_SWITCH_CALCULATOR,
+    SHT20_CALCULATOR,
+    HUMIDITY_CALCULATOR,
+    SWITCH_POSITION_CALCULATOR,
 };
 
 const char* ToString(CalculatorType v);

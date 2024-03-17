@@ -38,7 +38,7 @@ namespace Measurements {
 
     class Measurement {
         public:
-        virtual MeasurementTypeList getMeasurementTypes();
+        virtual MeasurementTypeList getMeasurementTypes() = 0;
 
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {
@@ -52,23 +52,23 @@ namespace Measurements {
 
     class Temperature : public Measurement {
         public:
-        virtual float getTemperature();
+        virtual float getTemperature() = 0;
     };
 
     class Humidity : public Measurement {
         public:
-        virtual float getHumidity();
+        virtual float getHumidity() = 0;
     };
 
     class DewPoint : public Measurement {
         public:
-        virtual float getDewPoint();
+        virtual float getDewPoint() = 0;
     };
 
     class SwitchPosition : public Measurement {
         public:
-        virtual uint8_t getNumberOfPositions();
-        virtual uint8_t getSelectedPosition();
+        virtual uint8_t getNumberOfPositions() = 0;
+        virtual uint8_t getSelectedPosition() = 0;
     };
 
 };
