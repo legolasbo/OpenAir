@@ -122,6 +122,7 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
     }
 
     this->config->getSensors()->erase(uuid);
+    this->config->save();
     request->redirect("/sensors");
 }
 

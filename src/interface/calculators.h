@@ -104,6 +104,7 @@ void CalculatorApi::remove(AsyncWebServerRequest * request) {
     }
 
     this->config->getCalculators()->erase(request->arg("uuid").c_str());
+    this->config->save();
     request->redirect("/calculators");
 }
 
