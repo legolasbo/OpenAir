@@ -10,7 +10,7 @@
 
 class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
-    HumidityCalculatorConfiguration(SensorConfigurations * sensorConfigs) : SensorBasedCalculatorConfiguration(sensorConfigs){}
+    HumidityCalculatorConfiguration(DI* container) : SensorBasedCalculatorConfiguration(container) {}
 
     Measurements::MeasurementTypeList supportedMeasurementTypes() {
         return Measurements::MeasurementTypeList {
@@ -45,7 +45,12 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
     }
 
     virtual SpeedCalculator * createInstance(SensorFactory * sensorFactory) {
-        return new HumidityCalculator(sensorFactory->fromUuid(this->uuid));
+        Sensor * sensor = sensorFactory->fromUuid(this->getSensorUuid());
+        if (sensor == nullptr) {
+            return nullptr;
+        }
+
+        return new HumidityCalculator(sensor);
     }
 
 };

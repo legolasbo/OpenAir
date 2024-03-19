@@ -4,11 +4,13 @@
 #include <vector>
 #include <map>
 #include "GenericConfiguration.h"
+#include "../DependencyInjectionContainer.hpp"
 
 template <typename ConfigurationType>
 
 class ConfigurationCollection {
     protected:
+    DI * container;
     std::map<std::string, ConfigurationType*> configs;
     std::vector<std::string> uuids;
 
@@ -26,7 +28,9 @@ class ConfigurationCollection {
     }
 
     public:
-    ConfigurationCollection() {}
+    ConfigurationCollection(DI * container) {
+        this->container = container;
+    }
 
     bool isDirty() {
         for (auto config : this->configs) {
@@ -57,6 +61,10 @@ class ConfigurationCollection {
     }
 
     void add(ConfigurationType * config) {
+        if (config == nullptr) {
+            return;
+        }
+
         if (this->identicalConfigExists(config)) {
             return;
         }

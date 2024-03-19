@@ -6,18 +6,22 @@
 #include <ArduinoJson.h>
 #include "SPIFFS.h"
 #include "../constants.h"
+#include "../DependencyInjectionContainer.hpp"
 
 class Configuration {
     private:
+    DI * container;
     SensorConfigurations *sensors;
     CalculatorConfigurations *calculators;
 
     public:
-    Configuration() {
-        this->sensors = new SensorConfigurations();
-        this->calculators = new CalculatorConfigurations(this->sensors);
+    Configuration(DI * container) {
+        this->container = container;
+        this->sensors = new SensorConfigurations(container);
+        this->calculators = new CalculatorConfigurations(container);
     }
-    Configuration(SensorConfigurations *sensors, CalculatorConfigurations* calculators) {
+    Configuration(DI * container, SensorConfigurations *sensors, CalculatorConfigurations* calculators) {
+        this->container = container;
         this->sensors = sensors;
         this->calculators = calculators;
     }
@@ -31,8 +35,8 @@ class Configuration {
         this->calculators->markClean();
     }
 
-    static Configuration * load() {
-        return Configuration::fromFile(CONFIGURATION_FILE_PATH);
+    static Configuration * load(DI * container) {
+        return Configuration::fromFile(container, CONFIGURATION_FILE_PATH);
     }
 
     void save() {
@@ -52,16 +56,16 @@ class Configuration {
         f.close();
     }
 
-    static Configuration * fromFile(const char * name) {
+    static Configuration * fromFile(DI * container, const char * name) {
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
-            return new Configuration();
+            return new Configuration(container);
         }
 
         File file = SPIFFS.open(name);
         if (!file || file.isDirectory()) {
             Serial.printf("Failed to open file: %s\n", name);
-            return new Configuration();
+            return new Configuration(container);
         }
 
         JsonDocument doc;
@@ -70,10 +74,10 @@ class Configuration {
         file.close();
         if (err != err.Ok) {
             Serial.printf("Failed to deserialize %s because of %d\n", name, err);
-            return new Configuration();
+            return new Configuration(container);
         }
 
-        return fromJson(doc);
+        return fromJson(container, doc);
     }
 
     SensorConfigurations * getSensors() {
@@ -84,14 +88,14 @@ class Configuration {
         return this->calculators;
     }
 
-    static Configuration * fromJson(JsonDocument &json) {
+    static Configuration * fromJson(DI * container, JsonDocument &json) {
         JsonObject sensorsJson = json["sensors"].as<JsonObject>();
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 
-        SensorConfigurations * sensors = SensorConfigurations::fromJson(sensorsJson);
-        CalculatorConfigurations * calculators = CalculatorConfigurations::fromJson(calculatorsJson, sensors);
+        SensorConfigurations * sensors = SensorConfigurations::fromJson(container, sensorsJson);
+        CalculatorConfigurations * calculators = CalculatorConfigurations::fromJson(container, calculatorsJson);
 
-        return new Configuration(sensors, calculators);
+        return new Configuration(container, sensors, calculators);
     }
 
     JsonDocument toJson() {

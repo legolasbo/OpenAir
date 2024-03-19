@@ -1,6 +1,7 @@
 #ifndef CALCULATOR_FACTORY_H
 #define CALCULATOR_FACTORY_H
 
+#include <memory>
 #include "../sensors/SensorFactory.h"
 #include "../speedCalculators/SpeedCalculator.h"
 #include "../configuration/CalculatorConfigurations.h"
@@ -28,7 +29,9 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
         }
 
         SpeedCalculator * instance = config->createInstance(this->sensorFactory);
-        this->registerInstance(uuid, instance);
+        if (instance != nullptr) {
+            this->registerInstance(uuid, instance);
+        }
         return instance;
     }    
 

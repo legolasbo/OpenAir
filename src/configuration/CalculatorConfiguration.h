@@ -3,20 +3,16 @@
 
 #include <string>
 #include <vector>
-#include "../sensors/SensorTypes.h"
+#include "../Measurements.h"
 #include "../sensors/SensorFactory.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include "../speedCalculators/SpeedCalculator.h"
 #include "GenericConfiguration.h"
 
 class CalculatorConfiguration : public GenericConfiguration {
-    protected:
-        SensorConfigurations * sensorConfigs;
 
     public:
-    CalculatorConfiguration(SensorConfigurations * sensorConfigs) : GenericConfiguration() {
-        this->sensorConfigs = sensorConfigs;
-    }
+    CalculatorConfiguration(DI * container) : GenericConfiguration(container) {}
 
     virtual CalculatorType type() {
         return UNKNOWN_CALCULATOR_TYPE;
@@ -26,10 +22,7 @@ class CalculatorConfiguration : public GenericConfiguration {
         return false;
     }
 
-    virtual SensorTypeList supportedSensorTypes() {
-        SensorTypeList types;
-        return types;
-    }
+    virtual Measurements::MeasurementTypeList supportedMeasurementTypes() = 0;
 
     virtual JsonDocument getConfigurationOptions() {
         JsonDocument doc;

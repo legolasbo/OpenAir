@@ -16,21 +16,21 @@ class SensorConfiguration : public GenericConfiguration {
 
 
     public:
-    SensorConfiguration() {}
-    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType) : GenericConfiguration() {
+    SensorConfiguration(DI * container) : GenericConfiguration(container) {}
+    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType) : GenericConfiguration(container) {
         this->connector = connector;
         this->connectionType = connectionType;
         this->sensorType = sensorType;
     }
-    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid) : GenericConfiguration(uuid) {
+    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
         this->connector = connector;
         this->connectionType = connectionType;
         this->sensorType = sensorType;
     }
-    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType, std::string name) : SensorConfiguration(connector, connectionType, sensorType) {
+    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, std::string name) : SensorConfiguration(container, connector, connectionType, sensorType) {
         this->name = name;
     }
-    SensorConfiguration(SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid, const char * name) : SensorConfiguration(connector, connectionType, sensorType, uuid) {
+    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid, const char * name) : SensorConfiguration(container, connector, connectionType, sensorType, uuid) {
         this->name = name;
     }
 
@@ -163,7 +163,7 @@ class SensorConfiguration : public GenericConfiguration {
         return doc;
     }
 
-    static SensorConfiguration * fromJson(JsonObject doc) {
+    static SensorConfiguration * fromJson(DI * container, JsonObject doc) {
         const char * uuid = doc["uuid"].as<const char *>();
         const char * name = doc["name"].as<const char *>();
         const char * connectorName = doc["connector"].as<const char *>();
@@ -171,13 +171,13 @@ class SensorConfiguration : public GenericConfiguration {
         const char * sensorTypeName = doc["type"].as<const char *>();
         if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr || uuid == nullptr) {  
             Serial.println("Skipping sensor");
-            return new SensorConfiguration();
+            return nullptr;
         }
 
         SensorConnector connector = SensorConnectorFromMachineName(connectorName);
         ConnectionType connectionType = ConnectionTypeFromMachineName(connectionTypeName);
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
-        return new SensorConfiguration(connector, connectionType, sensorType, uuid, name);
+        return new SensorConfiguration(container, connector, connectionType, sensorType, uuid, name);
     }
 };
 

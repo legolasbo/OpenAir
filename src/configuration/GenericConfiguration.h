@@ -6,9 +6,11 @@
 #include <vector>
 #include <ArduinoJson.h>
 #include "UUID.h"
+#include "../DependencyInjectionContainer.hpp"
 
 class GenericConfiguration {
     protected:
+        DI * container;
         std::string uuid;
         std::string name;
         bool dirty = true;
@@ -18,14 +20,16 @@ class GenericConfiguration {
     }
 
     public:
-    GenericConfiguration() {
+    GenericConfiguration(DI *container) {
+        this->container = container;
         UUID uuid;
         uuid.seed(esp_random(), esp_random());
         uuid.setRandomMode();
         uuid.generate();
         this->uuid = std::string(uuid.toCharArray());
     }
-    GenericConfiguration(std::string uuid) {
+    GenericConfiguration(DI * container, std::string uuid) {
+        this->container = container;
         this->uuid = uuid;
     }
 
@@ -76,9 +80,7 @@ class GenericConfiguration {
         return this->uuid;
     }
 
-    virtual bool isValid() {
-        return false;
-    }
+    virtual bool isValid() = 0;
 
     virtual bool equals(GenericConfiguration * other) {
         return this->uuid == other->uuid;

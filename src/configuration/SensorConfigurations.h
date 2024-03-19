@@ -8,11 +8,13 @@
 #include <vector>
 #include <map>
 #include <ArduinoJson.h>
+#include "../DependencyInjectionContainer.hpp"
 
 class SensorConfigurations : public ConfigurationCollection<SensorConfiguration> {
     private:
 
     public:
+    SensorConfigurations(DI * container) : ConfigurationCollection<SensorConfiguration>(container) {}
 
     std::vector<SensorConfiguration *> getConfigurationsFor(SensorConnector connector) {
         Serial.print("Getting configurations for ");
@@ -33,13 +35,13 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return sensors;
     }
 
-    static SensorConfigurations * fromJson(JsonObject sensors) {
-        SensorConfigurations * instance = new SensorConfigurations();
+    static SensorConfigurations * fromJson(DI * container, JsonObject sensors) {
+        SensorConfigurations * instance = new SensorConfigurations(container);
 
         for (JsonPair p : sensors) {
             try
             {
-                instance->add(SensorConfiguration::fromJson(p.value().as<JsonObject>()));
+                instance->add(SensorConfiguration::fromJson(container, p.value().as<JsonObject>()));
             }
             catch(const std::exception& e)
             {

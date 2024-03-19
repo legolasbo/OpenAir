@@ -18,8 +18,8 @@ class CalculatorApi : public API {
 
     public:
 
-    void initialize(AsyncWebServer * server, Configuration * config) {
-        API::initialize(server, config);
+    void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
+        API::initialize(container, server, config);
 
         server->on("/api/calculators/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(this->config->getCalculators()->availableCalculatorTypes(), request);

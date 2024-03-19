@@ -28,13 +28,13 @@ void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
   request->redirect("/");
 }
 
-void startInterface(Configuration *config) {
+void startInterface(DI * container, Configuration *config) {
   theConfig = config;
   wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
   Serial.println("Wifi connected");
 
-  sensorApi.initialize(&server, config);
-  calculatorApi.initialize(&server, config);
+  sensorApi.initialize(container, &server, config);
+  calculatorApi.initialize(container, &server, config);
 
   server.on("/config/save", HTTP_POST, saveSettingsRequestHandler);
 

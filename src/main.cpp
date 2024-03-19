@@ -8,40 +8,42 @@
 #include "inputs/tachometer.h"
 #include "outputs/fan.h"
 #include "interface/web.h"
+#include "DependencyInjectionContainer.hpp"
 
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 Configuration * config;
-SensorFactory *sensorFactory;
 CalculatorFactory * calculatorFactory;
+DI container;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
 
-  config = Configuration::fromFile("/config.json");
-  sensorFactory = new SensorFactory(new I2CManager(), config->getSensors());
-  calculatorFactory = new CalculatorFactory(sensorFactory, config->getCalculators());
+  config = Configuration::fromFile(&container, "/config.json");
+  container.registerInstance<SensorFactory>(new SensorFactory(new I2CManager(), config->getSensors()));
+  calculatorFactory = new CalculatorFactory(container.resolve<SensorFactory>().get(), config->getCalculators());
   
-  startInterface(config);
+  startInterface(&container, config);
 
 
 #if DEVELOPMENT_MODE == true
-  SensorConfiguration * defaultSensor = new SensorConfiguration(X4, I2C, SHT20Sensor);
+  SensorConfiguration * defaultSensor = new SensorConfiguration(&container, X4, I2C, SHT20Sensor);
   defaultSensor->setName("Default sensor");
   if (config->getSensors()->getUuids().size() == 0) {
     config->getSensors()->add(defaultSensor);
-    Serial.println("Added default sensor");
+    Serial.printf("Added default sensor: %s\n", defaultSensor->getUuid().c_str());
   }
 
-  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(config->getSensors());
+  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(&container);
   defaultCalculator->setName("Default calculator");
   defaultCalculator->setOption("sensor", defaultSensor->getUuid());
   if (config->getCalculators()->getUuids().size() == 0) {
     config->getCalculators()->add(defaultCalculator);
-    Serial.println("Added default calculator");
+    Serial.printf("Added default calculator %s\n", defaultCalculator->getUuid().c_str());
+    serializeJsonPretty(defaultCalculator->toJson(), Serial);
   }
-  config->save();
+  // config->save();
 #endif
 
   serializeJsonPretty(config->toJson(), Serial);
@@ -60,7 +62,7 @@ void loop() {
   loopInterface();
 
   if (config->isDirty()) {
-    sensorFactory->destroyInstances();
+    container.resolve<SensorFactory>().get()->destroyInstances();
     calculatorFactory->destroyInstances();
 
     config->markClean();
@@ -68,8 +70,14 @@ void loop() {
 
   int newSpeed = 0;
   for (auto uuid : config->getCalculators()->getUuids()) {
+    if (!config->getCalculators()->get(uuid)->isValid()) {
+      continue;
+    }
+
     SpeedCalculator * c = calculatorFactory->fromUuid(uuid);
-    newSpeed = max(c->calculate(), newSpeed);
+    if (c != nullptr) {
+      newSpeed = max(c->calculate(), newSpeed);
+    }
   }
 
   if (newSpeed != calculatedSpeed) {
@@ -77,6 +85,7 @@ void loop() {
     Serial.printf("Calculated speed: %d \n", calculatedSpeed);
   }
 
+  delay(1000);
   // fan.setFanSpeed(calculatedSpeed);
   // fan.loop();
 }

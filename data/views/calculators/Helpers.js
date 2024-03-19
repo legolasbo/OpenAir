@@ -5,7 +5,8 @@ const calculatorCache = {
 export const getCalculatorTypes = async () => {
     if (!calculatorCache.types) {
         calculatorCache.types = await fetch("/api/calculators/types")
-        .then(response => response.json());
+        .then(response => response.json())
+        .then(json => json == null ? {} : json);
     }
     return calculatorCache.types;
 };

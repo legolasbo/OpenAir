@@ -84,6 +84,23 @@ class SensorFactory : public Factory<Sensor> {
             return this->fromUuid(config->getUuid());
         }
 
+        Measurements::MeasurementTypeList availableMeasurementTypes() {
+            Measurements::MeasurementTypeList types;
+
+            for (std::string uuid : this->configs->getUuids()) {
+                auto instance = this->fromUuid(uuid);
+                if (instance == nullptr) {
+                    Serial.printf("Could not load %s\n", uuid);
+                    continue;
+                }
+
+                auto mtypes = instance->getMeasurementTypes();
+                types.insert(mtypes.begin(), mtypes.end());
+            }
+
+            return types;
+        }
+
         static std::vector<SensorType> knownSensorTypes() {
             return std::vector<SensorType>{
                 SHT20Sensor, 

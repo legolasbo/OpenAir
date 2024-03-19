@@ -9,8 +9,6 @@
 class SHT20CalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
 
-    SHT20CalculatorConfiguration(SensorConfigurations * sensorConfigs) : SensorBasedCalculatorConfiguration(sensorConfigs){}
-
     SensorTypeList supportedSensorTypes() {
         return SensorTypeList {
             SHT20Sensor,

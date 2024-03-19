@@ -9,10 +9,9 @@
 class SensorApi : public API {
     public:
 
-    void initialize(AsyncWebServer * server, Configuration * config) {
-        this->server = server;
-        this->config = config;
-
+    void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
+        API::initialize(container, server, config);
+        
         server->on("/api/sensors/configurable", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(SensorFactory::knownSensorTypesJson(), request);
         });
@@ -38,10 +37,6 @@ class SensorApi : public API {
         server->on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest * request){
             this->listSensors(request);
         });
-    }
-
-    Configuration * getConfig() {
-        return this->config;
     }
 
     void listSensors(AsyncWebServerRequest * request);
@@ -83,7 +78,7 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
     ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
     SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
-    SensorConfiguration * config = new SensorConfiguration(connector, connType, sensType);
+    SensorConfiguration * config = new SensorConfiguration(this->container, connector, connType, sensType);
 
     if (this->config->getSensors()->identicalConfigExists(config)) {
         return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");

@@ -13,17 +13,13 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     private:
         std::string sensorUuid;
 
-        bool isValidSensor(std::string uuid) {
-            SensorConfiguration * sensor = this->sensorConfigs->get(uuid);
-            if (sensor == nullptr) {
-                return false;
-            }
-            return this->supportedSensorTypes().includes(sensor->getSensorType());
-        }
+    protected:
+    std::string getSensorUuid() {
+        return this->sensorUuid;
+    }
 
     public:
-
-    SensorBasedCalculatorConfiguration(SensorConfigurations * sensorConfigs) : CalculatorConfiguration(sensorConfigs){}
+    SensorBasedCalculatorConfiguration(DI * container) : CalculatorConfiguration(container) {}
 
     virtual bool dependsOn(std::string uuid) {
         return sensorUuid == uuid;
@@ -38,16 +34,13 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     bool setSensor(std::string value) {
-        if (!this->isValidSensor(value)) {
-            return false;
-        }
         this->sensorUuid = value;
         this->markDirty();
         return true;
     }
 
     virtual bool isValid() {
-        return this->sensorConfigs->get(this->sensorUuid) != nullptr;
+        return this->container->resolve<SensorFactory>().get()->fromUuid(this->sensorUuid) != nullptr;
     }
     
     virtual bool setOption(std::string name, int value) {
@@ -55,6 +48,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool setOption(std::string name, std::string value) {
+        Serial.printf("Setting option '%s' to value '%s'\n", name.c_str(), value.c_str());
         if (name == "sensor") {
             return this->setSensor(value);
         }
@@ -64,23 +58,23 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     virtual JsonDocument getConfigurationOptions() {
         JsonDocument doc = CalculatorConfiguration::getConfigurationOptions();
 
-        auto supportedTypes = this->supportedSensorTypes();
+        auto supportedTypes = this->supportedMeasurementTypes();
         
         if (supportedTypes.size() > 0) {
             doc["sensor"]["type"] = "select";
             doc["sensor"]["label"] = "Sensor";
 
-            std::map<std::string, SensorType> uuidMap = this->sensorConfigs->getUuidsForTypes(supportedTypes);
+            // std::map<std::string, SensorType> uuidMap = this->sensorConfigs->getUuidsForTypes(supportedTypes);
 
-            for (auto entry : uuidMap) {
-                std::string name = this->sensorConfigs->get(entry.first)->getName();
-                if (name == "") {
-                    name.append("Unnamed ");
-                    name.append(ToString(entry.second));
-                }
+            // for (auto entry : uuidMap) {
+            //     std::string name = this->sensorConfigs->get(entry.first)->getName();
+            //     if (name == "") {
+            //         name.append("Unnamed ");
+            //         name.append(ToString(entry.second));
+            //     }
 
-                doc["sensor"]["options"][entry.first] = name;
-            }
+            //     doc["sensor"]["options"][entry.first] = name;
+            // }
         }
 
         return doc;

@@ -28,19 +28,24 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
     }
 
     public:
-    ThreePositionSwitchCalculatorConfiguration(SensorConfigurations * sensorConfigs) : SensorBasedCalculatorConfiguration(sensorConfigs) {}
 
-    virtual SensorTypeList supportedSensorTypes() {
+    Measurements::MeasurementTypeList supportedMeasurementTypes() {
+        return Measurements::MeasurementTypeList {
+            Measurements::Type::SwitchPositionMeasurement,
+        };
+    }
+
+    SensorTypeList supportedSensorTypes() {
         return SensorTypeList {
             ThreePositionSwitchSensor,
         };
     }
 
-    virtual CalculatorType type() {
+    CalculatorType type() {
         return THREE_POSITION_SWITCH_CALCULATOR;
     }
 
-    virtual bool hasOption(std::string name) {
+    bool hasOption(std::string name) {
         if (
             name == "min" ||
             name == "med" ||
@@ -52,7 +57,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         return SensorBasedCalculatorConfiguration::hasOption(name);
     }
 
-    virtual bool setOption(std::string name, std::string value) {
+    bool setOption(std::string name, std::string value) {
         if (name == "min" || name == "med" || name == "max") {
             return this->setOption(name, strtol(value.c_str(), nullptr, 10));
         }
@@ -60,7 +65,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         return SensorBasedCalculatorConfiguration::setOption(name, value);
     }
 
-    virtual bool setOption(std::string name, int value) {
+    bool setOption(std::string name, int value) {
         if (name == "min") {
             return this->setMin(value);
         }
@@ -112,7 +117,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         return true;
     }
 
-    virtual JsonDocument getConfigurationOptions() {
+    JsonDocument getConfigurationOptions() {
         JsonDocument doc = SensorBasedCalculatorConfiguration::getConfigurationOptions();
 
         doc["min"]["type"] = "number";
@@ -133,7 +138,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         return doc;
     }
 
-    virtual JsonDocument toJson() {
+    JsonDocument toJson() {
         JsonDocument doc =  SensorBasedCalculatorConfiguration::toJson();
 
         doc["min"] = this->min;
@@ -143,7 +148,7 @@ class ThreePositionSwitchCalculatorConfiguration : public SensorBasedCalculatorC
         return doc;
     }
 
-    virtual JsonDocument toDetails() {
+    JsonDocument toDetails() {
         JsonDocument doc = SensorBasedCalculatorConfiguration::toDetails();
 
         doc["min"]["label"] = "Minimum fan speed";

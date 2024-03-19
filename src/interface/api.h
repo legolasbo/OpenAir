@@ -4,9 +4,11 @@
 #include <ESPAsyncWebServer.h>
 #include "../configuration/Configuration.h"
 #include "responses.h"
+#include "../DependencyInjectionContainer.hpp"
 
 class API {
     protected:
+    DI * container;
     Configuration * config;
     AsyncWebServer * server;
 
@@ -39,7 +41,8 @@ class API {
     }
 
     public:
-    virtual void initialize(AsyncWebServer * server, Configuration * config) {
+    virtual void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
+        this->container = container;
         this->server = server;
         this->config = config;
     }

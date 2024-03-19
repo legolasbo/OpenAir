@@ -11,8 +11,6 @@
 
 class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfiguration> {
     private:
-        SensorConfigurations * sensors;
-
         static void deSerializationFailed(JsonObject json, const char * reason) {
             Serial.println(reason);
             serializeJsonPretty(json, Serial);
@@ -20,17 +18,11 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         }
 
     public:
-    CalculatorConfigurations(SensorConfigurations * sensors) {
-        this->sensors = sensors;
-    }
-
-    void setSensors(SensorConfigurations * sensors) {
-        this->sensors = sensors;
-    }
+    CalculatorConfigurations(DI * container) : ConfigurationCollection<CalculatorConfiguration>(container) {}
 
     CalculatorConfiguration * create(CalculatorType type) {
         switch (type) {
-            case HUMIDITY_CALCULATOR: return new HumidityCalculatorConfiguration(this->sensors);
+            case HUMIDITY_CALCULATOR: return new HumidityCalculatorConfiguration(this->container);
             default: return nullptr;
         }
     }
@@ -38,13 +30,19 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument availableCalculatorTypes() {
         JsonDocument doc;
 
-        SensorTypeList sensorTypes = this->sensors->getConfiguredSensorTypes();
+        Measurements::MeasurementTypeList types = this->container->resolve<SensorFactory>().get()->availableMeasurementTypes();
+
         for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);
+            if (conf == nullptr) {
+                continue;
+            }
 
-            if(conf->supportedSensorTypes().intersects(sensorTypes)) {
+            if(conf->supportedMeasurementTypes().intersects(types)) {
                 doc[ToMachineName(calculatorType)] = ToString(calculatorType);
             }
+
+            delete(conf);
         }
 
         return doc;
@@ -59,8 +57,8 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return options;
     }
 
-    static CalculatorConfigurations * fromJson(JsonObject calculators, SensorConfigurations * sensorConfig) {
-        CalculatorConfigurations * instance = new CalculatorConfigurations(sensorConfig);
+    static CalculatorConfigurations * fromJson(DI * container, JsonObject calculators) {
+        CalculatorConfigurations * instance = new CalculatorConfigurations(container);
         
         for (JsonPair p : calculators) {
             JsonObject json = p.value().as<JsonObject>();

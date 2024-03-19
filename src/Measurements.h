@@ -1,7 +1,8 @@
 #ifndef MEASUREMENTS_H
 #define MEASUREMENTS_H
 
-#include <vector>
+#include <set>
+
 namespace Measurements {
 
     enum Type {
@@ -12,18 +13,26 @@ namespace Measurements {
         SwitchPositionMeasurement,
     };
 
-    class MeasurementTypeList : public std::vector<Type> {
+    class MeasurementTypeList : public std::set<Type> {
         public:
-        MeasurementTypeList() : std::vector<Type>(){}
-        MeasurementTypeList(std::initializer_list<Type> s) : std::vector<Type>(s) {}
+        MeasurementTypeList() : std::set<Type>(){}
+        MeasurementTypeList(std::initializer_list<Type> s) : std::set<Type>(s) {}
         
         bool includes(Type needle) {
-            for (size_t i = 0; i < this->size(); i++) {
-                if (this->at(i) == needle) {
-                    return true;
-                }
+            auto iterator = this->find(needle);
+            if (iterator != this->end()) {
+                return true;
             }
             return false;
+        }
+
+        bool includesAll(MeasurementTypeList other) {
+            for (auto el : other) {
+                if (!this->includes(el)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         bool intersects(MeasurementTypeList other) {
