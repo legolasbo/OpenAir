@@ -1,5 +1,9 @@
 
 const createRadioButtons = (name, options, selected) => {
+    if (options) {
+        return "";
+    }
+
     return `
         ${
         Object.entries(options)
