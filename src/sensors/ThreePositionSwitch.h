@@ -16,7 +16,7 @@ class ThreePositionSwitch : public  I2CSensor,
                                     Measurements::SwitchPosition
                                     {
   private:
-    int address = 4;
+    int address = 32;
                                   
   public:
     ThreePositionSwitch(TwoWire *i2cBus) : I2CSensor(i2cBus) {
