@@ -24,7 +24,7 @@ void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
   Serial.println("Saving settings");
   theConfig->save();
   messages.push_back("Configuration saved");
-  messages.push_back("Please reset OpenAir for thenew configuration to take effect.");
+  messages.push_back("Please reset OpenAir for the new configuration to take effect.");
   request->redirect("/");
 }
 
