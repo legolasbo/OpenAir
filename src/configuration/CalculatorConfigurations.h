@@ -4,8 +4,6 @@
 #include "ConfigurationCollection.h"
 #include "CalculatorConfiguration.h"
 #include "SensorConfigurations.h"
-#include "ThreePositionSwitchCalculatorConfiguration.h"
-#include "SHT20CalculatorConfiguration.h"
 #include "HumidityCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 
