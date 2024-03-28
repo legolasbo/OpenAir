@@ -1,18 +1,10 @@
-#ifndef DEPENDENCY_INJECTION_CONTAINER_H
-#define DEPENDENCY_INJECTION_CONTAINER_H
-
 #pragma once
 
-#include <functional>
-#include <memory>
-#include <type_traits>
 #include <unordered_map>
-#include <cassert>
-#include <cstdint>
-#include <iostream>
+#include <memory>
 
 /**
- * Based on https://www.codeproject.com/Articles/1029836/A-Miniature-IOC-Container-in-Cplusplus
+ * Loosely based on https://www.codeproject.com/Articles/1029836/A-Miniature-IOC-Container-in-Cplusplus
 */
 class DI {
 	static size_t nextTypeId;
@@ -57,4 +49,3 @@ private:
 
 size_t DI::nextTypeId = 1;
 
-#endif

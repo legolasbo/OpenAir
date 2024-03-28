@@ -4,8 +4,6 @@
 #include "CalculatorConfiguration.h"
 #include "SensorConfigurations.h"
 #include "../speedCalculators/CalculatorTypes.h"
-#include <vector>
-#include <map>
 #include "../sensors/SensorTypes.h"
 #include "../sensors/SensorFactory.h"
 
