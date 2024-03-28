@@ -1,6 +1,6 @@
 
 const createRadioButtons = (name, options, selected) => {
-    if (options) {
+    if (!options) {
         return "";
     }
 
