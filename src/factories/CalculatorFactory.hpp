@@ -20,7 +20,7 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
         }
 
         CalculatorConfiguration * config = this->configs->get(uuid);
-        if (config == nullptr) {
+        if (config == nullptr || !config->isValid()) {
             return nullptr;
         }
 
