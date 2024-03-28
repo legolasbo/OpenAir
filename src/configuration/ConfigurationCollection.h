@@ -79,9 +79,11 @@ class ConfigurationCollection {
     }
 
     ConfigurationType * get(std::string uuid) {
-        auto search = this->configs.find(uuid);
-        if (search != this->configs.end()) {
-            return search->second;
+        try {
+            return this->configs.at(uuid);
+        } 
+        catch(std::exception e) {
+            Serial.printf("failed to get %s because %s\n", uuid.c_str(), e.what());
         }
 
         return nullptr;

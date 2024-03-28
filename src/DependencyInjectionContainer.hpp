@@ -11,60 +11,50 @@
 #include <cstdint>
 #include <iostream>
 
-template <class C>
-struct TypeIdentifier {
-    constexpr static int _id{};
-    constexpr static auto id() -> size_t {
-        return _id;
-    }
-};
-
+/**
+ * Based on https://www.codeproject.com/Articles/1029836/A-Miniature-IOC-Container-in-Cplusplus
+*/
 class DI {
+	static size_t nextTypeId;
+
 public:
-	DI() : instances(), creators() {};
+	template<typename T>
+	static size_t GetTypeId(){
+		static size_t typeId = nextTypeId++;
+		return typeId;
+	}
+
+	DI() : instances() {};
 	~DI() { clear(); }
 
 	void clear()
 	{
 		instances.clear();
-		creators.clear();
 	}
 
 	template<typename T>
 	void registerInstance(T* instance)
 	{
-		const size_t hash = TypeIdentifier<T>::id();
-		if (instances.find(hash) == instances.end())
-			instances.emplace(hash, std::shared_ptr<void>(instance));
-	}
-
-	template<typename T>
-	void registerCreator(std::function<std::shared_ptr<T>()> creator)
-	{
-		const size_t hash = TypeIdentifier<T>::id();
-		if (creators.find(hash) == creators.end())
-			creators.emplace(hash, creator);
+		const int typeId = GetTypeId<T>();
+		if (instances.find(typeId) == instances.end())
+			instances.emplace(typeId, std::shared_ptr<void>(instance));
 	}
 
 	template<typename T>
 	std::shared_ptr<T> resolve() const
 	{
-		const size_t hash = TypeIdentifier<T>::id();
-		auto itr1 = instances.find(hash);
+		const size_t typeId = GetTypeId<T>();
+		auto itr1 = instances.find(typeId);
 		if (itr1 != instances.end())
 			return std::static_pointer_cast<T>(itr1->second);
-
-		auto itr2 = creators.find(hash);
-		if (itr2 != creators.end())
-			return std::static_pointer_cast<T>(itr2->second());
 
 		return nullptr;
 	}
 
 private:
 	std::unordered_map<size_t, std::shared_ptr<void>> instances;
-	std::unordered_map<size_t, std::function<std::shared_ptr<void>()>> creators;
 };
 
+size_t DI::nextTypeId = 1;
 
 #endif
