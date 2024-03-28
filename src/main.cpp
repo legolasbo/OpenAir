@@ -22,7 +22,7 @@ void setup() {
 
   config = Configuration::fromFile(&container, "/config.json");
   container.registerInstance<SensorFactory>(new SensorFactory(new I2CManager(), config->getSensors()));
-  calculatorFactory = new CalculatorFactory(container.resolve<SensorFactory>().get(), config->getCalculators());
+  calculatorFactory = new CalculatorFactory(config->getCalculators());
   
   startInterface(&container, config);
 

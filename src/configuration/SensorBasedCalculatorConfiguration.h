@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include "../sensors/SensorTypes.h"
+#include "../sensors/SensorFactory.h"
 
 
 class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {

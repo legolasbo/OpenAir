@@ -1,19 +1,15 @@
 #ifndef CALCULATOR_FACTORY_H
 #define CALCULATOR_FACTORY_H
 
-#include <memory>
-#include "../sensors/SensorFactory.h"
 #include "../speedCalculators/SpeedCalculator.h"
 #include "../configuration/CalculatorConfigurations.h"
 
 class CalculatorFactory : public Factory<SpeedCalculator> {
     private:
-    SensorFactory * sensorFactory;
     CalculatorConfigurations * configs;
 
     public: 
-    CalculatorFactory (SensorFactory * sensorFactory, CalculatorConfigurations * configs) {
-        this->sensorFactory = sensorFactory;
+    CalculatorFactory (CalculatorConfigurations * configs) {
         this->configs = configs;
     }
 
@@ -28,7 +24,7 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
             return nullptr;
         }
 
-        SpeedCalculator * instance = config->createInstance(this->sensorFactory);
+        SpeedCalculator * instance = config->createInstance();
         if (instance != nullptr) {
             this->registerInstance(uuid, instance);
         }

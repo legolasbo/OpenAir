@@ -44,8 +44,8 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
         return doc;
     }
 
-    virtual SpeedCalculator * createInstance(SensorFactory * sensorFactory) {
-        Sensor * sensor = sensorFactory->fromUuid(this->getSensorUuid());
+    virtual SpeedCalculator * createInstance() {
+        Sensor * sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getSensorUuid());
         if (sensor == nullptr) {
             return nullptr;
         }
