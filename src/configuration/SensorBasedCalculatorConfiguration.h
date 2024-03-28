@@ -60,22 +60,20 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
         JsonDocument doc = CalculatorConfiguration::getConfigurationOptions();
 
         auto supportedTypes = this->supportedMeasurementTypes();
+        auto sensors = this->container->resolve<SensorFactory>()->getSensorsSupportingMeasurements(supportedTypes);
         
         if (supportedTypes.size() > 0) {
             doc["sensor"]["type"] = "select";
             doc["sensor"]["label"] = "Sensor";
 
-            // std::map<std::string, SensorType> uuidMap = this->sensorConfigs->getUuidsForTypes(supportedTypes);
-
-            // for (auto entry : uuidMap) {
-            //     std::string name = this->sensorConfigs->get(entry.first)->getName();
-            //     if (name == "") {
-            //         name.append("Unnamed ");
-            //         name.append(ToString(entry.second));
-            //     }
-
-            //     doc["sensor"]["options"][entry.first] = name;
-            // }
+            for (auto sensor : sensors) {
+                std::string name = "";
+                if (name == "") {
+                    name.append("Unnamed ");
+                    name.append(ToString(sensor->getSensorType()));
+                }
+                doc["sensor"]["options"][sensor->getUuid()] = name;
+            }
         }
 
         return doc;

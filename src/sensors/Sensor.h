@@ -6,8 +6,16 @@
 #include "ConnectionTypes.h"
 
 class Sensor : public Measurements::Measurement {
+    private:
+        std::string uuid;
 
     public:
+        Sensor(std::string uuid) {
+            this->uuid = uuid;
+        }
+        std::string getUuid() {
+            return this->uuid;
+        }
         virtual SensorType getSensorType() = 0;
         virtual ConnectionType getConnectionType() = 0;
         virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;

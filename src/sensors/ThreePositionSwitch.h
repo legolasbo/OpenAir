@@ -19,7 +19,7 @@ class ThreePositionSwitch : public  I2CSensor,
     int address = 32;
                                   
   public:
-    ThreePositionSwitch(TwoWire *i2cBus) : I2CSensor(i2cBus) {
+    ThreePositionSwitch(std::string uuid, TwoWire *i2cBus) : I2CSensor(uuid, i2cBus) {
     }
 
     static const SensorType sensorType = ThreePositionSwitchSensor;

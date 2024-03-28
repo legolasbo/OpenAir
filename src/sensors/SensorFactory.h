@@ -32,6 +32,7 @@ class I2CManager {
                 default: return this->x4;
             }
         }
+
 };
 
 class SensorFactory : public Factory<Sensor> {
@@ -39,18 +40,17 @@ class SensorFactory : public Factory<Sensor> {
         I2CManager * i2cManager;
         SensorConfigurations * configs;
 
-
-        I2CSensor* createI2CSensor(SensorType type, TwoWire *i2cBus) {
-            switch (type) {
-                case SHT20Sensor: return new SHT20Reader(i2cBus);
-                case ThreePositionSwitchSensor: return new ThreePositionSwitch(i2cBus);
+        I2CSensor* createI2CSensor(SensorConfiguration * config) {
+            switch (config->getSensorType()) {
+                case SHT20Sensor: return new SHT20Reader(config->getUuid(), this->i2cManager->fromConnector(config->getSensorConnector()));
+                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), this->i2cManager->fromConnector(config->getSensorConnector()));
                 default: throw std::invalid_argument("Unknown sensor type");
             }
         }
 
         Sensor* createSensorFromConfiguration(SensorConfiguration* config) {
             switch (config->getConnectionType()) {
-                case I2C: return createI2CSensor(config->getSensorType(), this->i2cManager->fromConnector(config->getSensorConnector()));
+                case I2C: return createI2CSensor(config);
                 case UART: throw std::invalid_argument("Uart is not implemented yet");
                 default: throw std::invalid_argument("unsupported connection type");
             }
@@ -99,6 +99,25 @@ class SensorFactory : public Factory<Sensor> {
             }
 
             return types;
+        }
+
+        std::set<Sensor*> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
+            std::set<Sensor *> sensors;
+
+            for (std::string uuid : this->configs->getUuids()) {
+                Sensor* instance = this->fromUuid(uuid);
+                if (instance == nullptr) {
+                    continue;
+                }
+
+                if (!instance->getMeasurementTypes().intersects(measurements)) {
+                    continue;
+                }
+
+                sensors.insert(instance);
+            }
+
+            return sensors;
         }
 
         static std::vector<SensorType> knownSensorTypes() {

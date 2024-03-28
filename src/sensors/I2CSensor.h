@@ -16,7 +16,7 @@ class I2CSensor : public Sensor {
             return I2CSensor::connectionType;
         }
 
-        I2CSensor(TwoWire *bus) : Sensor() {
+        I2CSensor(std::string uuid, TwoWire *bus) : Sensor(uuid) {
             this->i2cBus = bus;
         }
 
