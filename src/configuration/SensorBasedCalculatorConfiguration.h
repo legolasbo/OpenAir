@@ -39,7 +39,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool isValid() {
-        return this->container->resolve<SensorFactory>().get()->fromUuid(this->sensorUuid) != nullptr;
+        return this->container->resolve<SensorFactory>()->fromUuid(this->sensorUuid) != nullptr;
     }
     
     virtual bool setOption(std::string name, int value) {
@@ -65,7 +65,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
             doc["sensor"]["label"] = "Sensor";
 
             for (auto sensor : sensors) {
-                SensorConfiguration* sensorConfig = this->container->resolve<SensorConfigurations>().get()->get(sensor->getUuid());
+                SensorConfiguration* sensorConfig = this->container->resolve<SensorConfigurations>()->get(sensor->getUuid());
                 std::string name = "";
                 if (sensorConfig != nullptr) {
                     name = sensorConfig->getName();

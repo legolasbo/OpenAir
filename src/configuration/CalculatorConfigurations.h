@@ -30,7 +30,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument availableCalculatorTypes() {
         JsonDocument doc;
 
-        Measurements::MeasurementTypeList types = this->container->resolve<SensorFactory>().get()->availableMeasurementTypes();
+        Measurements::MeasurementTypeList types = this->container->resolve<SensorFactory>()->availableMeasurementTypes();
 
         for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);

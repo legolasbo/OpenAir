@@ -9,6 +9,8 @@ class Factory {
     std::map<std::string, Type*> instances;
 
     protected:
+    DI* container;
+
     void registerInstance(std::string uuid, Type * instance) {
         if (this->getInstance(uuid) != nullptr) {
             return;
@@ -26,6 +28,10 @@ class Factory {
     }
 
     public:
+    Factory(DI * container) {
+        this->container = container;
+    }
+
     void destroyInstances() {
         for (auto instance : this->instances) {
             delete(instance.second);

@@ -37,13 +37,11 @@ class I2CManager {
 
 class SensorFactory : public Factory<Sensor> {
     private:
-        I2CManager * i2cManager;
-        SensorConfigurations * configs;
 
         I2CSensor* createI2CSensor(SensorConfiguration * config) {
             switch (config->getSensorType()) {
-                case SHT20Sensor: return new SHT20Reader(config->getUuid(), this->i2cManager->fromConnector(config->getSensorConnector()));
-                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), this->i2cManager->fromConnector(config->getSensorConnector()));
+                case SHT20Sensor: return new SHT20Reader(config->getUuid(), this->container->resolve<I2CManager>()->fromConnector(config->getSensorConnector()));
+                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), this->container->resolve<I2CManager>()->fromConnector(config->getSensorConnector()));
                 default: throw std::invalid_argument("Unknown sensor type");
             }
         }
@@ -57,10 +55,7 @@ class SensorFactory : public Factory<Sensor> {
         }
 
     public:
-        SensorFactory(I2CManager *i2cManager, SensorConfigurations * config) {
-            this->i2cManager = i2cManager;
-            this->configs = config;
-        }
+        SensorFactory(DI* container) : Factory<Sensor>(container) {}
 
         Sensor * fromUuid(std::string uuid) {
             Sensor * foundSensor = this->getInstance(uuid);
@@ -68,11 +63,11 @@ class SensorFactory : public Factory<Sensor> {
                 return foundSensor;
             }
 
-            if (!this->configs->exists(uuid)) {
+            if (!this->container->resolve<SensorConfigurations>()->exists(uuid)) {
                 return nullptr;
             }
 
-            SensorConfiguration * sensorConfig = this->configs->get(uuid);
+            SensorConfiguration * sensorConfig = this->container->resolve<SensorConfigurations>()->get(uuid);
 
             Sensor * createdSensor = this->createSensorFromConfiguration(sensorConfig);
             this->registerInstance(uuid, createdSensor);
@@ -87,7 +82,7 @@ class SensorFactory : public Factory<Sensor> {
         Measurements::MeasurementTypeList availableMeasurementTypes() {
             Measurements::MeasurementTypeList types;
 
-            for (std::string uuid : this->configs->getUuids()) {
+            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
                 auto instance = this->fromUuid(uuid);
                 if (instance == nullptr) {
                     Serial.printf("Could not load %s\n", uuid);
@@ -104,7 +99,7 @@ class SensorFactory : public Factory<Sensor> {
         std::set<Sensor*> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
             std::set<Sensor *> sensors;
 
-            for (std::string uuid : this->configs->getUuids()) {
+            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
                 Sensor* instance = this->fromUuid(uuid);
                 if (instance == nullptr) {
                     continue;

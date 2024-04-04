@@ -5,13 +5,8 @@
 #include "../configuration/CalculatorConfigurations.h"
 
 class CalculatorFactory : public Factory<SpeedCalculator> {
-    private:
-    CalculatorConfigurations * configs;
-
     public: 
-    CalculatorFactory (CalculatorConfigurations * configs) {
-        this->configs = configs;
-    }
+    CalculatorFactory (DI * container): Factory<SpeedCalculator>(container) {}
 
     SpeedCalculator * fromUuid(std::string uuid) {
         SpeedCalculator * calculator = this->getInstance(uuid);
@@ -19,7 +14,7 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
             return calculator;
         }
 
-        CalculatorConfiguration * config = this->configs->get(uuid);
+        CalculatorConfiguration * config = this->container->resolve<CalculatorConfigurations>()->get(uuid);
         if (config == nullptr || !config->isValid()) {
             return nullptr;
         }

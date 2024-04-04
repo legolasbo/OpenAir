@@ -28,7 +28,7 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
     }
 
     virtual SpeedCalculator * createInstance() {
-        Sensor * sensor = this->container->resolve<SensorFactory>().get()->fromUuid(this->getSensorUuid());
+        Sensor * sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getSensorUuid());
         if (sensor == nullptr) {
             return nullptr;
         }

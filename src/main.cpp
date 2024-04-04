@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoLog.h>
 #include <vector>
 
 #include "constants.h"
@@ -19,14 +20,18 @@ DI container;
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
+  Log.begin(LOG_LEVEL_VERBOSE, &Serial);
+  Log.setShowLevel(true);
 
   config = Configuration::fromFile(&container, "/config.json");
-  container.registerInstance<SensorFactory>(new SensorFactory(new I2CManager(), config->getSensors()));
+  container.registerInstance<I2CManager>(new I2CManager());
   container.registerInstance<Configuration>(config);
   container.registerInstance<SensorConfigurations>(config->getSensors());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());
-  calculatorFactory = new CalculatorFactory(config->getCalculators());
-  
+  container.registerInstance<SensorFactory>(new SensorFactory(&container));
+  calculatorFactory = new CalculatorFactory(&container);
+
+
   startInterface(&container, config);
 
 
@@ -49,12 +54,12 @@ void setup() {
   // config->save();
 #endif
 
-  serializeJsonPretty(config->toJson(), Serial);
 
-  // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x4_i2c_sht20"))));
-  // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(config->getSensors()->get("x6_i2c_3possw"))));
-  // calculators.push_back(new SHT20SpeedCalculator(sensorFactory->fromConfiguration(new SensorConfiguration(X6, I2C, SHT20Sensor))));
-  // calculators.push_back(new ThreePositionCalculator(sensorFactory->fromConfiguration(new SensorConfiguration(X4, I2C, ThreePositionSwitchSensor))));
+  Log.verboseln("Config:");
+  if (Log.getLevel() == LOG_LEVEL_VERBOSE) {
+    serializeJsonPretty(config->toJson(), Serial);
+    Serial.println();
+  }
 
   // tachometer.begin();
   // fan.begin();
@@ -69,6 +74,7 @@ void loop() {
     calculatorFactory->destroyInstances();
 
     config->markClean();
+    Log.traceln("Config updated");
   }
 
   int newSpeed = 0;
