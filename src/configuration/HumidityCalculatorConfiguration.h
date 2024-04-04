@@ -50,7 +50,10 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
             return nullptr;
         }
 
-        return new HumidityCalculator(sensor);
+        if (auto m = sensor->toMeasurement<Measurements::Humidity>()) {
+            return new HumidityCalculator(m);
+        }
+        return nullptr;
     }
 
 };

@@ -12,9 +12,7 @@ enum SelectedMode {
   MODE_HIGH = 3
 };
 
-class ThreePositionSwitch : public  I2CSensor,
-                                    Measurements::SwitchPosition
-                                    {
+class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPosition {
   private:
     int address = 32;
                                   

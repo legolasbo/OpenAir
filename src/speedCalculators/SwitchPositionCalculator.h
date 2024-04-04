@@ -18,27 +18,24 @@ class SwitchPositionCalculator : public SpeedCalculator {
         int mapPositionToValue(uint8_t position) {
             return this->positionMap[position];
         }
-
-    public:
-        SwitchPositionCalculator(Measurements::SwitchPosition * sensor) {
-            this->sensor = sensor;
-            this->initializePositionMap();
-        }
-
-        SwitchPositionCalculator(Sensor * sensor) {
-            if (sensor->supportsMeasurementType(Measurements::SwitchPositionMeasurement)) {
-                this->sensor = (Measurements::SwitchPosition*) sensor;
-            }
-            this->initializePositionMap();
-        }
-
-        int calculate() {
+    
+    protected:
+        int _calculate() {
             uint8_t position = this->sensor->getSelectedPosition();
             if (position > this->sensor->getNumberOfPositions()) {
                 position = this->sensor->getNumberOfPositions();
             }
 
             return this->mapPositionToValue(position);
+        }
+        const char * name() {
+            return "Switch position";
+        }
+
+    public:
+        SwitchPositionCalculator(Measurements::SwitchPosition * sensor) {
+            this->sensor = sensor;
+            this->initializePositionMap();
         }
 
 };

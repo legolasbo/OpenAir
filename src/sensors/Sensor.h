@@ -27,6 +27,16 @@ class Sensor : public Measurements::Measurement {
             }
             return false;
         }
+
+        template <typename T>
+        T* toMeasurement() {
+            T * measurement = dynamic_cast<T*>(this);
+            if (measurement == nullptr) {
+                Log.errorln("Could not cast sensor to %s Actual type %s", typeid(T*).name(), typeid(*this).name());
+                return nullptr;
+            }
+            return measurement;
+        }
 };
 
 

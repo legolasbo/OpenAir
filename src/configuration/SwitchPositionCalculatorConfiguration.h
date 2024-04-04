@@ -30,10 +30,14 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
     virtual SpeedCalculator * createInstance() {
         Sensor * sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getSensorUuid());
         if (sensor == nullptr) {
+            Log.errorln("Unable to resolve sensor %s in calculator %s", this->getSensorUuid().c_str(), this->getUuid().c_str());
             return nullptr;
         }
 
-        return new SwitchPositionCalculator(sensor);
+        if (auto m = sensor->toMeasurement<Measurements::SwitchPosition>()) {
+            return new SwitchPositionCalculator(m);
+        }
+        return nullptr;
     }
 
 };

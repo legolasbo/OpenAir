@@ -16,11 +16,11 @@ struct SHT20Reading {
     float pressure;
 };
 
-class SHT20Reader : public  I2CSensor, 
-                            Measurements::Temperature,
-                            Measurements::Humidity,
-                            Measurements::DewPoint
-                            {
+class SHT20Reader : public I2CSensor, 
+                    public Measurements::Temperature,
+                    public Measurements::Humidity,
+                    public Measurements::DewPoint
+                    {
     private:
         uFire_SHT20 sht20;
         u_long lastReadMillis;

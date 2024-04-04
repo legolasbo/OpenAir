@@ -91,7 +91,7 @@ void loop() {
 
   if (newSpeed != calculatedSpeed) {
     calculatedSpeed = newSpeed;
-    Serial.printf("Calculated speed: %d \n", calculatedSpeed);
+    Log.traceln("New speed: %d \n", calculatedSpeed);
   }
 
   delay(1000);
