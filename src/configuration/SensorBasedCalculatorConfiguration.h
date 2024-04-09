@@ -5,7 +5,7 @@
 #include "SensorConfigurations.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include "../sensors/SensorTypes.h"
-#include "../sensors/SensorFactory.h"
+#include "../factories/SensorFactory.h"
 
 
 class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {

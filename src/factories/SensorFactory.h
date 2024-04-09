@@ -5,35 +5,13 @@
 #include <Wire.h>
 #include <vector>
 #include <map>
-#include "I2CSensor.h"
-#include "SHT20Reader.h"
-#include "ThreePositionSwitch.h"
-#include "SensorConnectors.h"
+#include "../I2CManager.h"
+#include "../sensors/I2CSensor.h"
+#include "../sensors/SHT20Reader.h"
+#include "../sensors/ThreePositionSwitch.h"
+#include "../sensors/SensorConnectors.h"
 #include "../configuration/SensorConfigurations.h"
-#include "../factories/Factory.hpp"
-
-class I2CManager {
-    public:
-        TwoWire * x4;
-        TwoWire * x6;
-        
-        I2CManager() {
-            this->x4 = &Wire;
-            this->x6 = &Wire1;
-
-            x4->begin(S1_SDA, S1_SCL);
-            x6->begin(S2_SDA, S2_SCL);
-        }
-
-        TwoWire* fromConnector(SensorConnector connector) {
-            switch(connector) {
-                case X4: return this->x4;
-                case X6: return this->x6;
-                default: return this->x4;
-            }
-        }
-
-};
+#include "Factory.hpp"
 
 class SensorFactory : public Factory<Sensor> {
     private:

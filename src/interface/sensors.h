@@ -2,7 +2,7 @@
 #define INTERFACE_SENSORS_H
 
 #include "api.h"
-#include "../sensors/SensorFactory.h"
+#include "../factories/SensorFactory.h"
 #include "../configuration/Configuration.h"
 #include "../configuration/SensorConfiguration.h"
 

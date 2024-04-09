@@ -4,7 +4,7 @@
 #include "SensorBasedCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include "../speedCalculators/HumidityCalculator.h"
-#include "../sensors/SensorFactory.h"
+#include "../factories/SensorFactory.h"
 #include <vector>
 #include "../Measurements.h"
 

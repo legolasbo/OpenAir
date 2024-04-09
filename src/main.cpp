@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "configuration/Configuration.h"
 #include "factories/CalculatorFactory.hpp"
-#include "sensors/SensorFactory.h"
+#include "factories/SensorFactory.h"
 #include "inputs/tachometer.h"
 #include "outputs/fan.h"
 #include "interface/web.h"

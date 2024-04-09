@@ -4,7 +4,7 @@
 #include "SensorBasedCalculatorConfiguration.h"
 #include "../speedCalculators/CalculatorTypes.h"
 #include "../speedCalculators/SwitchPositionCalculator.h"
-#include "../sensors/SensorFactory.h"
+#include "../factories/SensorFactory.h"
 #include "../Measurements.h"
 
 class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
