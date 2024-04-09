@@ -17,9 +17,12 @@ class SensorFactory : public Factory<Sensor> {
     private:
 
         I2CSensor* createI2CSensor(SensorConfiguration * config) {
+            auto i2cManager = this->container->resolve<I2CManager>();
+            auto connector = i2cManager->fromConnector(config->getSensorConnector());
+
             switch (config->getSensorType()) {
-                case SHT20Sensor: return new SHT20Reader(config->getUuid(), this->container->resolve<I2CManager>()->fromConnector(config->getSensorConnector()));
-                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), this->container->resolve<I2CManager>()->fromConnector(config->getSensorConnector()));
+                case SHT20Sensor: return new SHT20Reader(config->getUuid(), connector);
+                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), connector);
                 default: throw std::invalid_argument("Unknown sensor type");
             }
         }
