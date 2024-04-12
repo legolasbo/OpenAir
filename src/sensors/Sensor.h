@@ -4,12 +4,14 @@
 #include "Measurements.h"
 #include "SensorTypes.h"
 #include "ConnectionTypes.h"
+#include "../options/Configurable.h"
 
-class Sensor : public Measurements::Measurement {
+class Sensor : public Configurable, public Measurements::Measurement {
     private:
         std::string uuid;
 
     public:
+        virtual ~Sensor() = default;
         Sensor(std::string uuid) {
             this->uuid = uuid;
         }

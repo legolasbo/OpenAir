@@ -42,11 +42,11 @@ class SHT20Reader : public I2CSensor,
             sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *bus);
         }
         
-        virtual SensorType getSensorType() {
+        SensorType getSensorType() {
             return SHT20Reader::sensorType;
         }
     
-        virtual Measurements::MeasurementTypeList getMeasurementTypes() {
+        Measurements::MeasurementTypeList getMeasurementTypes() {
             return Measurements::MeasurementTypeList {
                 Measurements::Type::HumidityMeasurement,
                 Measurements::Type::TemperatureMeasurement,
@@ -54,7 +54,11 @@ class SHT20Reader : public I2CSensor,
             };
         }
 
-        virtual SHT20Reading takeReading() {
+        std::unordered_map<const char *, Option> availableOptions() {
+            return {};
+        }
+
+        SHT20Reading takeReading() {
             if (this->shouldMeasure()) {
                 sht20.measure_all();
             }
@@ -71,15 +75,15 @@ class SHT20Reader : public I2CSensor,
             return result;
         }
 
-        virtual float getTemperature() {
+        float getTemperature() {
             return this->takeReading().temperatureDegC;
         }
 
-        virtual float getHumidity() {
+        float getHumidity() {
             return this->takeReading().humidity;
         }
 
-        virtual float getDewPoint() {
+        float getDewPoint() {
             return this->takeReading().pressure;
         }
 

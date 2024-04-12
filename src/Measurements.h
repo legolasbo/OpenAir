@@ -47,6 +47,7 @@ namespace Measurements {
 
     class Measurement {
         public:
+        virtual ~Measurement() = default;
         virtual MeasurementTypeList getMeasurementTypes() = 0;
 
         bool supportsMeasurementType(Measurements::Type type) {

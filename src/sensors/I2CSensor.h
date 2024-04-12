@@ -11,6 +11,7 @@ class I2CSensor : public Sensor {
 
     public:
         static const ConnectionType connectionType = I2C;
+        virtual ~I2CSensor() = default;
 
         ConnectionType getConnectionType() {
             return I2CSensor::connectionType;
