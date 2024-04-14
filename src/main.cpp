@@ -45,7 +45,7 @@ void setup() {
 
   CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(&container);
   defaultCalculator->setName("Default calculator");
-  defaultCalculator->setOption("sensor", defaultSensor->getUuid());
+  defaultCalculator->oldSetOption("sensor", defaultSensor->getUuid());
   if (config->getCalculators()->getUuids().size() == 0) {
     config->getCalculators()->add(defaultCalculator);
     Serial.printf("Added default calculator %s\n", defaultCalculator->getUuid().c_str());

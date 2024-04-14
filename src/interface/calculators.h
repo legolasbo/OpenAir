@@ -11,7 +11,7 @@ class CalculatorApi : public API {
             auto argName = request->argName(i).c_str();
             if (calc->hasOption(argName)) {
                 Serial.println("Option present");
-                calc->setOption(argName, request->arg(argName).c_str());
+                calc->oldSetOption(argName, request->arg(argName).c_str());
             }
         }
     }

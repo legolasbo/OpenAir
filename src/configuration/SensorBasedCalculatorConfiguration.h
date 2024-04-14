@@ -42,16 +42,16 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
         return this->container->resolve<SensorFactory>()->fromUuid(this->sensorUuid) != nullptr;
     }
     
-    virtual bool setOption(std::string name, int value) {
-        return CalculatorConfiguration::setOption(name, value);
+    virtual bool oldSetOption(std::string name, int value) {
+        return CalculatorConfiguration::oldSetOption(name, value);
     }
 
-    virtual bool setOption(std::string name, std::string value) {
+    virtual bool oldSetOption(std::string name, std::string value) {
         Serial.printf("Setting option '%s' to value '%s'\n", name.c_str(), value.c_str());
         if (name == "sensor") {
             return this->setSensor(value);
         }
-        return CalculatorConfiguration::setOption(name, value);
+        return CalculatorConfiguration::oldSetOption(name, value);
     }
 
     virtual JsonDocument getConfigurationOptions() {

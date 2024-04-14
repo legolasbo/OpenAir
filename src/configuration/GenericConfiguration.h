@@ -45,11 +45,11 @@ class GenericConfiguration {
         return name == "name";
     }
 
-    virtual bool setOption(std::string name, int value) {
+    virtual bool oldSetOption(std::string name, int value) {
         return false;
     }
 
-    virtual bool setOption(std::string name, std::string value) {
+    virtual bool oldSetOption(std::string name, std::string value) {
         if (name == "name") {
             return this->setName(value);
         }

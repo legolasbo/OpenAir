@@ -26,8 +26,8 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
         return SensorBasedCalculatorConfiguration::hasOption(name);
     }
 
-    virtual bool setOption(std::string name, std::string value) {
-        return SensorBasedCalculatorConfiguration::setOption(name, value);
+    virtual bool oldSetOption(std::string name, std::string value) {
+        return SensorBasedCalculatorConfiguration::oldSetOption(name, value);
     }
 
     virtual JsonDocument getConfigurationOptions() {

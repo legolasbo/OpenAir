@@ -88,11 +88,11 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
                 bool success = false;
                 if (kv.value().is<const char *>()) {
                     Serial.printf("Setting %s to %s\n", kv.key().c_str(), kv.value().as<const char *>());
-                    success = config->setOption(kv.key().c_str(), kv.value().as<const char *>());
+                    success = config->oldSetOption(kv.key().c_str(), kv.value().as<const char *>());
                 }
                 if (kv.value().is<int>()) {
                     Serial.printf("Setting %s to %d\n", kv.key().c_str(), kv.value().as<int>());
-                    success = config->setOption(kv.key().c_str(), kv.value().as<int>());
+                    success = config->oldSetOption(kv.key().c_str(), kv.value().as<int>());
                 }
 
                 if (!success) {

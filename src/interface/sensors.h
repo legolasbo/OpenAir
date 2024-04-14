@@ -85,7 +85,7 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
     }
 
     if (request->hasArg("name")) {
-        config->setOption("name", request->arg("name").c_str());
+        config->oldSetOption("name", request->arg("name").c_str());
     }
 
     this->config->getSensors()->add(config);
@@ -143,7 +143,7 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
         }
 
         String value = request->arg(argName);
-        if (!sensor->setOption(argName.c_str(), value.c_str())) {
+        if (!sensor->oldSetOption(argName.c_str(), value.c_str())) {
             errors += "Unknown value: ";
             errors += value.c_str();
             errors += " for option ";

@@ -103,7 +103,7 @@ class SensorConfiguration : public GenericConfiguration {
           GenericConfiguration::hasOption(name);
     }
 
-    virtual bool setOption(std::string name, std::string value) {
+    virtual bool oldSetOption(std::string name, std::string value) {
         if (name == "connector") {
             return this->setConnector(value);
         }
@@ -112,7 +112,7 @@ class SensorConfiguration : public GenericConfiguration {
             return this->setConnection(value);
         }
 
-        return GenericConfiguration::setOption(name, value);
+        return GenericConfiguration::oldSetOption(name, value);
     }
 
     virtual bool setConnection(ConnectionType connection) {
