@@ -17,7 +17,7 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
     static const int defaultAddress = 32;
 
     int getAddress() {
-      Option address = this->configuredOptions().at("address");
+      Option address = this->getOption("address");
       return address.toIntOr(this->defaultAddress);
     }
                                   
@@ -62,7 +62,7 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
 
       }
       catch(const std::exception& e) {
-          Serial.println(e.what());
+          Log.errorln("Failed to read Three Position Switch on address %i because: %s", this->getAddress(), e.what());
       }
       
       this->i2cBus->end();

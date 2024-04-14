@@ -13,7 +13,7 @@ class Configurable {
                 Log.traceln("%s: %s", i.first, i.second.toStr());
             }
             Log.traceln("%s: Configured options:", typeid(*this).name());
-            for (auto &&i : this->configuredOptions()) {
+            for (auto &&i : this->options) {
                 Log.traceln("%s: %s", i.first, i.second.toStr());
             }
         }
@@ -22,9 +22,6 @@ class Configurable {
         virtual ~Configurable() = default;
 
         virtual std::unordered_map<const char *, Option> availableOptions() = 0;
-        std::unordered_map<const char *, Option> configuredOptions() {
-            return this->options;
-        };
 
         Option getOption(const char * name) {
             if (this->availableOptions().find(name) == this->availableOptions().end()) {
@@ -32,12 +29,12 @@ class Configurable {
                 return Option();
             }
 
-            if (this->configuredOptions().find(name) == this->configuredOptions().end()) {
+            if (this->options.find(name) == this->options.end()) {
                 Log.warningln("%s: Unconfigured option %s", typeid(*this).name(), name);
                 return this->availableOptions().at(name);
             }
 
-            return this->configuredOptions().at(name);
+            return this->options.at(name);
         }
 
         bool setOption(const char * name, Option value) {
