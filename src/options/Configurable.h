@@ -7,20 +7,42 @@ class Configurable {
     private:
         std::unordered_map<const char *, Option> options;
 
+        void logOptions() {
+            Log.traceln("%s: Available options:", typeid(*this).name());
+            for (auto &&i : this->availableOptions()) {
+                Log.traceln("%s: %s", i.first, i.second.toStr());
+            }
+            Log.traceln("%s: Configured options:", typeid(*this).name());
+            for (auto &&i : this->configuredOptions()) {
+                Log.traceln("%s: %s", i.first, i.second.toStr());
+            }
+        }
+
     public:
         virtual ~Configurable() = default;
 
         virtual std::unordered_map<const char *, Option> availableOptions() = 0;
         std::unordered_map<const char *, Option> configuredOptions() {
-            if (options.size() == 0) {
-                this->options = this->availableOptions();
-            }
             return this->options;
         };
 
+        Option getOption(const char * name) {
+            if (this->availableOptions().find(name) == this->availableOptions().end()) {
+                Log.errorln("%s: Unknown option %s", typeid(*this).name(), name);
+                return Option();
+            }
+
+            if (this->configuredOptions().find(name) == this->configuredOptions().end()) {
+                Log.warningln("%s: Unconfigured option %s", typeid(*this).name(), name);
+                return this->availableOptions().at(name);
+            }
+
+            return this->configuredOptions().at(name);
+        }
+
         bool setOption(const char * name, Option value) {
             if (this->availableOptions().find(name) == this->availableOptions().end()) {
-                Log.warningln("Unable to set option %s to %s. it does not exist", name, value.toStr());
+                Log.warningln("Option %s is not one of the available options.", name);
                 return false;
             }
 
@@ -29,7 +51,6 @@ class Configurable {
                 return false;
             }
 
-            Log.info("Set option %s to %s", name, value.toStr());
-            this->options.emplace(name, value);
+            return this->options.emplace(name, value).second;
         }
 };
