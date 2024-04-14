@@ -11,8 +11,8 @@ class Option {
             const char * s;
         };
 
-        enum Type {INTEGER, STRING} type;
         Value _value;
+        bool editable = false;
 
         template <typename T, typename U>
         bool typesMatch() {
@@ -20,17 +20,24 @@ class Option {
         }
 
     public:
+        enum Type {INTEGER, STRING} type;
         virtual ~Option() = default;
         Option() : Option(0) {};
-        Option(std::string v) : Option(v.c_str()) {};
-        Option(const char * v) {
+        Option(std::string v, bool editable = false) : Option(v.c_str(), editable) {};
+        Option(const char * v, bool editable = false) {
             this->_value.s = v;
             this->type = STRING;
+            this->editable = editable;
         }
 
-        Option(int v) {
+        Option(int v, bool editable = false) {
             this->_value.i = v;
             this->type = INTEGER;
+            this->editable = false;
+        }
+
+        bool isEditable() {
+            return this->editable;
         }
 
         virtual Type getType() {
@@ -55,6 +62,24 @@ class Option {
                 default: return "[Option with unknown value]";
             }
         }
+
+        virtual Option newValue(String value) {
+            switch (this->type) {
+                case INTEGER: return Option(value.toInt());
+                default: return Option(value.c_str());
+            }
+        }
+
+        virtual Option newValue(Option value) {
+            if (this->type != value.getType()) {
+                return *this;
+            }
+
+            switch (this->type) {
+                case INTEGER: return Option(this->toInt());
+                default: return Option(this->toStr());
+            }
+        }
 };
 
 class BoundedOption : public Option {
@@ -63,7 +88,7 @@ class BoundedOption : public Option {
         Option upper;
 
     public:
-        BoundedOption(int value, int lower, int upper) : Option(value) {
+        BoundedOption(int value, int lower, int upper) : Option(min(upper, max(lower, value))) {
             this->lower = Option(lower);
             this->upper = Option(upper);
         }
@@ -74,6 +99,21 @@ class BoundedOption : public Option {
 
         Option upperBound() {
             return this->upper;
+        }
+
+        Option newValue(Option value) {
+            if (this->type != value.getType()) {
+                return *this;
+            }
+
+            switch(this->type) {
+                case INTEGER: return BoundedOption(value.toInt(), this->lower.toInt(), this->upper.toInt());
+                default: return *this;
+            }
+        }
+
+        BoundedOption newValue(int value) {
+            return BoundedOption(value, this->lower.toInt(), this->upper.toInt());
         }
 
 };
