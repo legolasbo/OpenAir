@@ -45,7 +45,7 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
             }
             catch(const std::exception& e)
             {
-                Serial.println(e.what());
+                Log.errorln("Unable to add sensor from json because: %s", e.what());
             }
         }
 

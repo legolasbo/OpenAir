@@ -46,6 +46,7 @@ class Option {
 
         int toIntOr(int alternative) {
             if (!this->type == INTEGER) {
+                Log.warningln("Reverting to alternative %i", alternative);
                 return alternative;
             }
             return this->_value.i;
