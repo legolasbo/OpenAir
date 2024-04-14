@@ -61,7 +61,7 @@ class GenericConfiguration {
         return false;
     }
 
-    std::string getName() {
+    virtual std::string getName() {
         return this->name;
     }
 
@@ -90,7 +90,7 @@ class GenericConfiguration {
         JsonDocument doc;
 
         doc["uuid"] = this->uuid;
-        doc["name"] = this->name;
+        doc["name"] = this->getName();
 
         return doc;
     }

@@ -36,7 +36,7 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
       };
     }
 
-    std::unordered_map<const char *, Option> availableOptions() {
+    std::unordered_map<std::string, Option> availableOptions() {
       return {
         {"address", BoundedOption(this->defaultAddress, 32, 39)}
       };

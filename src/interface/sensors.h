@@ -136,11 +136,14 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
         }
 
         if (!sensor->hasOption(argName.c_str())) {
+            sensor->setOption(argName.c_str(), request->arg(argName).c_str());
+
             errors += "Unknown option: ";
             errors += argName.c_str();
             errors += "<br>";
             continue;
         }
+
 
         String value = request->arg(argName);
         if (!sensor->oldSetOption(argName.c_str(), value.c_str())) {

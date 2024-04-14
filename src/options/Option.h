@@ -6,12 +6,9 @@
 
 class Option {
     private:
-        union Value {
-            int i;
-            const char * s;
-        };
+        int i;
+        std::string s;
 
-        Value _value;
         bool editable = false;
 
         template <typename T, typename U>
@@ -23,15 +20,14 @@ class Option {
         enum Type {INTEGER, STRING} type;
         virtual ~Option() = default;
         Option() : Option(0) {};
-        Option(std::string v, bool editable = false) : Option(v.c_str(), editable) {};
-        Option(const char * v, bool editable = false) {
-            this->_value.s = v;
+        Option(std::string v, bool editable = false) {
+            this->s = v;
             this->type = STRING;
             this->editable = editable;
-        }
-
+        };
+        
         Option(int v, bool editable = false) {
-            this->_value.i = v;
+            this->i = v;
             this->type = INTEGER;
             this->editable = false;
         }
@@ -49,19 +45,23 @@ class Option {
                 Log.warningln("Reverting to alternative %i", alternative);
                 return alternative;
             }
-            return this->_value.i;
+            return this->i;
         }
 
         int toInt() {
             return this->toIntOr(0);
         }
 
-        const char * toStr() {
+        std::string toStr() {
             switch (this->type) {
-                case INTEGER : return std::to_string(this->toInt()).c_str();
-                case STRING : return this->_value.s;
+                case INTEGER : return std::to_string(this->toInt());
+                case STRING : return this->s;
                 default: return "[Option with unknown value]";
             }
+        }
+
+        const char * toCharPtr() {
+            return this->toStr().c_str();
         }
 
         virtual Option newValue(String value) {

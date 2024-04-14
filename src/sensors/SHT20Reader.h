@@ -54,7 +54,7 @@ class SHT20Reader : public I2CSensor,
             };
         }
 
-        std::unordered_map<const char *, Option> availableOptions() {
+        std::unordered_map<std::string, Option> availableOptions() {
             return {};
         }
 

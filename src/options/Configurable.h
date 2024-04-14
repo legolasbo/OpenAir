@@ -5,26 +5,31 @@
 
 class Configurable {
     private:
-        std::unordered_map<const char *, Option> options;
+        std::unordered_map<std::string, Option> options;
 
         void logOptions() {
             Log.traceln("%s: Available options:", typeid(*this).name());
             for (auto &&i : this->availableOptions()) {
-                Log.traceln("%s: %s", i.first, i.second.toStr());
+                Log.traceln("%s: %s", i.first, i.second.toCharPtr());
             }
             Log.traceln("%s: Configured options:", typeid(*this).name());
             for (auto &&i : this->options) {
-                Log.traceln("%s: %s", i.first, i.second.toStr());
+                Log.traceln("%s: %s", i.first, i.second.toCharPtr());
             }
         }
 
     public:
         virtual ~Configurable() = default;
 
-        virtual std::unordered_map<const char *, Option> availableOptions() = 0;
+        virtual std::unordered_map<std::string, Option> availableOptions() = 0;
 
-        Option getOption(const char * name) {
-            if (this->availableOptions().find(name) == this->availableOptions().end()) {
+        bool isAvailableOption(std::string name) {
+            auto options = this->availableOptions();
+            return options.find(name) != options.end();
+        }
+
+        Option getOption(std::string name) {
+            if (!this->isAvailableOption(name)) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name);
                 return Option();
             }
@@ -37,9 +42,17 @@ class Configurable {
             return this->options.at(name);
         }
 
-        bool setOption(const char * name, Option value) {
-            if (this->availableOptions().find(name) == this->availableOptions().end()) {
+        bool setOption(std::string name, std::string value) {
+            switch(this->getOption(name).getType()) {
+                case Option::Type::INTEGER : return this->setOption(name, Option(atoi(value.c_str())));
+            }
+            return this->setOption(name, Option(value));
+        }
+
+        bool setOption(std::string name, Option value) {
+            if (!this->isAvailableOption(name)) {
                 Log.warningln("Option %s is not one of the available options.", name);
+                this->logOptions();
                 return false;
             }
 
@@ -48,6 +61,9 @@ class Configurable {
                 return false;
             }
 
-            return this->options.emplace(name, value).second;
+            this->options.erase(name);
+            bool success = this->options.emplace(name, value).second;
+            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value.toCharPtr(), success ? "succeeded" : "failed");
+            return success;
         }
 };

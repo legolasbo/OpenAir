@@ -17,17 +17,10 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
     SensorConfigurations(DI * container) : ConfigurationCollection<SensorConfiguration>(container) {}
 
     std::vector<SensorConfiguration *> getConfigurationsFor(SensorConnector connector) {
-        Serial.print("Getting configurations for ");
-        Serial.println(ToString(connector));
         std::vector<SensorConfiguration *> sensors;
 
         for (auto &pair : this->configs) {
-            Serial.print("Checking: ");
-            Serial.println(pair.second->machineName());
-
             if(pair.second->getSensorConnector() == connector) {
-                Serial.print("Selecting: ");
-                Serial.println(pair.second->machineName());
                 sensors.push_back(pair.second);
             }
         }

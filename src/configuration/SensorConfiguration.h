@@ -7,8 +7,9 @@
 #include "GenericConfiguration.h"
 #include <ArduinoJson.h>
 #include <sstream>
+#include "../options/Configurable.h"
 
-class SensorConfiguration : public GenericConfiguration {
+class SensorConfiguration : public GenericConfiguration, public Configurable {
     private:
         SensorConnector     connector;
         SensorType          sensorType;
@@ -34,6 +35,12 @@ class SensorConfiguration : public GenericConfiguration {
         this->name = name;
     }
 
+    virtual std::unordered_map<std::string, Option> availableOptions() {
+        return {
+            {"name", Option("Unnamed")}
+        };
+    };
+
     SensorConnector getSensorConnector() {
         return this->connector;
     }
@@ -43,7 +50,7 @@ class SensorConfiguration : public GenericConfiguration {
     }
 
     std::string getName() {
-        return this->name;
+        return this->getOption("name").toStr();
     }
 
     ConnectionType getConnectionType() {
@@ -76,18 +83,6 @@ class SensorConfiguration : public GenericConfiguration {
         return this->equals(&other);
     }
 
-    const char * machineName() {
-        std::ostringstream out;
-
-        out << ToMachineName(this->connector);
-        out << "_";
-        out << ToMachineName(this->connectionType);
-        out << "_";
-        out << ToMachineName(this->sensorType);
-
-        return out.str().c_str();
-    }
-
     virtual JsonDocument toJson() {
         JsonDocument doc = GenericConfiguration::toJson();
         doc["connector"] = ToMachineName(this->connector);
@@ -97,6 +92,10 @@ class SensorConfiguration : public GenericConfiguration {
     }
 
     virtual bool hasOption(std::string name) {
+        if (name == "name") {
+            return false;
+        }
+
         return
           name == "connector" ||
           name == "connection" ||
@@ -165,7 +164,6 @@ class SensorConfiguration : public GenericConfiguration {
 
     static SensorConfiguration * fromJson(DI * container, JsonObject doc) {
         const char * uuid = doc["uuid"].as<const char *>();
-        const char * name = doc["name"].as<const char *>();
         const char * connectorName = doc["connector"].as<const char *>();
         const char * connectionTypeName = doc["connection"].as<const char *>();
         const char * sensorTypeName = doc["type"].as<const char *>();
@@ -177,7 +175,14 @@ class SensorConfiguration : public GenericConfiguration {
         SensorConnector connector = SensorConnectorFromMachineName(connectorName);
         ConnectionType connectionType = ConnectionTypeFromMachineName(connectionTypeName);
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
-        return new SensorConfiguration(container, connector, connectionType, sensorType, uuid, name);
+        SensorConfiguration * config = new SensorConfiguration(container, connector, connectionType, sensorType, uuid);
+
+        const char * name = doc["name"].as<const char *>();
+        if (name != nullptr) {
+            config->setOption("name", Option(name));
+        }
+
+        return config;
     }
 };
 

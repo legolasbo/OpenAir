@@ -27,12 +27,21 @@ class SensorFactory : public Factory<Sensor> {
             }
         }
 
-        Sensor* createSensorFromConfiguration(SensorConfiguration* config) {
+
+        Sensor* createUnconfiguredSensorFromConfiguration(SensorConfiguration* config) {
             switch (config->getConnectionType()) {
                 case I2C: return createI2CSensor(config);
                 case UART: throw std::invalid_argument("Uart is not implemented yet");
                 default: throw std::invalid_argument("unsupported connection type");
             }
+        }
+
+        Sensor* createSensorFromConfiguration(SensorConfiguration* config) {
+            Sensor * sensor = this->createUnconfiguredSensorFromConfiguration(config);
+
+            sensor->setOption("address", Option(32));
+            
+            return sensor;
         }
 
     public:
