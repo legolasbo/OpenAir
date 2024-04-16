@@ -20,7 +20,7 @@ DI container;
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
-  Log.begin(LOG_LEVEL_VERBOSE, &Serial);
+  Log.begin(LOG_LEVEL_TRACE, &Serial);
   Log.setShowLevel(true);
 
   config = Configuration::fromFile(&container, "/config.json");
@@ -55,8 +55,8 @@ void setup() {
 #endif
 
 
-  Log.verboseln("Config:");
-  if (Log.getLevel() == LOG_LEVEL_VERBOSE) {
+  Log.traceln("Config:");
+  if (Log.getLevel() == LOG_LEVEL_TRACE) {
     serializeJsonPretty(config->toJson(), Serial);
     Serial.println();
   }
