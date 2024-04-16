@@ -48,15 +48,6 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return doc;
     }
 
-    JsonDocument getCalculatorOptions(const char * type) {
-        CalculatorConfiguration * conf = this->create(CalculatorTypeFromMachineName(type));
-
-        JsonDocument options = conf->getConfigurationOptions();
-        delete conf;
-
-        return options;
-    }
-
     static CalculatorConfigurations * fromJson(DI * container, JsonObject calculators) {
         CalculatorConfigurations * instance = new CalculatorConfigurations(container);
         
@@ -75,31 +66,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
                 continue;
             }
 
-            for (JsonPair kv : json) {
-                if (kv.key() == "uuid") {
-                    config->setUuid(kv.value().as<const char *>());
-                    continue;
-                }
-
-                if (kv.key() == "type") {
-                    continue;
-                }
-
-                bool success = false;
-                if (kv.value().is<const char *>()) {
-                    Serial.printf("Setting %s to %s\n", kv.key().c_str(), kv.value().as<const char *>());
-                    success = config->oldSetOption(kv.key().c_str(), kv.value().as<const char *>());
-                }
-                if (kv.value().is<int>()) {
-                    Serial.printf("Setting %s to %d\n", kv.key().c_str(), kv.value().as<int>());
-                    success = config->oldSetOption(kv.key().c_str(), kv.value().as<int>());
-                }
-
-                if (!success) {
-                    Serial.printf("Failed to set %s\n", kv.key().c_str());
-                }
-            }
-
+            config->configureFromJson(json);
             instance->add(config);
         }
 

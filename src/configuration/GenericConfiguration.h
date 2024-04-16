@@ -96,6 +96,17 @@ class GenericConfiguration: public Configurable {
 
         return doc;
     }
+
+    virtual bool configureFromJson(JsonObject doc) {
+        if (!doc.containsKey("uuid")) {
+            Log.errorln("Unable to configure %s without a uuid", typeid(*this).name());
+        }
+        
+        this->uuid = doc["uuid"].as<std::string>();
+
+        return Configurable::configureFromJson(doc);
+    }
+
 };
 
 #endif

@@ -61,28 +61,27 @@ class CalculatorApi : public API {
 };
 
 void CalculatorApi::options(AsyncWebServerRequest * request) {
-    std::string typeName = "";
-
-
-    if (request->hasParam("type")) {
-        typeName.assign(request->getParam("type")->value().c_str());
-    }
-
-    if (typeName == "" && request->hasParam("uuid")) {
+    auto configs = container->resolve<CalculatorConfigurations>();
+    if (request->hasParam("uuid")) {
         std::string uuid = request->getParam("uuid")->value().c_str();
-        CalculatorConfiguration * calculator = this->config->getCalculators()->get(uuid);
-        if (calculator == nullptr) {
-            return internalServerErrorResponse(request, "Unknown uuid");
-        }
-        std::string machineName = ToMachineName(calculator->type());
-        typeName.assign(machineName);
+        CalculatorConfiguration * calculator = configs->get(uuid);
+        return this->respondJson(calculator->getConfigurationOptions(), request);
     }
 
-    if (typeName == "") {
+    if (!request->hasParam("type")) {
         return internalServerErrorResponse(request, "Unable to determine calculator type");
     }
 
-    return this->respondJson(this->config->getCalculators()->getCalculatorOptions(typeName.c_str()), request);
+    CalculatorType type = CalculatorTypeFromMachineName(request->getParam("type")->value().c_str());
+    if (type == CalculatorType::UNKNOWN_CALCULATOR_TYPE) {
+        return internalServerErrorResponse(request, "Unknown calculater type");
+    }
+
+    CalculatorConfiguration * c = configs->create(type);
+    JsonDocument options = c->getConfigurationOptions();
+    delete(c);
+
+    return this->respondJson(options, request);
 }
 
 void CalculatorApi::list(AsyncWebServerRequest * request) {

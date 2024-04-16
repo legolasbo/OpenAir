@@ -96,10 +96,15 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
 void SensorApi::sensorJson(AsyncWebServerRequest * request) {
     std::string uuid = this->extractValidUuid(request);
     if (uuid == "") {
-        return;
+        return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
 
-    this->respondJson(this->config->getSensors()->get(uuid)->toJson(), request);
+    SensorConfiguration * sensor = this->config->getSensors()->get(uuid);
+    if (sensor == nullptr) {
+        return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
+    }
+
+    this->respondJson(sensor->toJson(), request);
 }
 
 void SensorApi::deleteSensor(AsyncWebServerRequest * request) {

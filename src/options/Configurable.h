@@ -68,15 +68,16 @@ class Configurable {
             return success;
         }
 
-        void configureFromJson(JsonObject doc) {
+        virtual bool configureFromJson(JsonObject doc) {
             if (!doc.containsKey("options")) {
-                return;
+                return true;
             }
 
             for (const auto& p : doc["options"].as<JsonObject>()) {
                 std::string key = p.key().c_str();
                 this->setOption(key, doc["options"][key].as<std::string>());
             }
+            return true;
         }
 
         JsonDocument toJson() {

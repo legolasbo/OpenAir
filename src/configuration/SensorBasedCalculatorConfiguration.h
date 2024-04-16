@@ -89,6 +89,19 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
         return doc;
     }
 
+    virtual bool configureFromJson(JsonObject doc) {
+        if (!doc.containsKey("sensor")) {
+            return CalculatorConfiguration::configureFromJson(doc);
+        }
+
+        std::string uuid = doc["sensor"].as<std::string>();
+        if (uuid != "") {
+            this->sensorUuid = uuid;
+        }
+
+        return CalculatorConfiguration::configureFromJson(doc);
+    }
+
     virtual JsonDocument toDetails() {
         JsonDocument doc = CalculatorConfiguration::toDetails();        
 
