@@ -45,10 +45,6 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return instance;
     }
 
-    bool exists(std::string uuid) {
-        return this->get(uuid) != nullptr;
-    }
-
     SensorTypeList getConfiguredSensorTypes() {
         SensorTypeList types;
 

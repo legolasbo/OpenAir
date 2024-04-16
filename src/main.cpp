@@ -36,17 +36,19 @@ void setup() {
 
 
 #if DEVELOPMENT_MODE == true
-  SensorConfiguration * defaultSensor = new SensorConfiguration(&container, X4, I2C, SHT20Sensor);
-  defaultSensor->setName("Default sensor");
+  SensorConfiguration * defaultSensor = new SensorConfiguration(&container, SHT20Sensor);
   if (config->getSensors()->getUuids().size() == 0) {
+    defaultSensor->setOption("name", "Default sensor");
+    defaultSensor->setOption("connector", X4);
+    defaultSensor->setOption("connection", I2C);
     config->getSensors()->add(defaultSensor);
     Serial.printf("Added default sensor: %s\n", defaultSensor->getUuid().c_str());
   }
 
   CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(&container);
-  defaultCalculator->setName("Default calculator");
-  defaultCalculator->oldSetOption("sensor", defaultSensor->getUuid());
   if (config->getCalculators()->getUuids().size() == 0) {
+    defaultCalculator->setOption("name", "Default calculator");
+    defaultCalculator->setOption("sensor", defaultSensor->getUuid());
     config->getCalculators()->add(defaultCalculator);
     Serial.printf("Added default calculator %s\n", defaultCalculator->getUuid().c_str());
     serializeJsonPretty(defaultCalculator->toJson(), Serial);

@@ -78,14 +78,16 @@ class ConfigurationCollection {
         return this->uuids;
     }
 
+    bool exists(std::string uuid) {
+        return this->configs.find(uuid) != this->configs.end();
+    }
+
     ConfigurationType * get(std::string uuid) {
-        try {
+        if (this->exists(uuid)) {
             return this->configs.at(uuid);
-        } 
-        catch(std::exception e) {
-            Serial.printf("failed to get %s because %s\n", uuid.c_str(), e.what());
         }
 
+        Log.warningln("Failed to get %s because uuid '%s' does not exist", typeid(ConfigurationType).name(), uuid.c_str());
         return nullptr;
     }
 

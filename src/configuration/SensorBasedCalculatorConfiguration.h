@@ -9,49 +9,29 @@
 
 
 class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
-    private:
-        std::string sensorUuid;
-
-    protected:
-    std::string getSensorUuid() {
-        return this->sensorUuid;
-    }
 
     public:
     SensorBasedCalculatorConfiguration(DI * container) : CalculatorConfiguration(container) {}
 
+
+    virtual std::unordered_map<std::string, Option> availableOptions() {
+        auto options = CalculatorConfiguration::availableOptions();
+        options.emplace("sensor", Option(""));
+        return options;
+    };
+
     virtual bool dependsOn(std::string uuid) {
-        return sensorUuid == uuid;
-    }
-
-    virtual bool hasOption(std::string name) {
-        if (name == "sensor") {
-            return true;
-        }
-
-        return CalculatorConfiguration::hasOption(name);
+        return this->getOption("sensor").toStr() == uuid;
     }
 
     bool setSensor(std::string value) {
-        this->sensorUuid = value;
+        this->setOption("sensor", value);
         this->markDirty();
         return true;
     }
 
     virtual bool isValid() {
-        return this->container->resolve<SensorFactory>()->fromUuid(this->sensorUuid) != nullptr;
-    }
-    
-    virtual bool oldSetOption(std::string name, int value) {
-        return CalculatorConfiguration::oldSetOption(name, value);
-    }
-
-    virtual bool oldSetOption(std::string name, std::string value) {
-        Serial.printf("Setting option '%s' to value '%s'\n", name.c_str(), value.c_str());
-        if (name == "sensor") {
-            return this->setSensor(value);
-        }
-        return CalculatorConfiguration::oldSetOption(name, value);
+        return this->container->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
     }
 
     virtual JsonDocument getConfigurationOptions() {
@@ -81,32 +61,11 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
         return doc;
     }
 
-    virtual JsonDocument toJson() {
-        JsonDocument doc = CalculatorConfiguration::toJson();
-
-        doc["sensor"] = this->sensorUuid;
-
-        return doc;
-    }
-
-    virtual bool configureFromJson(JsonObject doc) {
-        if (!doc.containsKey("sensor")) {
-            return CalculatorConfiguration::configureFromJson(doc);
-        }
-
-        std::string uuid = doc["sensor"].as<std::string>();
-        if (uuid != "") {
-            this->sensorUuid = uuid;
-        }
-
-        return CalculatorConfiguration::configureFromJson(doc);
-    }
-
     virtual JsonDocument toDetails() {
         JsonDocument doc = CalculatorConfiguration::toDetails();        
 
         doc["sensor"]["label"] = "Sensor";
-        doc["sensor"]["value"] = this->sensorUuid;
+        doc["sensor"]["value"] = this->getOption("sensor").toStr();
         doc["sensor"]["type"] = "sensor";
 
         return doc;

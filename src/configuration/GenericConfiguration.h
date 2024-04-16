@@ -47,19 +47,6 @@ class GenericConfiguration: public Configurable {
         this->dirty = false;
     }
 
-    virtual bool hasOption(std::string name) {
-        return false;
-    }
-
-    virtual bool oldSetOption(std::string name, int value) {
-        return false;
-    }
-
-    virtual bool oldSetOption(std::string name, std::string value) {
-        Log.warningln("Old set option accessed with %s -> %s", name.c_str(), value.c_str());
-        return false;
-    }
-
     virtual bool dependsOn(std::string uuid) {
         return false;
     }

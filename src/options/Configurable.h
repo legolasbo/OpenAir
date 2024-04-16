@@ -24,8 +24,12 @@ class Configurable {
         virtual std::unordered_map<std::string, Option> availableOptions() = 0;
 
         bool isAvailableOption(std::string name) {
-            auto options = this->availableOptions();
-            return options.find(name) != options.end();
+            auto opts = this->availableOptions();
+            return opts.find(name) != opts.end();
+        }
+
+        bool isConfiguredOption(std::string name) {
+            return this->options.find(name) != this->options.end();
         }
 
         Option getOption(std::string name) {

@@ -10,26 +10,26 @@
 
 class SensorConfiguration : public GenericConfiguration {
     private:
-        SensorConnector     connector;
         SensorType          sensorType;
-        ConnectionType      connectionType;
-
 
     public:
     SensorConfiguration(DI * container) : GenericConfiguration(container) {}
-    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType) : GenericConfiguration(container) {
-        this->connector = connector;
-        this->connectionType = connectionType;
+    SensorConfiguration(DI * container, SensorType sensorType) : GenericConfiguration(container) {
         this->sensorType = sensorType;
     }
-    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
-        this->connector = connector;
-        this->connectionType = connectionType;
+    SensorConfiguration(DI * container, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
         this->sensorType = sensorType;
     }
 
+    virtual std::unordered_map<std::string, Option> availableOptions() {
+        auto options = GenericConfiguration::availableOptions();
+        options.emplace("connector", Option(X4));
+        options.emplace("connection", Option(I2C));
+        return options;
+    };
+
     SensorConnector getSensorConnector() {
-        return this->connector;
+        return this->getOption("connector").toConnector();
     }
 
     SensorType getSensorType() {
@@ -37,12 +37,12 @@ class SensorConfiguration : public GenericConfiguration {
     }
 
     ConnectionType getConnectionType() {
-        return this->connectionType;
+        return this->getOption("connection").toConnection();
     }
 
     bool isValid() {
-        return this->connector != UNKNOWN_CONNECTOR
-            && this->connectionType != UNKNOWN_CONNECTION_TYPE
+        return this->getSensorConnector() != UNKNOWN_CONNECTOR
+            && this->getConnectionType() != UNKNOWN_CONNECTION_TYPE
             && this->sensorType != UNKNOWN_SENSOR_TYPE;
     }
 
@@ -51,11 +51,11 @@ class SensorConfiguration : public GenericConfiguration {
             return false;
         }
 
-        if (this->connector != other->connector) {
+        if (this->getSensorConnector() != other->getSensorConnector()) {
             return false;
         }
 
-        if (this->connectionType != other->connectionType) {
+        if (this->getConnectionType() != other->getConnectionType()) {
             return false;
         }
 
@@ -68,58 +68,8 @@ class SensorConfiguration : public GenericConfiguration {
 
     virtual JsonDocument toJson() {
         JsonDocument doc = GenericConfiguration::toJson();
-        doc["connector"] = ToMachineName(this->connector);
-        doc["connection"] = ToMachineName(this->connectionType);
         doc["type"] = ToMachineName(this->sensorType);
         return doc;
-    }
-
-    virtual bool hasOption(std::string name) {
-        if (name == "name") {
-            return false;
-        }
-
-        return
-          name == "connector" ||
-          name == "connection" ||
-          GenericConfiguration::hasOption(name);
-    }
-
-    virtual bool oldSetOption(std::string name, std::string value) {
-        if (name == "connector") {
-            return this->setConnector(value);
-        }
-
-        if (name == "connection") {
-            return this->setConnection(value);
-        }
-
-        return GenericConfiguration::oldSetOption(name, value);
-    }
-
-    virtual bool setConnection(ConnectionType connection) {
-        if (connection == UNKNOWN_CONNECTION_TYPE) {
-            return false;
-        }
-
-        this->connectionType = connection;
-        return true;
-    }
-
-    virtual bool setConnection(std::string connection) {
-        return this->setConnection(ConnectionTypeFromMachineName(connection.c_str()));
-    }
-
-    virtual bool setConnector(SensorConnector connector) {
-        if (connector == UNKNOWN_CONNECTOR) {
-            return false;
-        }
-        this->connector = connector;
-        return true;
-    }
-
-    virtual bool setConnector(std::string value) {
-        return this->setConnector(SensorConnectorFromMachineName(value.c_str()));
     }
 
     static JsonDocument getConfigurationOptions() {
@@ -147,18 +97,14 @@ class SensorConfiguration : public GenericConfiguration {
 
     static SensorConfiguration * fromJson(DI * container, JsonObject doc) {
         const char * uuid = doc["uuid"].as<const char *>();
-        const char * connectorName = doc["connector"].as<const char *>();
-        const char * connectionTypeName = doc["connection"].as<const char *>();
         const char * sensorTypeName = doc["type"].as<const char *>();
-        if (connectorName == nullptr || connectionTypeName == nullptr || sensorTypeName == nullptr || uuid == nullptr) {  
+        if (sensorTypeName == nullptr || uuid == nullptr) {  
             Serial.println("Skipping sensor");
             return nullptr;
         }
 
-        SensorConnector connector = SensorConnectorFromMachineName(connectorName);
-        ConnectionType connectionType = ConnectionTypeFromMachineName(connectionTypeName);
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
-        SensorConfiguration * config = new SensorConfiguration(container, connector, connectionType, sensorType, uuid);
+        SensorConfiguration * config = new SensorConfiguration(container, sensorType, uuid);
 
         config->configureFromJson(doc);
 

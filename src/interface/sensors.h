@@ -63,30 +63,21 @@ void SensorApi::listSensors(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::addSensor(AsyncWebServerRequest * request) {
-    Serial.println("Add sensor handler");
-    if (!request->hasArg("connection")) {
-        return internalServerErrorResponse(request, "missing connection parameter");
-    };
     if (!request->hasArg("type")) {
         return internalServerErrorResponse(request, "missing type parameter");
     }
-    if (!request->hasArg("connector")) {
-        return internalServerErrorResponse(request, "missing connector parameter");
-    }
-
+    
     SensorType sensType = SensorType(SensorTypeFromMachineName(request->arg("type").c_str()));
     ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
     SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
-    SensorConfiguration * config = new SensorConfiguration(this->container, connector, connType, sensType);
+    SensorConfiguration * config = new SensorConfiguration(this->container, sensType);
 
     if (this->config->getSensors()->identicalConfigExists(config)) {
         return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
     }
 
-    if (request->hasArg("name")) {
-        config->oldSetOption("name", request->arg("name").c_str());
-    }
+    this->processFormValues(config, request);
 
     this->config->getSensors()->add(config);
     request->redirect("/sensors");
@@ -134,32 +125,8 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
 
     String errors;
     SensorConfiguration * sensor = this->config->getSensors()->get(uuid);
-    for (size_t i = 0; i < request->args(); i++) {
-        String argName = request->argName(i);
-        if (argName == "uuid") {
-            continue;
-        }
 
-        if (!sensor->hasOption(argName.c_str())) {
-            sensor->setOption(argName.c_str(), request->arg(argName).c_str());
-
-            errors += "Unknown option: ";
-            errors += argName.c_str();
-            errors += "<br>";
-            continue;
-        }
-
-
-        String value = request->arg(argName);
-        if (!sensor->oldSetOption(argName.c_str(), value.c_str())) {
-            errors += "Unknown value: ";
-            errors += value.c_str();
-            errors += " for option ";
-            errors += value.c_str();
-            errors += "<br>";
-            continue;
-        }
-    }
+   this->processFormValues(sensor, request);
 
     this->config->save();
     request->redirect("/sensors");

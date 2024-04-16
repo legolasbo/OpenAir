@@ -8,6 +8,8 @@ class Option {
     private:
         int i;
         std::string s;
+        ConnectionType ct;
+        SensorConnector sc;
 
         bool editable = false;
 
@@ -17,19 +19,40 @@ class Option {
         }
 
     public:
-        enum Type {INTEGER, STRING} type;
+        enum Type {INTEGER, STRING, CONNECTOR, CONNECTION} type;
         virtual ~Option() = default;
         Option() : Option(0) {};
         Option(std::string v, bool editable = false) {
             this->s = v;
             this->type = STRING;
             this->editable = editable;
+
+            this->sc = SensorConnectorFromMachineName(v.c_str());
+            this->ct = ConnectionTypeFromMachineName(v.c_str());
+            if (this->sc != UNKNOWN_CONNECTOR) {
+                this->type = CONNECTOR;
+            }
+            if (this->ct != UNKNOWN_CONNECTION_TYPE) {
+                this->type = CONNECTION;
+            }
         };
         
         Option(int v, bool editable = false) {
             this->i = v;
             this->type = INTEGER;
-            this->editable = false;
+            this->editable = editable;
+        }
+
+        Option(ConnectionType v, bool editable = false) {
+            this->ct = v;
+            this->type = CONNECTION;
+            this->editable = editable;
+        }
+
+        Option(SensorConnector v, bool editable = false) {
+            this->sc = v;
+            this->type = CONNECTOR;
+            this->editable = editable;
         }
 
         bool isEditable() {
@@ -52,16 +75,34 @@ class Option {
             return this->toIntOr(0);
         }
 
+        SensorConnector toConnector() {
+            return this->sc;
+        }
+
+        ConnectionType toConnection() {
+            return this->ct;
+        }
+
         std::string toStr() {
             switch (this->type) {
                 case INTEGER : return std::to_string(this->toInt());
                 case STRING : return this->s;
+                case CONNECTOR: return ToMachineName(this->sc);
+                case CONNECTION: return ToMachineName(this->ct);
                 default: return "[Option with unknown value]";
             }
         }
 
         const char * toCharPtr() {
             return this->toStr().c_str();
+        }
+
+        virtual Option newValue(ConnectionType value) {
+            return Option(value);
+        }
+
+        virtual Option NewValue(SensorConnector value) {
+            return Option(value);
         }
 
         virtual Option newValue(String value) {

@@ -22,14 +22,6 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
         return HUMIDITY_CALCULATOR;
     }
 
-    virtual bool hasOption(std::string name) {
-        return SensorBasedCalculatorConfiguration::hasOption(name);
-    }
-
-    virtual bool oldSetOption(std::string name, std::string value) {
-        return SensorBasedCalculatorConfiguration::oldSetOption(name, value);
-    }
-
     virtual JsonDocument getConfigurationOptions() {
         return SensorBasedCalculatorConfiguration::getConfigurationOptions();
     }
@@ -45,7 +37,11 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
     }
 
     virtual SpeedCalculator * createInstance() {
-        Sensor * sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getSensorUuid());
+        if (!this->isConfiguredOption("sensor")) {
+            return nullptr;
+        }
+
+        Sensor * sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
         if (sensor == nullptr) {
             return nullptr;
         }
