@@ -96,7 +96,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
                 }
 
                 if (!success) {
-                    Serial.printf("Failed to set %s", kv.key().c_str());
+                    Serial.printf("Failed to set %s\n", kv.key().c_str());
                 }
             }
 

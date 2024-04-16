@@ -7,12 +7,12 @@
 #include <ArduinoJson.h>
 #include "UUID.h"
 #include "../DependencyInjectionContainer.hpp"
+#include "../options/Configurable.h"
 
-class GenericConfiguration {
+class GenericConfiguration: public Configurable {
     protected:
         DI * container;
         std::string uuid;
-        std::string name;
         bool dirty = true;
 
     void markDirty() {
@@ -33,6 +33,12 @@ class GenericConfiguration {
         this->uuid = uuid;
     }
 
+    virtual std::unordered_map<std::string, Option> availableOptions() {
+        return {
+            {"name", Option("Unnamed")}
+        };
+    };
+
     bool isDirty() {
         return this->dirty;
     }
@@ -42,7 +48,7 @@ class GenericConfiguration {
     }
 
     virtual bool hasOption(std::string name) {
-        return name == "name";
+        return false;
     }
 
     virtual bool oldSetOption(std::string name, int value) {
@@ -50,10 +56,7 @@ class GenericConfiguration {
     }
 
     virtual bool oldSetOption(std::string name, std::string value) {
-        if (name == "name") {
-            return this->setName(value);
-        }
-
+        Log.warningln("Old set option accessed with %s -> %s", name.c_str(), value.c_str());
         return false;
     }
 
@@ -62,11 +65,11 @@ class GenericConfiguration {
     }
 
     virtual std::string getName() {
-        return this->name;
+        return this->getOption("name").toStr();
     }
 
     bool setName(std::string name) {
-        this->name = name;
+        return this->setOption("name", Option(name));
         this->markDirty();
         return true;
     }
@@ -87,10 +90,9 @@ class GenericConfiguration {
     }
 
     virtual JsonDocument toJson() {
-        JsonDocument doc;
+        JsonDocument doc = Configurable::toJson();
 
         doc["uuid"] = this->uuid;
-        doc["name"] = this->getName();
 
         return doc;
     }

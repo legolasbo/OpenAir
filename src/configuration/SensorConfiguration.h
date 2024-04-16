@@ -7,9 +7,8 @@
 #include "GenericConfiguration.h"
 #include <ArduinoJson.h>
 #include <sstream>
-#include "../options/Configurable.h"
 
-class SensorConfiguration : public GenericConfiguration, public Configurable {
+class SensorConfiguration : public GenericConfiguration {
     private:
         SensorConnector     connector;
         SensorType          sensorType;
@@ -28,18 +27,6 @@ class SensorConfiguration : public GenericConfiguration, public Configurable {
         this->connectionType = connectionType;
         this->sensorType = sensorType;
     }
-    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, std::string name) : SensorConfiguration(container, connector, connectionType, sensorType) {
-        this->name = name;
-    }
-    SensorConfiguration(DI * container, SensorConnector connector, ConnectionType connectionType, SensorType sensorType, const char * uuid, const char * name) : SensorConfiguration(container, connector, connectionType, sensorType, uuid) {
-        this->name = name;
-    }
-
-    virtual std::unordered_map<std::string, Option> availableOptions() {
-        return {
-            {"name", Option("Unnamed")}
-        };
-    };
 
     SensorConnector getSensorConnector() {
         return this->connector;
@@ -47,10 +34,6 @@ class SensorConfiguration : public GenericConfiguration, public Configurable {
 
     SensorType getSensorType() {
         return this->sensorType;
-    }
-
-    std::string getName() {
-        return this->getOption("name").toStr();
     }
 
     ConnectionType getConnectionType() {
@@ -177,10 +160,7 @@ class SensorConfiguration : public GenericConfiguration, public Configurable {
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
         SensorConfiguration * config = new SensorConfiguration(container, connector, connectionType, sensorType, uuid);
 
-        const char * name = doc["name"].as<const char *>();
-        if (name != nullptr) {
-            config->setOption("name", Option(name));
-        }
+        config->configureFromJson(doc);
 
         return config;
     }

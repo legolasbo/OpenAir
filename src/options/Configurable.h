@@ -10,11 +10,11 @@ class Configurable {
         void logOptions() {
             Log.traceln("%s: Available options:", typeid(*this).name());
             for (auto &&i : this->availableOptions()) {
-                Log.traceln("%s: %s", i.first, i.second.toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second.toCharPtr());
             }
             Log.traceln("%s: Configured options:", typeid(*this).name());
             for (auto &&i : this->options) {
-                Log.traceln("%s: %s", i.first, i.second.toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second.toCharPtr());
             }
         }
 
@@ -30,13 +30,14 @@ class Configurable {
 
         Option getOption(std::string name) {
             if (!this->isAvailableOption(name)) {
-                Log.errorln("%s: Unknown option %s", typeid(*this).name(), name);
+                Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
                 return Option();
             }
 
             if (this->options.find(name) == this->options.end()) {
-                Log.warningln("%s: Unconfigured option %s", typeid(*this).name(), name);
-                return this->availableOptions().at(name);
+                Option defaultValue = this->availableOptions().at(name);
+                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue.toCharPtr());
+                return defaultValue;
             }
 
             return this->options.at(name);
@@ -51,13 +52,13 @@ class Configurable {
 
         bool setOption(std::string name, Option value) {
             if (!this->isAvailableOption(name)) {
-                Log.warningln("Option %s is not one of the available options.", name);
+                Log.warningln("Option %s is not one of the available options.", name.c_str());
                 this->logOptions();
                 return false;
             }
 
             if (this->availableOptions().at(name).getType() != value.getType()) {
-                Log.warningln("Unable to set option %s to %s. Types don't match", name, value.toStr());
+                Log.warningln("Unable to set option %s to %s. Types don't match", name.c_str(), value.toStr());
                 return false;
             }
 
@@ -65,5 +66,26 @@ class Configurable {
             bool success = this->options.emplace(name, value).second;
             Log.verboseln("Setting option %s to value %s %s", name.c_str(), value.toCharPtr(), success ? "succeeded" : "failed");
             return success;
+        }
+
+        void configureFromJson(JsonObject doc) {
+            if (!doc.containsKey("options")) {
+                return;
+            }
+
+            for (const auto& p : doc["options"].as<JsonObject>()) {
+                std::string key = p.key().c_str();
+                this->setOption(key, doc["options"][key].as<std::string>());
+            }
+        }
+
+        JsonDocument toJson() {
+            JsonDocument doc;
+
+            for (auto p : this->options) {
+                doc["options"][p.first] = p.second.toStr();
+            }
+
+            return doc;
         }
 };

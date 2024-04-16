@@ -10,8 +10,10 @@ class CalculatorApi : public API {
             Serial.printf("Processing option %d: %s -> %s\n", i, request->argName(i).c_str(), request->arg(request->argName(i)).c_str());
             auto argName = request->argName(i).c_str();
             if (calc->hasOption(argName)) {
-                Serial.println("Option present");
                 calc->oldSetOption(argName, request->arg(argName).c_str());
+            }
+            else {
+                calc->setOption(argName, request->arg(argName).c_str());
             }
         }
     }
