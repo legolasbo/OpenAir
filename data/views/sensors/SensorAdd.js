@@ -1,6 +1,6 @@
 import AbstractView from "../AbstractView.js";
 import { formFromOptions } from "../form/Form.js";
-import { getSensorOptions, getSensorTypes } from "./SensorHelpers.js";
+import { getOptionsForSensorType, getSensorTypes } from "./SensorHelpers.js";
 
 export default class extends AbstractView {
 
@@ -11,7 +11,7 @@ export default class extends AbstractView {
     async getHtml() {
         const sensorTypes = await getSensorTypes();
         const sensorType = sensorTypes[this.params.type];
-        const sensorOptions = await getSensorOptions();
+        const sensorOptions = await getOptionsForSensorType(this.params.type);
 
         sensorOptions.type.value = this.params.type;
         

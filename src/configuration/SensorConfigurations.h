@@ -73,6 +73,10 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
 
         return uuids;
     }
+
+    SensorConfiguration * create(SensorType t) {
+        return new SensorConfiguration(this->container, t);
+    }
 };
 
 #endif

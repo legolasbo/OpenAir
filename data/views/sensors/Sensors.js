@@ -21,11 +21,12 @@ export default class extends AbstractView {
                     Object.values(await this.getSensors())
                     .map(sensor => `
                     <tr>
-                        <td>${sensor.name ? sensor.name : "Unnamed"}</td>
-                        <td>${sensor.connector}</td>
-                        <td>${sensor.connection}</td>
+                        <td>${sensor.options.name}</td>
+                        <td>${sensor.options.connector}</td>
+                        <td>${sensor.options.connection}</td>
                         <td>${sensor.type}</td>
                         <td><ul>
+                            <li><a href="/sensors/${sensor.uuid}" data-link="">Details</a></li>
                             <li><a href="/sensors/${sensor.uuid}/edit" data-link="">Edit</a></li>
                             <li><a href="/sensors/${sensor.uuid}/delete" data-link="">Delete</a></li>
                         </ul></td>

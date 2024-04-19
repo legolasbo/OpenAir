@@ -20,22 +20,13 @@ class API {
         }
     }
 
-    std::string extractValidUuid(AsyncWebServerRequest * request) {
+    std::string extractUuid(AsyncWebServerRequest * request) {
         if (!request->hasParam("uuid") && !request->hasArg("uuid")) {
-            internalServerErrorResponse(request, "uuid is required to configure a sensor");
             return "";
         }
 
-        std::string uuid;
-        if (request->hasParam("uuid")) {
-            uuid = request->getParam("uuid")->value().c_str();
-        }
-        else {
-            uuid = request->arg("uuid").c_str();
-        }
-
-        if (!this->config->getSensors()->exists(uuid)) {
-            internalServerErrorResponse(request, "Unknown uuid");
+        std::string uuid = request->hasParam("uuid") ? request->getParam("uuid")->value().c_str() : request->arg("uuid").c_str();
+        if (uuid == "undefined") {
             return "";
         }
 

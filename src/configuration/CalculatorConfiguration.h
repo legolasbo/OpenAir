@@ -43,24 +43,6 @@ class CalculatorConfiguration : public GenericConfiguration {
         return doc;
     }
 
-    virtual JsonDocument toDetails() {
-        JsonDocument doc;
-
-        doc["uuid"]["label"] = "Uuid";
-        doc["uuid"]["value"] = this->getUuid();
-        doc["uuid"]["type"] = "key/value";
-
-        doc["name"]["label"] = "Name";
-        doc["name"]["value"] = this->getName();
-        doc["name"]["type"] = "key/value";
-
-        doc["type"]["label"] = "Calculator type";
-        doc["type"]["value"] = ToString(this->type());
-        doc["type"]["type"] = "key/value";
-
-        return doc;
-    }
-
     virtual SpeedCalculator * createInstance() = 0;
 };
 

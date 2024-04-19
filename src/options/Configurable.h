@@ -71,6 +71,26 @@ class Configurable {
             Log.verboseln("Setting option %s to value %s %s", name.c_str(), value.toCharPtr(), success ? "succeeded" : "failed");
             return success;
         }
+        
+        virtual JsonDocument toDetails() {
+            JsonDocument doc;
+
+            for (auto p : this->availableOptions()) {
+                Log.traceln("Option %s", p.first.c_str());
+                std::string label = p.first;
+                label.at(0) = toUpperCase(label.at(0));
+
+                doc[p.first]["label"] = label;
+                doc[p.first]["type"] = "key/value";
+                doc[p.first]["value"] = p.second.toStr();
+
+                if (this->isConfiguredOption(p.first)) {
+                    doc[p.first]["value"] = this->getOption(p.first).toStr();
+                }
+            }
+
+            return doc;
+        }
 
         virtual bool configureFromJson(JsonObject doc) {
             if (!doc.containsKey("options")) {
@@ -84,7 +104,7 @@ class Configurable {
             return true;
         }
 
-        JsonDocument toJson() {
+        virtual JsonDocument toJson() {
             JsonDocument doc;
 
             for (auto p : this->options) {

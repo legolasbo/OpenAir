@@ -13,11 +13,16 @@ export default class extends AbstractView {
         const sensorTypes = await getSensorTypes();
         const sensorType = sensorTypes[config.type];
 
-        Object.entries(config).forEach(([k,v]) => {
-            if (options[k] !== undefined) {
+        const assignIfKeyExists = ([k, v]) => {
+            if (options[k] != undefined) {
                 options[k].value = v;
             }
-        })
+        }
+
+        Object.entries(config).forEach(assignIfKeyExists);
+        if (config.options) {
+            Object.entries(config.options).forEach(assignIfKeyExists);
+        }
         
         this.setTitle(`Edit ${sensorType} sensor`);
         

@@ -76,6 +76,16 @@ class GenericConfiguration: public Configurable {
         return this->uuid == other->uuid;
     }
 
+    virtual JsonDocument toDetails() {
+        JsonDocument doc = Configurable::toDetails();
+
+        doc["uuid"]["label"] = "Uuid";
+        doc["uuid"]["value"] = this->getUuid();
+        doc["uuid"]["type"] = "key/value";
+
+        return doc;
+    }
+
     virtual JsonDocument toJson() {
         JsonDocument doc = Configurable::toJson();
 

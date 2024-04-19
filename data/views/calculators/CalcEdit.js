@@ -16,11 +16,16 @@ export default class CalculatorEdit extends AbstractView {
         ]);
         const calculatorType = calculatorTypes[config.type];
 
-        Object.entries(config).forEach(([k,v]) => {
-            if (options[k] !== undefined) {
+        const assignIfKeyExists = ([k, v]) => {
+            if (options[k] != undefined) {
                 options[k].value = v;
             }
-        })
+        }
+
+        Object.entries(config).forEach(assignIfKeyExists);
+        if (config.options) {
+            Object.entries(config.options).forEach(assignIfKeyExists);
+        }
         delete(options.type);
         
         this.setTitle(`Edit ${calculatorType} calculator`);

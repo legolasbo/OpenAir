@@ -12,26 +12,28 @@ class SensorApi : public API {
     void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
         API::initialize(container, server, config);
         
-        server->on("/api/sensors/configurable", HTTP_GET, [this](AsyncWebServerRequest * request) {
+        server->on("/api/sensors/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(SensorFactory::knownSensorTypesJson(), request);
         });
 
         server->on("/api/sensors/add", HTTP_POST, [this](AsyncWebServerRequest * request){
             this->addSensor(request);
         });
+        server->on("/api/sensors/get", HTTP_GET, [this](AsyncWebServerRequest * request){
+            this->sensorJson(request);
+        });
+        server->on("/api/sensors/edit", HTTP_POST, [this](AsyncWebServerRequest * request){
+            this->editSensor(request);
+        });
         server->on("/api/sensors/delete", HTTP_POST, [this](AsyncWebServerRequest * request){
             this->deleteSensor(request);
         });
 
-        server->on("/api/sensors/get", HTTP_GET, [this](AsyncWebServerRequest * request){
-            this->sensorJson(request);
-        });
         server->on("/api/sensors/options", HTTP_GET, [this](AsyncWebServerRequest * request){
-           this->respondJson(SensorConfiguration::getConfigurationOptions(), request);
+           this->options(request);
         });
-
-        server->on("/api/sensors/edit", HTTP_POST, [this](AsyncWebServerRequest * request){
-            this->editSensor(request);
+        server->on("/api/sensors/details", HTTP_GET, [this](AsyncWebServerRequest * request) {
+            this->details(request);
         });
 
         server->on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest * request){
@@ -39,6 +41,8 @@ class SensorApi : public API {
         });
     }
 
+    void options(AsyncWebServerRequest * request);
+    void details(AsyncWebServerRequest * request);
     void listSensors(AsyncWebServerRequest * request);
     void addSensor(AsyncWebServerRequest * request);
     void deleteSensor(AsyncWebServerRequest * request);
@@ -46,17 +50,56 @@ class SensorApi : public API {
     void editSensor(AsyncWebServerRequest * request);
 };
 
+void SensorApi::options(AsyncWebServerRequest * request) {
+    auto configs = container->resolve<SensorConfigurations>();
+    std::string uuid = this->extractUuid(request);
+    SensorConfiguration * sensor = configs->get(uuid);
+
+    if (uuid != "" && sensor == nullptr) {
+        return internalServerErrorResponse(request, "Unknown uuid was given");
+    }
+
+    if (sensor != nullptr) {
+        return this->respondJson(sensor->getConfigurationOptions(), request);
+    }
+
+    if (!request->hasParam("type")) {
+        return internalServerErrorResponse(request, "Unable to determine sensor type");
+    }
+
+    SensorType type = SensorTypeFromMachineName(request->getParam("type")->value().c_str());
+    if (type == SensorType::UNKNOWN_SENSOR_TYPE) {
+        return internalServerErrorResponse(request, "Unknown sensor type");
+    }
+
+    sensor = configs->create(type);
+    JsonDocument options = sensor->getConfigurationOptions();
+    delete(sensor);
+
+    this->respondJson(options, request);
+}
+
+void SensorApi::details(AsyncWebServerRequest * request) {
+    std::string uuid = this->extractUuid(request);
+    if (uuid == "") {
+        return internalServerErrorResponse(request, "Unable to determine the uuid");
+    }
+
+    SensorConfiguration * sensor = this->container->resolve<SensorConfigurations>()->get(uuid);
+    if (sensor == nullptr) {
+        return internalServerErrorResponse(request, "Unknown uuid");
+    }
+
+    this->respondJson(sensor->toDetails(), request);
+}
+
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
     JsonDocument doc;
     SensorConfigurations * sensors = this->config->getSensors();
 
     for (auto uuid : sensors->getUuids()) {
         SensorConfiguration* sensor = sensors->get(uuid);
-        doc[uuid]["name"] = sensor->getName();
-        doc[uuid]["type"] = ToString(sensor->getSensorType());
-        doc[uuid]["connector"] = ToString(sensor->getSensorConnector());
-        doc[uuid]["connection"] = ToString(sensor->getConnectionType());
-        doc[uuid]["uuid"] = uuid;
+        doc[uuid] = sensor->toJson();
     }
 
     this->respondJson(doc, request);
@@ -85,7 +128,7 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::sensorJson(AsyncWebServerRequest * request) {
-    std::string uuid = this->extractValidUuid(request);
+    std::string uuid = this->extractUuid(request);
     if (uuid == "") {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
@@ -118,15 +161,15 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::editSensor(AsyncWebServerRequest * request) {
-    std::string uuid = this->extractValidUuid(request);
+    std::string uuid = this->extractUuid(request);
     if (uuid == "") {
-        return;
+        return internalServerErrorResponse(request, "Unable to edit a sensor without a uuid");
     }
 
     String errors;
     SensorConfiguration * sensor = this->config->getSensors()->get(uuid);
 
-   this->processFormValues(sensor, request);
+    this->processFormValues(sensor, request);
 
     this->config->save();
     request->redirect("/sensors");
