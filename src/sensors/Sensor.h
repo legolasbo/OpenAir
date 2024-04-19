@@ -1,9 +1,8 @@
-#ifndef SENSOR_H
-#define SENSOR_H
+#pragma once
 
 #include "Measurements.h"
-#include "SensorTypes.h"
-#include "ConnectionTypes.h"
+#include "../enums/SensorTypes.h"
+#include "../enums/ConnectionTypes.h"
 #include "../options/Configurable.h"
 
 class Sensor : public Configurable, public Measurements::Measurement {
@@ -41,5 +40,3 @@ class Sensor : public Configurable, public Measurements::Measurement {
         }
 };
 
-
-#endif

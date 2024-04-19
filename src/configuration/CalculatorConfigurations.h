@@ -1,12 +1,10 @@
-#ifndef CALCULATOR_CONFIGURATIONS_H
-#define CALCULATOR_CONFIGURATIONS_H
+#pragma once
 
 #include "ConfigurationCollection.h"
 #include "CalculatorConfiguration.h"
 #include "SensorConfigurations.h"
 #include "HumidityCalculatorConfiguration.h"
 #include "SwitchPositionCalculatorConfiguration.h"
-#include "../speedCalculators/CalculatorTypes.h"
 
 class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfiguration> {
     private:
@@ -73,6 +71,3 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return instance;
     }
 };
-
-
-#endif

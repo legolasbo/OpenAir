@@ -3,8 +3,7 @@
 #error "This application requires an ESP32 with hardware pulsecounter."
 #endif
 
-#ifndef TACHOMETER_H
-#define TACHOMETER_H
+#pragma once
 
 #include "driver/pcnt.h"
 #include "driver/ledc.h"
@@ -108,5 +107,3 @@ class Tachometer {
       return sum;
     }
 };
-
-#endif

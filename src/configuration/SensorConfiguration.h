@@ -1,9 +1,8 @@
-#ifndef SENSOR_CONFIGURATION_H
-#define SENSOR_CONFIGURATION_H
+#pragma once
 
-#include "../sensors/SensorConnectors.h"
-#include "../sensors/SensorTypes.h"
-#include "../sensors/ConnectionTypes.h"
+#include "../enums/SensorConnectors.h"
+#include "../enums/SensorTypes.h"
+#include "../enums/ConnectionTypes.h"
 #include "GenericConfiguration.h"
 #include <ArduinoJson.h>
 #include <sstream>
@@ -112,5 +111,3 @@ class SensorConfiguration : public GenericConfiguration {
     }
 };
 
-
-#endif

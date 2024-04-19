@@ -1,5 +1,4 @@
-#ifndef INTERFACE_SENSORS_H
-#define INTERFACE_SENSORS_H
+#pragma once
 
 #include "api.h"
 #include "../factories/SensorFactory.h"
@@ -175,4 +174,3 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
     request->redirect("/sensors");
 }
 
-#endif

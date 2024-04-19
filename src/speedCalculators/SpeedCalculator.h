@@ -1,5 +1,4 @@
-#ifndef SPEEDCALCULATOR_H
-#define SPEEDCALCULATOR_H
+#pragma once
 
 #include <string>
 
@@ -16,4 +15,3 @@ class SpeedCalculator {
     }
 };
 
-#endif

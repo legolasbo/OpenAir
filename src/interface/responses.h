@@ -1,5 +1,4 @@
-#ifndef INTERFACE_RESPONSES_H
-#define INTERFACE_RESPONSES_H
+#pragma once
 
 #include <ESPAsyncWebServer.h>
 
@@ -9,4 +8,3 @@ void internalServerErrorResponse(AsyncWebServerRequest * request, String text) {
     request->send(500, "text/html", text);
 }
 
-#endif

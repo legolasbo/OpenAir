@@ -2,7 +2,7 @@
 
 #include "constants.h"
 #include <Wire.h>
-#include "sensors/SensorConnectors.h"
+#include "enums/SensorConnectors.h"
 
 class I2CManager {
     public:

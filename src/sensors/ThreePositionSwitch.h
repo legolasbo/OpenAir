@@ -1,9 +1,7 @@
-#ifndef THREE_POSITION_SWITCH_H
-#define THREE_POSITION_SWITCH_H
+#pragma once
 
 #include <HardwareSerial.h>
 #include "I2CSensor.h"
-#include "SensorTypes.h"
 #include "../Measurements.h"
 
 enum SelectedMode {
@@ -70,4 +68,3 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
     }
 };
 
-#endif

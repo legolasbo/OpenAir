@@ -1,5 +1,4 @@
-#ifndef INTERFACE_API_H
-#define INTERFACE_API_H
+#pragma once
 
 #include <ESPAsyncWebServer.h>
 #include "../configuration/Configuration.h"
@@ -47,4 +46,3 @@ class API {
     }
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#pragma once
 
 #include "SensorConfigurations.h"
 #include "CalculatorConfigurations.h"
@@ -109,4 +108,3 @@ class Configuration {
 
 };
 
-#endif

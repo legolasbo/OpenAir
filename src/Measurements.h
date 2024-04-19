@@ -1,5 +1,4 @@
-#ifndef MEASUREMENTS_H
-#define MEASUREMENTS_H
+#pragma once
 
 #include <set>
 
@@ -83,4 +82,3 @@ namespace Measurements {
 
 };
 
-#endif

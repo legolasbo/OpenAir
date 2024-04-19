@@ -1,5 +1,13 @@
-#include "CalculatorTypes.h"
+#pragma once
+
+#include <vector>
 #include <string.h> 
+
+enum CalculatorType {
+    UNKNOWN_CALCULATOR_TYPE,
+    HUMIDITY_CALCULATOR,
+    SWITCH_POSITION_CALCULATOR,
+};
 
 const char* ToString(CalculatorType v) {
     switch (v)

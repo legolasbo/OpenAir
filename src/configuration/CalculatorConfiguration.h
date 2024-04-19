@@ -1,10 +1,9 @@
-#ifndef CALCULATOR_CONFIGURATION_H
-#define CALCULATOR_CONFIGURATION_H
+#pragma once
 
 #include <string>
 #include <vector>
 #include "../Measurements.h"
-#include "../speedCalculators/CalculatorTypes.h"
+#include "../enums/CalculatorTypes.h"
 #include "../speedCalculators/SpeedCalculator.h"
 #include "GenericConfiguration.h"
 
@@ -46,4 +45,3 @@ class CalculatorConfiguration : public GenericConfiguration {
     virtual SpeedCalculator * createInstance() = 0;
 };
 
-#endif

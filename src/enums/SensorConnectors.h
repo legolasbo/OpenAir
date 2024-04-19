@@ -1,5 +1,4 @@
-#ifndef SENSOR_CONNECTORS_H
-#define SENSOR_CONNECTORS_H
+#pragma once
 
 enum SensorConnector {
     UNKNOWN_CONNECTOR,
@@ -33,5 +32,3 @@ SensorConnector SensorConnectorFromMachineName(const char * name) {
 
     return UNKNOWN_CONNECTOR;
 }
-
-#endif

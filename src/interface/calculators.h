@@ -1,5 +1,4 @@
-#ifndef INTERFACE_CALCULATORS_H
-#define INTERFACE_CALCULATORS_H
+#pragma once 
 
 #include "api.h"
 
@@ -160,5 +159,3 @@ void CalculatorApi::edit(AsyncWebServerRequest * request) {
     request->redirect("/calculators");
     this->config->save();
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SENSOR_FACTORY_H
-#define SENSOR_FACTORY_H
+#pragma once
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -9,7 +8,6 @@
 #include "../sensors/I2CSensor.h"
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/ThreePositionSwitch.h"
-#include "../sensors/SensorConnectors.h"
 #include "../configuration/SensorConfigurations.h"
 #include "Factory.hpp"
 
@@ -123,5 +121,3 @@ class SensorFactory : public Factory<Sensor> {
         }
 
 };
-
-#endif

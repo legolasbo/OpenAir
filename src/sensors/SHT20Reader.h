@@ -1,8 +1,6 @@
-#ifndef SHT20Reader_H
-#define SHT20Reader_H
+#pragma once
 
 #include "I2CSensor.h"
-#include "SensorTypes.h"
 #include "../Measurements.h"
 #include <uFire_SHT20.h>
 #include <Wire.h>
@@ -89,4 +87,3 @@ class SHT20Reader : public I2CSensor,
 
 };
 
-#endif

@@ -1,8 +1,6 @@
-#ifndef SWITCH_POSITION_CALCULATOR_CONFIGURATION_H
-#define SWITCH_POSITION_CALCULATOR_CONFIGURATION_H
+#pragma once
 
 #include "SensorBasedCalculatorConfiguration.h"
-#include "../speedCalculators/CalculatorTypes.h"
 #include "../speedCalculators/SwitchPositionCalculator.h"
 #include "../factories/SensorFactory.h"
 #include "../Measurements.h"
@@ -43,4 +41,3 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
 
 };
 
-#endif

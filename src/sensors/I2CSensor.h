@@ -1,8 +1,6 @@
-#ifndef I2CSENSOR_H
-#define I2CSENSOR_H
+#pragma once
 
 #include <Wire.h>
-#include "SensorTypes.h"
 #include "Sensor.h"
 
 class I2CSensor : public Sensor {
@@ -23,4 +21,3 @@ class I2CSensor : public Sensor {
 
 };
 
-#endif

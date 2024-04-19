@@ -8,7 +8,6 @@
 #include "SPIFFS.h"
 
 #include "configuration/Configuration.h"
-#include "../speedCalculators/CalculatorTypes.h"
 #include "sensors.h"
 #include "calculators.h"
 
@@ -20,14 +19,6 @@ std::vector<std::string> messages;
 SensorApi sensorApi;
 CalculatorApi calculatorApi;
 
-void saveSettingsRequestHandler(AsyncWebServerRequest * request) {
-  Serial.println("Saving settings");
-  theConfig->save();
-  messages.push_back("Configuration saved");
-  messages.push_back("Please reset OpenAir for the new configuration to take effect.");
-  request->redirect("/");
-}
-
 void startInterface(DI * container, Configuration *config) {
   theConfig = config;
   wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
@@ -35,8 +26,6 @@ void startInterface(DI * container, Configuration *config) {
 
   sensorApi.initialize(container, &server, config);
   calculatorApi.initialize(container, &server, config);
-
-  server.on("/config/save", HTTP_POST, saveSettingsRequestHandler);
 
   server.serveStatic("/static", SPIFFS, "/");
 

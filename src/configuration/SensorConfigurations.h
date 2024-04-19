@@ -1,8 +1,5 @@
+#pragma once
 
-#ifndef SENSOR_CONFIGURATIONS_H
-#define SENSOR_CONFIGURATIONS_H
-
-#include "../sensors/SensorTypes.h"
 #include "SensorConfiguration.h"
 #include "ConfigurationCollection.h"
 #include <vector>
@@ -78,5 +75,3 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return new SensorConfiguration(this->container, t);
     }
 };
-
-#endif

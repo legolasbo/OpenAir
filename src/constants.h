@@ -1,5 +1,4 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#pragma once
 
 /**************************/
 /****   Development    ****/
@@ -36,4 +35,3 @@
 #define HOSTNAME "OpenAir"
 #define AP_PASSWORD "OpenUpAir"
 
-#endif

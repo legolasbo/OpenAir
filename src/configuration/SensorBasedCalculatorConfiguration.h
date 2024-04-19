@@ -1,10 +1,8 @@
-#ifndef SENSOR_BASED_CALCULATOR_CONFIGURATION
-#define SENSOR_BASED_CALCULATOR_CONFIGURATION
+#pragma once
 
 #include "CalculatorConfiguration.h"
 #include "SensorConfigurations.h"
-#include "../speedCalculators/CalculatorTypes.h"
-#include "../sensors/SensorTypes.h"
+#include "../enums/CalculatorTypes.h"
 #include "../factories/SensorFactory.h"
 
 
@@ -72,5 +70,3 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
 };
-
-#endif

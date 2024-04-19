@@ -1,8 +1,6 @@
-#ifndef HUMIDITY_CALCULATOR_CONFIGURATION_H
-#define HUMIDITY_CALCULATOR_CONFIGURATION_H
+#pragma once
 
 #include "SensorBasedCalculatorConfiguration.h"
-#include "../speedCalculators/CalculatorTypes.h"
 #include "../speedCalculators/HumidityCalculator.h"
 #include "../factories/SensorFactory.h"
 #include <vector>
@@ -54,4 +52,3 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
 
 };
 
-#endif

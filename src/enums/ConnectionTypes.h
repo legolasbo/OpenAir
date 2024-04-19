@@ -1,5 +1,12 @@
-#include "ConnectionTypes.h"
+#pragma once
+
 #include "string.h"
+
+enum ConnectionType {
+    UNKNOWN_CONNECTION_TYPE,
+    I2C,
+    UART,
+};
 
 const char* ToMachineName(ConnectionType v) {
     switch (v)
