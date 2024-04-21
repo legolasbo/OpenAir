@@ -16,6 +16,7 @@ Fan fan(PWM_MOTOR_SPEED, tachometer);
 Configuration * config;
 CalculatorFactory * calculatorFactory;
 DI container;
+I2CManager i2cManager;
 
 Web webInterface(container);
 
@@ -26,7 +27,7 @@ void setup() {
   Log.setShowLevel(true);
 
   config = Configuration::fromFile(container, "/config.json");
-  container.registerInstance<I2CManager>(new I2CManager());
+  container.registerInstance<I2CManager>(i2cManager);
   container.registerInstance<Configuration>(config);
   container.registerInstance<SensorConfigurations>(config->getSensors());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());

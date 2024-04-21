@@ -92,6 +92,7 @@ void SensorApi::details(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
+    Log.infoln("Listing sensors");
     JsonDocument doc;
     auto sensors = this->container.resolve<SensorConfigurations>();
 

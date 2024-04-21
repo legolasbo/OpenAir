@@ -13,22 +13,24 @@ public:
 	DI() : instances() {};
 	~DI() { clear(); }
 
-	void clear()
-	{
+	void clear() {
 		instances.clear();
 	}
 
 	template<typename T>
-	void registerInstance(T* instance)
-	{
+	void registerInstance(T* instance) {
 		const size_t typeId = typeid(T).hash_code();
 		if (instances.find(typeId) == instances.end())
 			instances.emplace(typeId, std::shared_ptr<void>(instance));
 	}
 
 	template<typename T>
-	std::shared_ptr<T> resolve() const
-	{
+	void registerInstance(T &instance) {
+		this->registerInstance(&instance);
+	}
+
+	template<typename T>
+	std::shared_ptr<T> resolve() const {
 		const size_t typeId = typeid(T).hash_code();
 		auto itr1 = instances.find(typeId);
 		if (itr1 != instances.end())

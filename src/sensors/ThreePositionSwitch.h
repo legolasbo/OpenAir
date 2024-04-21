@@ -20,7 +20,7 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
     }
                                   
   public:
-    ThreePositionSwitch(std::string uuid, TwoWire *i2cBus) : I2CSensor(uuid, i2cBus) {}
+    ThreePositionSwitch(std::string uuid, TwoWire &i2cBus) : I2CSensor(uuid, i2cBus) {}
 
     static const SensorType sensorType = ThreePositionSwitchSensor;
 
@@ -49,13 +49,13 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
     }
 
     SelectedMode read() {
-      this->i2cBus->begin();
+      this->i2cBus.begin();
       SelectedMode mode = MODE_LOW;
       
       try {
-        this->i2cBus->requestFrom(this->getAddress(), 1);
-        if (this->i2cBus->available()) {
-            mode = (SelectedMode) this->i2cBus->read();
+        this->i2cBus.requestFrom(this->getAddress(), 1);
+        if (this->i2cBus.available()) {
+            mode = (SelectedMode) this->i2cBus.read();
         }
 
       }
@@ -63,7 +63,7 @@ class ThreePositionSwitch : public  I2CSensor, public Measurements::SwitchPositi
           Log.errorln("Failed to read Three Position Switch on address %i because: %s", this->getAddress(), e.what());
       }
       
-      this->i2cBus->end();
+      this->i2cBus.end();
       return mode;
     }
 };

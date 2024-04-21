@@ -16,7 +16,7 @@ class SensorFactory : public Factory<Sensor> {
 
         I2CSensor* createI2CSensor(SensorConfiguration * config) {
             auto i2cManager = this->container.resolve<I2CManager>();
-            auto connector = i2cManager->fromConnector(config->getSensorConnector());
+            TwoWire &connector = i2cManager->fromConnector(config->getSensorConnector());
 
             switch (config->getSensorType()) {
                 case SHT20Sensor: return new SHT20Reader(config->getUuid(), connector);

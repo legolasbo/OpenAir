@@ -5,7 +5,7 @@
 
 class I2CSensor : public Sensor {
     protected:
-        TwoWire *i2cBus;
+        TwoWire &i2cBus;
 
     public:
         static const ConnectionType connectionType = I2C;
@@ -15,9 +15,7 @@ class I2CSensor : public Sensor {
             return I2CSensor::connectionType;
         }
 
-        I2CSensor(std::string uuid, TwoWire *bus) : Sensor(uuid) {
-            this->i2cBus = bus;
-        }
+        I2CSensor(std::string uuid, TwoWire &bus) : Sensor(uuid), i2cBus(bus) {}
 
 };
 

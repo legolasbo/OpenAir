@@ -36,8 +36,8 @@ class SHT20Reader : public I2CSensor,
     public:
         static const SensorType sensorType = SHT20Sensor;
 
-        SHT20Reader(std::string uuid, TwoWire *bus) : I2CSensor(uuid, bus) {
-            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, *bus);
+        SHT20Reader(std::string uuid, TwoWire &bus) : I2CSensor(uuid, bus) {
+            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, bus);
         }
         
         SensorType getSensorType() {
