@@ -7,9 +7,8 @@
 
 class API {
     protected:
-    DI * container;
-    Configuration * config;
-    AsyncWebServer * server;
+    DI &container;
+    AsyncWebServer &server;
 
     void processFormValues(Configurable * conf, AsyncWebServerRequest * request) {
         for (size_t i = 0; i < request->args(); i++) {
@@ -39,10 +38,7 @@ class API {
     }
 
     public:
-    virtual void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
-        this->container = container;
-        this->server = server;
-        this->config = config;
+    API(DI &container, AsyncWebServer &server) : container(container), server(server) {
     }
 };
 

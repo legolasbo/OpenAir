@@ -17,26 +17,26 @@ Configuration * config;
 CalculatorFactory * calculatorFactory;
 DI container;
 
+Web webInterface(container);
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
   Log.begin(LOG_LEVEL_TRACE, &Serial);
   Log.setShowLevel(true);
 
-  config = Configuration::fromFile(&container, "/config.json");
+  config = Configuration::fromFile(container, "/config.json");
   container.registerInstance<I2CManager>(new I2CManager());
   container.registerInstance<Configuration>(config);
   container.registerInstance<SensorConfigurations>(config->getSensors());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());
-  container.registerInstance<SensorFactory>(new SensorFactory(&container));
-  calculatorFactory = new CalculatorFactory(&container);
+  container.registerInstance<SensorFactory>(new SensorFactory(container));
+  calculatorFactory = new CalculatorFactory(container);
 
-
-  startInterface(&container, config);
-
+  webInterface.begin();
 
 #if DEVELOPMENT_MODE == true
-  SensorConfiguration * defaultSensor = new SensorConfiguration(&container, SHT20Sensor);
+  SensorConfiguration * defaultSensor = new SensorConfiguration(container, SHT20Sensor);
   if (config->getSensors()->getUuids().size() == 0) {
     defaultSensor->setOption("name", "Default sensor");
     defaultSensor->setOption("connector", X4);
@@ -45,7 +45,7 @@ void setup() {
     Serial.printf("Added default sensor: %s\n", defaultSensor->getUuid().c_str());
   }
 
-  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(&container);
+  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(container);
   if (config->getCalculators()->getUuids().size() == 0) {
     defaultCalculator->setOption("name", "Default calculator");
     defaultCalculator->setOption("sensor", defaultSensor->getUuid());
@@ -69,7 +69,7 @@ void setup() {
 
 int calculatedSpeed = 0;
 void loop() {
-  loopInterface();
+  webInterface.loop();
 
   if (config->isDirty()) {
     container.resolve<SensorFactory>().get()->destroyInstances();

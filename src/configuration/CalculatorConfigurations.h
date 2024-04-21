@@ -15,7 +15,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         }
 
     public:
-    CalculatorConfigurations(DI * container) : ConfigurationCollection<CalculatorConfiguration>(container) {}
+    CalculatorConfigurations(DI &container) : ConfigurationCollection<CalculatorConfiguration>(container) {}
 
     CalculatorConfiguration * create(CalculatorType type) {
         switch (type) {
@@ -28,7 +28,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument availableCalculatorTypes() {
         JsonDocument doc;
 
-        Measurements::MeasurementTypeList types = this->container->resolve<SensorFactory>()->availableMeasurementTypes();
+        Measurements::MeasurementTypeList types = this->container.resolve<SensorFactory>()->availableMeasurementTypes();
 
         for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);
@@ -46,7 +46,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return doc;
     }
 
-    static CalculatorConfigurations * fromJson(DI * container, JsonObject calculators) {
+    static CalculatorConfigurations * fromJson(DI &container, JsonObject calculators) {
         CalculatorConfigurations * instance = new CalculatorConfigurations(container);
         
         for (JsonPair p : calculators) {

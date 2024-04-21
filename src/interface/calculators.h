@@ -3,37 +3,34 @@
 #include "api.h"
 
 class CalculatorApi : public API {
-
     public:
 
-    void initialize(DI * container, AsyncWebServer * server, Configuration * config) {
-        API::initialize(container, server, config);
-
-        server->on("/api/calculators/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
-            this->respondJson(this->config->getCalculators()->availableCalculatorTypes(), request);
+    CalculatorApi(DI &container, AsyncWebServer &server) : API(container, server) {
+        server.on("/api/calculators/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
+            this->respondJson(this->container.resolve<CalculatorConfigurations>()->availableCalculatorTypes(), request);
         });
 
-        server->on("/api/calculators/add", HTTP_POST, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/add", HTTP_POST, [this](AsyncWebServerRequest * request) {
             this->add(request);
         });
-        server->on("/api/calculators/get", HTTP_GET, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/get", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->get(request);
         });
-        server->on("/api/calculators/edit", HTTP_POST, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/edit", HTTP_POST, [this](AsyncWebServerRequest * request) {
             this->edit(request);
         });
-        server->on("/api/calculators/delete", HTTP_POST, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/delete", HTTP_POST, [this](AsyncWebServerRequest * request) {
             this->remove(request);
         });
 
-        server->on("/api/calculators/options", HTTP_GET, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/options", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->options(request);
         });
-        server->on("/api/calculators/details", HTTP_GET, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators/details", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->details(request);
         });
 
-        server->on("/api/calculators", HTTP_GET, [this](AsyncWebServerRequest * request) {
+        server.on("/api/calculators", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->list(request);
         });
     }
@@ -48,7 +45,7 @@ class CalculatorApi : public API {
 };
 
 void CalculatorApi::options(AsyncWebServerRequest * request) {
-    auto configs = container->resolve<CalculatorConfigurations>();
+    auto configs = this->container.resolve<CalculatorConfigurations>();
     std::string uuid = this->extractUuid(request);
     CalculatorConfiguration * calculator = configs->get(uuid);
 
@@ -78,7 +75,7 @@ void CalculatorApi::options(AsyncWebServerRequest * request) {
 
 void CalculatorApi::list(AsyncWebServerRequest * request) {
     JsonDocument doc;
-    CalculatorConfigurations * calculators = this->config->getCalculators();
+    auto calculators = this->container.resolve<CalculatorConfigurations>();
 
     for (auto uuid : calculators->getUuids()) {
         CalculatorConfiguration* calculator = calculators->get(uuid);
@@ -96,8 +93,10 @@ void CalculatorApi::remove(AsyncWebServerRequest * request) {
         return request->redirect("/");
     }
 
-    this->config->getCalculators()->erase(request->arg("uuid").c_str());
-    this->config->save();
+    auto config = this->container.resolve<Configuration>();
+
+    config->getCalculators()->erase(request->arg("uuid").c_str());
+    config->save();
     request->redirect("/calculators");
 }
 
@@ -107,7 +106,7 @@ void CalculatorApi::get(AsyncWebServerRequest * request) {
         return request->redirect("/");
     }
 
-    this->respondJson(this->config->getCalculators()->get(request->arg("uuid").c_str())->toJson(), request);
+    this->respondJson(this->container.resolve<CalculatorConfigurations>()->get(request->arg("uuid").c_str())->toJson(), request);
 }
 
 void CalculatorApi::details(AsyncWebServerRequest * request) {
@@ -116,7 +115,7 @@ void CalculatorApi::details(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to determine the uuid");
     }
 
-    CalculatorConfiguration * calc = this->container->resolve<CalculatorConfigurations>()->get(uuid);
+    CalculatorConfiguration * calc = this->container.resolve<CalculatorConfigurations>()->get(uuid);
     if (calc == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid");
     }
@@ -134,12 +133,13 @@ void CalculatorApi::add(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unknown type");
     }
 
-    CalculatorConfiguration * calc = this->config->getCalculators()->create(type);
+    auto calculators = this->container.resolve<CalculatorConfigurations>();
+    CalculatorConfiguration * calc = calculators->create(type);
     this->processFormValues(calc, request);
 
-    this->config->getCalculators()->add(calc);
+    calculators->add(calc);
     request->redirect("/calculators");
-    this->config->save();
+    this->container.resolve<Configuration>()->save();
 }
 
 void CalculatorApi::edit(AsyncWebServerRequest * request) {
@@ -147,7 +147,7 @@ void CalculatorApi::edit(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Missing 'uuid' parameter");
     }
     std::string uuid = request->arg("uuid").c_str();
-    CalculatorConfiguration * calc = this->config->getCalculators()->get(uuid);
+    CalculatorConfiguration * calc = this->container.resolve<CalculatorConfigurations>()->get(uuid);
     
     if (calc == nullptr) {
         return internalServerErrorResponse(request, "Unknown calculator");
@@ -157,5 +157,5 @@ void CalculatorApi::edit(AsyncWebServerRequest * request) {
     serializeJsonPretty(calc->toJson(), Serial);
 
     request->redirect("/calculators");
-    this->config->save();
+    this->container.resolve<Configuration>()->save();
 }

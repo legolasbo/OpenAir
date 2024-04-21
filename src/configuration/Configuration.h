@@ -9,18 +9,16 @@
 
 class Configuration {
     private:
-    DI * container;
+    DI &container;
     SensorConfigurations *sensors;
     CalculatorConfigurations *calculators;
 
     public:
-    Configuration(DI * container) {
-        this->container = container;
+    Configuration(DI &container) : container(container) {
         this->sensors = new SensorConfigurations(container);
         this->calculators = new CalculatorConfigurations(container);
     }
-    Configuration(DI * container, SensorConfigurations *sensors, CalculatorConfigurations* calculators) {
-        this->container = container;
+    Configuration(DI &container, SensorConfigurations *sensors, CalculatorConfigurations* calculators) : container(container) {
         this->sensors = sensors;
         this->calculators = calculators;
     }
@@ -34,7 +32,7 @@ class Configuration {
         this->calculators->markClean();
     }
 
-    static Configuration * load(DI * container) {
+    static Configuration * load(DI &container) {
         return Configuration::fromFile(container, CONFIGURATION_FILE_PATH);
     }
 
@@ -55,7 +53,7 @@ class Configuration {
         f.close();
     }
 
-    static Configuration * fromFile(DI * container, const char * name) {
+    static Configuration * fromFile(DI &container, const char * name) {
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
             return new Configuration(container);
@@ -87,7 +85,7 @@ class Configuration {
         return this->calculators;
     }
 
-    static Configuration * fromJson(DI * container, JsonDocument &json) {
+    static Configuration * fromJson(DI &container, JsonDocument &json) {
         JsonObject sensorsJson = json["sensors"].as<JsonObject>();
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 

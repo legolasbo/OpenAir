@@ -11,7 +11,7 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
     private:
 
     public:
-    SensorConfigurations(DI * container) : ConfigurationCollection<SensorConfiguration>(container) {}
+    SensorConfigurations(DI &container) : ConfigurationCollection<SensorConfiguration>(container) {}
 
     std::vector<SensorConfiguration *> getConfigurationsFor(SensorConnector connector) {
         std::vector<SensorConfiguration *> sensors;
@@ -25,7 +25,7 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return sensors;
     }
 
-    static SensorConfigurations * fromJson(DI * container, JsonObject sensors) {
+    static SensorConfigurations * fromJson(DI &container, JsonObject sensors) {
         SensorConfigurations * instance = new SensorConfigurations(container);
 
         for (JsonPair p : sensors) {

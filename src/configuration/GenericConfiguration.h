@@ -10,8 +10,17 @@
 #include "../options/Configurable.h"
 
 class GenericConfiguration: public Configurable {
+    private:
+    static std::string GenerateUuid() {
+        UUID uuid;
+        uuid.seed(esp_random(), esp_random());
+        uuid.setRandomMode();
+        uuid.generate();
+        return std::string(uuid.toCharArray());
+    }
+
     protected:
-        DI * container;
+        DI &container;
         std::string uuid;
         bool dirty = true;
 
@@ -20,16 +29,8 @@ class GenericConfiguration: public Configurable {
     }
 
     public:
-    GenericConfiguration(DI *container) {
-        this->container = container;
-        UUID uuid;
-        uuid.seed(esp_random(), esp_random());
-        uuid.setRandomMode();
-        uuid.generate();
-        this->uuid = std::string(uuid.toCharArray());
-    }
-    GenericConfiguration(DI * container, std::string uuid) {
-        this->container = container;
+    GenericConfiguration(DI &container) : container(container) {}
+    GenericConfiguration(DI &container, std::string uuid) : GenericConfiguration(container) {
         this->uuid = uuid;
     }
 

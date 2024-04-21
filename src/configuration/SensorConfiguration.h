@@ -12,11 +12,11 @@ class SensorConfiguration : public GenericConfiguration {
         SensorType          sensorType;
 
     public:
-    SensorConfiguration(DI * container) : GenericConfiguration(container) {}
-    SensorConfiguration(DI * container, SensorType sensorType) : GenericConfiguration(container) {
+    SensorConfiguration(DI &container) : GenericConfiguration(container) {}
+    SensorConfiguration(DI &container, SensorType sensorType) : GenericConfiguration(container) {
         this->sensorType = sensorType;
     }
-    SensorConfiguration(DI * container, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
+    SensorConfiguration(DI &container, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
         this->sensorType = sensorType;
     }
 
@@ -94,7 +94,7 @@ class SensorConfiguration : public GenericConfiguration {
         return doc;
     }
 
-    static SensorConfiguration * fromJson(DI * container, JsonObject doc) {
+    static SensorConfiguration * fromJson(DI &container, JsonObject doc) {
         const char * uuid = doc["uuid"].as<const char *>();
         const char * sensorTypeName = doc["type"].as<const char *>();
         if (sensorTypeName == nullptr || uuid == nullptr) {  

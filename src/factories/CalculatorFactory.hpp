@@ -6,7 +6,7 @@
 
 class CalculatorFactory : public Factory<SpeedCalculator> {
     public: 
-    CalculatorFactory (DI * container): Factory<SpeedCalculator>(container) {}
+    CalculatorFactory (DI &container): Factory<SpeedCalculator>(container) {}
 
     SpeedCalculator * fromUuid(std::string uuid) {
         SpeedCalculator * calculator = this->getInstance(uuid);
@@ -14,7 +14,7 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
             return calculator;
         }
 
-        CalculatorConfiguration * config = this->container->resolve<CalculatorConfigurations>()->get(uuid);
+        CalculatorConfiguration * config = this->container.resolve<CalculatorConfigurations>()->get(uuid);
         if (config == nullptr || !config->isValid()) {
             return nullptr;
         }

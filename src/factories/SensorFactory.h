@@ -15,7 +15,7 @@ class SensorFactory : public Factory<Sensor> {
     private:
 
         I2CSensor* createI2CSensor(SensorConfiguration * config) {
-            auto i2cManager = this->container->resolve<I2CManager>();
+            auto i2cManager = this->container.resolve<I2CManager>();
             auto connector = i2cManager->fromConnector(config->getSensorConnector());
 
             switch (config->getSensorType()) {
@@ -43,7 +43,7 @@ class SensorFactory : public Factory<Sensor> {
         }
 
     public:
-        SensorFactory(DI* container) : Factory<Sensor>(container) {}
+        SensorFactory(DI& container) : Factory<Sensor>(container) {}
 
         Sensor * fromUuid(std::string uuid) {
             Sensor * foundSensor = this->getInstance(uuid);
@@ -51,11 +51,11 @@ class SensorFactory : public Factory<Sensor> {
                 return foundSensor;
             }
 
-            if (!this->container->resolve<SensorConfigurations>()->exists(uuid)) {
+            if (!this->container.resolve<SensorConfigurations>()->exists(uuid)) {
                 return nullptr;
             }
 
-            SensorConfiguration * sensorConfig = this->container->resolve<SensorConfigurations>()->get(uuid);
+            SensorConfiguration * sensorConfig = this->container.resolve<SensorConfigurations>()->get(uuid);
 
             Sensor * createdSensor = this->createSensorFromConfiguration(sensorConfig);
             this->registerInstance(uuid, createdSensor);
@@ -70,7 +70,7 @@ class SensorFactory : public Factory<Sensor> {
         Measurements::MeasurementTypeList availableMeasurementTypes() {
             Measurements::MeasurementTypeList types;
 
-            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
+            for (std::string uuid : this->container.resolve<SensorConfigurations>()->getUuids()) {
                 auto instance = this->fromUuid(uuid);
                 if (instance == nullptr) {
                     Serial.printf("Could not load %s\n", uuid);
@@ -87,7 +87,7 @@ class SensorFactory : public Factory<Sensor> {
         std::set<Sensor*> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
             std::set<Sensor *> sensors;
 
-            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
+            for (std::string uuid : this->container.resolve<SensorConfigurations>()->getUuids()) {
                 Sensor* instance = this->fromUuid(uuid);
                 if (instance == nullptr) {
                     continue;

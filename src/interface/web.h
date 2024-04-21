@@ -7,57 +7,65 @@
 #include <ElegantOTA.h>
 #include "SPIFFS.h"
 
-#include "configuration/Configuration.h"
 #include "sensors.h"
 #include "calculators.h"
 
-AsyncWebServer server(80);
-DNSServer dns;
-AsyncWiFiManager wifiManager(&server,&dns);
-Configuration * theConfig;
-std::vector<std::string> messages;
-SensorApi sensorApi;
-CalculatorApi calculatorApi;
+class Web {
+  private:
+    DI &container;
+    AsyncWebServer server;
+    DNSServer dns;
+    AsyncWiFiManager wifiManager;
+    SensorApi sensorApi;
+    CalculatorApi calculatorApi;
 
-void startInterface(DI * container, Configuration *config) {
-  theConfig = config;
-  wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
-  Serial.println("Wifi connected");
 
-  sensorApi.initialize(container, &server, config);
-  calculatorApi.initialize(container, &server, config);
+    ulong lastCheck = 0;
+    void checkWiFi() {
+      ulong now = millis();
+      if (now < lastCheck) {
+        lastCheck = now;
+        return;
+      }
 
-  server.serveStatic("/static", SPIFFS, "/");
+      if (now - lastCheck > 5000) {
+        return;
+      }
 
-  server.onNotFound([](AsyncWebServerRequest * request) {
-    request->send(SPIFFS, "/index.html", "text/html", false);
-  });
+      if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Reconnecting to WiFi....");
+        WiFi.disconnect();
+        WiFi.reconnect();
+        lastCheck = now;
+      }
+    }
 
-  ElegantOTA.begin(&server);
-  server.begin();
-}
+  public:
+    Web(DI &container) :
+              server(80) , 
+              container(container) , 
+              wifiManager(&server, &dns),
+              sensorApi(container, server),
+              calculatorApi(container, server) {
+    }
 
-ulong lastCheck = 0;
-void checkWiFi() {
-  ulong now = millis();
-  if (now < lastCheck) {
-    lastCheck = now;
-    return;
-  }
+    void begin() {
+      wifiManager.autoConnect(HOSTNAME, AP_PASSWORD);
+      Log.infoln("WiFi connected");
 
-  if (now - lastCheck > 5000) {
-    return;
-  }
+      this->server.serveStatic("/static", SPIFFS, "/");
+      this->server.onNotFound([](AsyncWebServerRequest * request) {
+        request->send(SPIFFS, "/index.html", "text/html", false);
+      });
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Reconnecting to WiFi....");
-    WiFi.disconnect();
-    WiFi.reconnect();
-    lastCheck = now;
-  }
-}
+      ElegantOTA.begin(&this->server);
+      this->server.begin();
+    }
 
-void loopInterface() {
-  ElegantOTA.loop();
-  checkWiFi();
-}
+    void loop() {
+      ElegantOTA.loop();
+      checkWiFi();
+    }
+
+};
+
