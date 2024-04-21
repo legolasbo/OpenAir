@@ -11,7 +11,7 @@
 
 class GenericConfiguration: public Configurable {
     private:
-    static std::string GenerateUuid() {
+    static std::string generateUuid() {
         UUID uuid;
         uuid.seed(esp_random(), esp_random());
         uuid.setRandomMode();
@@ -29,7 +29,9 @@ class GenericConfiguration: public Configurable {
     }
 
     public:
-    GenericConfiguration(DI &container) : container(container) {}
+    GenericConfiguration(DI &container) : container(container) {
+        this->uuid = GenericConfiguration::generateUuid();
+    }
     GenericConfiguration(DI &container, std::string uuid) : GenericConfiguration(container) {
         this->uuid = uuid;
     }
