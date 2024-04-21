@@ -7,14 +7,8 @@
  * Loosely based on https://www.codeproject.com/Articles/1029836/A-Miniature-IOC-Container-in-Cplusplus
 */
 class DI {
-	static size_t nextTypeId;
 
 public:
-	template<typename T>
-	static size_t GetTypeId(){
-		static size_t typeId = nextTypeId++;
-		return typeId;
-	}
 
 	DI() : instances() {};
 	~DI() { clear(); }
@@ -27,7 +21,7 @@ public:
 	template<typename T>
 	void registerInstance(T* instance)
 	{
-		const int typeId = GetTypeId<T>();
+		const size_t typeId = typeid(T).hash_code();
 		if (instances.find(typeId) == instances.end())
 			instances.emplace(typeId, std::shared_ptr<void>(instance));
 	}
@@ -35,7 +29,7 @@ public:
 	template<typename T>
 	std::shared_ptr<T> resolve() const
 	{
-		const size_t typeId = GetTypeId<T>();
+		const size_t typeId = typeid(T).hash_code();
 		auto itr1 = instances.find(typeId);
 		if (itr1 != instances.end())
 			return std::static_pointer_cast<T>(itr1->second);
@@ -46,6 +40,4 @@ public:
 private:
 	std::unordered_map<size_t, std::shared_ptr<void>> instances;
 };
-
-size_t DI::nextTypeId = 1;
 
