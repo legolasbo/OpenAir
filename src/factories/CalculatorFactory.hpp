@@ -1,7 +1,7 @@
 #ifndef CALCULATOR_FACTORY_H
 #define CALCULATOR_FACTORY_H
 
-#include "../speedCalculators/SpeedCalculator.h"
+#include "../calculators/SpeedCalculator.h"
 #include "../configuration/CalculatorConfigurations.h"
 
 class CalculatorFactory : public Factory<SpeedCalculator> {

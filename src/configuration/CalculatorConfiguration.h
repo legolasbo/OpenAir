@@ -4,7 +4,7 @@
 #include <vector>
 #include "../Measurements.h"
 #include "../enums/CalculatorTypes.h"
-#include "../speedCalculators/SpeedCalculator.h"
+#include "../calculators/SpeedCalculator.h"
 #include "GenericConfiguration.h"
 
 class CalculatorConfiguration : public GenericConfiguration {

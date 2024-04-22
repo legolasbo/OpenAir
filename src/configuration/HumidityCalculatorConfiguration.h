@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SensorBasedCalculatorConfiguration.h"
-#include "../speedCalculators/HumidityCalculator.h"
+#include "../calculators/HumidityCalculator.h"
 #include "../factories/SensorFactory.h"
 #include <vector>
 #include "../Measurements.h"

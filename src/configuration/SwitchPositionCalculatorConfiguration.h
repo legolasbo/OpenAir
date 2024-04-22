@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SensorBasedCalculatorConfiguration.h"
-#include "../speedCalculators/SwitchPositionCalculator.h"
+#include "../calculators/SwitchPositionCalculator.h"
 #include "../factories/SensorFactory.h"
 #include "../Measurements.h"
 
