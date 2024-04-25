@@ -31,7 +31,7 @@ void setup() {
   container.registerInstance<Configuration>(config);
   container.registerInstance<SensorConfigurations>(config->getSensors());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());
-  container.registerInstance<SensorFactory>(new SensorFactory(container));
+  container.registerInstance<SensorFactory>(std::make_shared<SensorFactory>(container));
   calculatorFactory = new CalculatorFactory(container);
 
   webInterface.begin();
