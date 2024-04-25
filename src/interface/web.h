@@ -12,7 +12,7 @@
 
 class Web {
   private:
-    DI &container;
+    std::shared_ptr<DI> container;
     AsyncWebServer server;
     DNSServer dns;
     AsyncWiFiManager wifiManager;
@@ -41,7 +41,7 @@ class Web {
     }
 
   public:
-    Web(DI &container) :
+    Web(std::shared_ptr<DI> container) :
               server(80) , 
               container(container) , 
               wifiManager(&server, &dns),

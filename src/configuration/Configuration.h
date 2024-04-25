@@ -9,16 +9,16 @@
 
 class Configuration {
     private:
-    DI &container;
+    std::shared_ptr<DI> container;
     std::shared_ptr<SensorConfigurations>sensors;
     std::shared_ptr<CalculatorConfigurations>calculators;
 
     public:
-    Configuration(DI &container) : container(container) {
+    Configuration(std::shared_ptr<DI> container) : container(container) {
         this->sensors = std::make_shared<SensorConfigurations>(container);
         this->calculators = std::make_shared<CalculatorConfigurations>(container);
     }
-    Configuration(DI &container, std::shared_ptr<SensorConfigurations>sensors, std::shared_ptr<CalculatorConfigurations> calculators) : container(container) {
+    Configuration(std::shared_ptr<DI> container, std::shared_ptr<SensorConfigurations>sensors, std::shared_ptr<CalculatorConfigurations> calculators) : container(container) {
         this->sensors = sensors;
         this->calculators = calculators;
     }
@@ -32,7 +32,7 @@ class Configuration {
         this->calculators->markClean();
     }
 
-    static std::shared_ptr<Configuration> load(DI &container) {
+    static std::shared_ptr<Configuration> load(std::shared_ptr<DI> container) {
         return Configuration::fromFile(container, CONFIGURATION_FILE_PATH);
     }
 
@@ -53,7 +53,7 @@ class Configuration {
         f.close();
     }
 
-    static std::shared_ptr<Configuration> fromFile(DI &container, const char * name) {
+    static std::shared_ptr<Configuration> fromFile(std::shared_ptr<DI> container, const char * name) {
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
             return std::make_shared<Configuration>(container);
@@ -85,7 +85,7 @@ class Configuration {
         return this->calculators;
     }
 
-    static std::shared_ptr<Configuration> fromJson(DI &container, JsonDocument &json) {
+    static std::shared_ptr<Configuration> fromJson(std::shared_ptr<DI> container, JsonDocument &json) {
         JsonObject sensorsJson = json["sensors"].as<JsonObject>();
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 

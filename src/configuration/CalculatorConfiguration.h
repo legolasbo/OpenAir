@@ -10,7 +10,7 @@
 class CalculatorConfiguration : public GenericConfiguration {
 
     public:
-    CalculatorConfiguration(DI &container) : GenericConfiguration(container) {}
+    CalculatorConfiguration(std::shared_ptr<DI> container) : GenericConfiguration(container) {}
 
     virtual CalculatorType type() {
         return UNKNOWN_CALCULATOR_TYPE;

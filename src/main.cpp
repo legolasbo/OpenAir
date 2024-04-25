@@ -14,11 +14,10 @@
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 std::shared_ptr<Configuration> config;
-DI container;
-CalculatorFactory calculatorFactory(container);
+CalculatorFactory calculatorFactory(DI::GetContainer());
 I2CManager i2cManager;
 
-Web webInterface(container);
+Web webInterface(DI::GetContainer());
 
 void setup() {
   Serial.begin(115200);
@@ -26,12 +25,14 @@ void setup() {
   Log.begin(LOG_LEVEL_TRACE, &Serial);
   Log.setShowLevel(true);
 
+  auto container = DI::GetContainer();
+
   config = Configuration::fromFile(container, "/config.json");
-  container.registerInstance<I2CManager>(i2cManager);
-  container.registerInstance<Configuration>(config);
-  container.registerInstance<SensorConfigurations>(config->getSensors());
-  container.registerInstance<CalculatorConfigurations>(config->getCalculators());
-  container.registerInstance<SensorFactory>(std::make_shared<SensorFactory>(container));
+  container->registerInstance<I2CManager>(i2cManager);
+  container->registerInstance<Configuration>(config);
+  container->registerInstance<SensorConfigurations>(config->getSensors());
+  container->registerInstance<CalculatorConfigurations>(config->getCalculators());
+  container->registerInstance<SensorFactory>(std::make_shared<SensorFactory>(container));
 
   webInterface.begin();
 
@@ -72,7 +73,7 @@ void loop() {
   webInterface.loop();
 
   if (config->isDirty()) {
-    container.resolve<SensorFactory>().get()->destroyInstances();
+    DI::GetContainer()->resolve<SensorFactory>().get()->destroyInstances();
     calculatorFactory.destroyInstances();
 
     config->markClean();

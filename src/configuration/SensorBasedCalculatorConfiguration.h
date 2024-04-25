@@ -9,7 +9,7 @@
 class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
 
     public:
-    SensorBasedCalculatorConfiguration(DI &container) : CalculatorConfiguration(container) {}
+    SensorBasedCalculatorConfiguration(std::shared_ptr<DI> container) : CalculatorConfiguration(container) {}
 
 
     virtual std::unordered_map<std::string, Option> availableOptions() {
@@ -29,21 +29,21 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool isValid() {
-        return this->container.resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
+        return this->container->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
     }
 
     virtual JsonDocument getConfigurationOptions() {
         JsonDocument doc = CalculatorConfiguration::getConfigurationOptions();
 
         auto supportedTypes = this->supportedMeasurementTypes();
-        auto sensors = this->container.resolve<SensorFactory>()->getSensorsSupportingMeasurements(supportedTypes);
+        auto sensors = this->container->resolve<SensorFactory>()->getSensorsSupportingMeasurements(supportedTypes);
         
         if (supportedTypes.size() > 0) {
             doc["sensor"]["type"] = "select";
             doc["sensor"]["label"] = "Sensor";
 
             for (auto sensor : sensors) {
-                SensorConfiguration* sensorConfig = this->container.resolve<SensorConfigurations>()->get(sensor->getUuid());
+                SensorConfiguration* sensorConfig = this->container->resolve<SensorConfigurations>()->get(sensor->getUuid());
                 std::string name = "";
                 if (sensorConfig != nullptr) {
                     name = sensorConfig->getName();

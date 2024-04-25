@@ -11,7 +11,7 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
     private:
 
     public:
-    SensorConfigurations(DI &container) : ConfigurationCollection<SensorConfiguration>(container) {}
+    SensorConfigurations(std::shared_ptr<DI> container) : ConfigurationCollection<SensorConfiguration>(container) {}
 
     std::vector<SensorConfiguration *> getConfigurationsFor(SensorConnector connector) {
         std::vector<SensorConfiguration *> sensors;
@@ -25,7 +25,7 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return sensors;
     }
 
-    static std::shared_ptr<SensorConfigurations> fromJson(DI &container, JsonObject sensors) {
+    static std::shared_ptr<SensorConfigurations> fromJson(std::shared_ptr<DI> container, JsonObject sensors) {
         std::shared_ptr<SensorConfigurations> instance = std::make_shared<SensorConfigurations>(container);
 
         for (JsonPair p : sensors) {

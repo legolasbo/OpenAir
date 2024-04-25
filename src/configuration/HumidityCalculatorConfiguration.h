@@ -8,7 +8,7 @@
 
 class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
-    HumidityCalculatorConfiguration(DI &container) : SensorBasedCalculatorConfiguration(container) {}
+    HumidityCalculatorConfiguration(std::shared_ptr<DI> container) : SensorBasedCalculatorConfiguration(container) {}
 
     Measurements::MeasurementTypeList supportedMeasurementTypes() {
         return Measurements::MeasurementTypeList {
@@ -39,7 +39,7 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
             return nullptr;
         }
 
-        std::shared_ptr<Sensor> sensor = this->container.resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
+        std::shared_ptr<Sensor> sensor = this->container->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
         if (sensor == nullptr) {
             return nullptr;
         }

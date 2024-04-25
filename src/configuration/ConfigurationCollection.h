@@ -10,7 +10,7 @@ template <typename ConfigurationType>
 
 class ConfigurationCollection {
     protected:
-    DI &container;
+    std::shared_ptr<DI> container;
     std::map<std::string, ConfigurationType*> configs;
     std::vector<std::string> uuids;
 
@@ -28,7 +28,7 @@ class ConfigurationCollection {
     }
 
     public:
-    ConfigurationCollection(DI &container) : container(container) {}
+    ConfigurationCollection(std::shared_ptr<DI> container) : container(container) {}
 
     bool isDirty() {
         for (auto config : this->configs) {

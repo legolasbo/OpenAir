@@ -9,7 +9,7 @@ class Factory {
     std::map<std::string, std::shared_ptr<Type>> instances;
 
     protected:
-    DI &container;
+    std::shared_ptr<DI> container;
 
     void registerInstance(std::string uuid, std::shared_ptr<Type> instance) {
         if (this->getInstance(uuid) != nullptr) {
@@ -28,7 +28,9 @@ class Factory {
     }
 
     public:
-    Factory(DI &container) : container(container) {}
+    Factory(std::shared_ptr<DI> container) {
+        this->container = container;
+    }
 
     void destroyInstances() {
         this->instances.clear();

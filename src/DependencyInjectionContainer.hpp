@@ -7,10 +7,15 @@
  * Loosely based on https://www.codeproject.com/Articles/1029836/A-Miniature-IOC-Container-in-Cplusplus
 */
 class DI {
+private:
+	DI() : instances() {};
+	static std::shared_ptr<DI> container;
 
 public:
+	DI(DI &other) = delete;
+	void operator=(const DI &) = delete;
+	static std::shared_ptr<DI> GetContainer();
 
-	DI() : instances() {};
 	~DI() { clear(); }
 
 	void clear() {
@@ -43,3 +48,11 @@ private:
 	std::unordered_map<size_t, std::shared_ptr<void>> instances;
 };
 
+std::shared_ptr<DI> DI::container = nullptr;
+
+std::shared_ptr<DI> DI::GetContainer() {
+	if (DI::container == nullptr) {
+		DI::container = std::shared_ptr<DI>(new DI());
+	}
+	return DI::container;
+}
