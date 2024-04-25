@@ -1,7 +1,7 @@
 #pragma once
 
 #include "api.h"
-#include "../factories/SensorFactory.h"
+#include "../repositories/SensorRepository.hpp"
 #include "../configuration/Configuration.h"
 #include "../configuration/SensorConfiguration.h"
 
@@ -11,7 +11,7 @@ class SensorApi : public API {
     SensorApi(AsyncWebServer & server) : API(server) {
 
         server.on("/api/sensors/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
-            this->respondJson(SensorFactory::knownSensorTypesJson(), request);
+            this->respondJson(SensorRepository::knownSensorTypesJson(), request);
         });
 
         server.on("/api/sensors/add", HTTP_POST, [this](AsyncWebServerRequest * request){

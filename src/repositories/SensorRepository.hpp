@@ -9,9 +9,9 @@
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/ThreePositionSwitch.h"
 #include "../configuration/SensorConfigurations.h"
-#include "Factory.hpp"
+#include "Repository.hpp"
 
-class SensorFactory : public Factory<Sensor> {
+class SensorRepository : public Repository<Sensor> {
     private:
 
         std::shared_ptr<Sensor> createI2CSensor(SensorConfiguration * config) {
@@ -43,7 +43,7 @@ class SensorFactory : public Factory<Sensor> {
         }
 
     public:
-        SensorFactory() : Factory<Sensor>() {}
+        SensorRepository() : Repository<Sensor>() {}
 
         std::shared_ptr<Sensor> fromUuid(std::string uuid) {
             std::shared_ptr<Sensor> foundSensor = this->getInstance(uuid);

@@ -2,7 +2,6 @@
 
 #include "SensorBasedCalculatorConfiguration.h"
 #include "../calculators/HumidityCalculator.h"
-#include "../factories/SensorFactory.h"
 #include <vector>
 #include "../Measurements.h"
 
@@ -39,7 +38,7 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
             return nullptr;
         }
 
-        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
+        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->fromUuid(this->getOption("sensor").toStr());
         if (sensor == nullptr) {
             return nullptr;
         }

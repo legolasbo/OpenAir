@@ -3,8 +3,7 @@
 #include "CalculatorConfiguration.h"
 #include "SensorConfigurations.h"
 #include "../enums/CalculatorTypes.h"
-#include "../factories/SensorFactory.h"
-
+#include "../repositories/SensorRepository.hpp"
 
 class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
 
@@ -29,14 +28,14 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool isValid() {
-        return DI::GetContainer()->resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
+        return DI::GetContainer()->resolve<SensorRepository>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
     }
 
     virtual JsonDocument getConfigurationOptions() {
         JsonDocument doc = CalculatorConfiguration::getConfigurationOptions();
 
         auto supportedTypes = this->supportedMeasurementTypes();
-        auto sensors = DI::GetContainer()->resolve<SensorFactory>()->getSensorsSupportingMeasurements(supportedTypes);
+        auto sensors = DI::GetContainer()->resolve<SensorRepository>()->getSensorsSupportingMeasurements(supportedTypes);
         
         if (supportedTypes.size() > 0) {
             doc["sensor"]["type"] = "select";

@@ -1,10 +1,9 @@
-#ifndef FACTORY_H
-#define FACTORY_H
+#pragma once
 
 #include <map>
 
 template <typename Type>
-class Factory {
+class Repository {
     private:
     std::map<std::string, std::shared_ptr<Type>> instances;
 
@@ -28,7 +27,7 @@ class Factory {
     }
 
     public:
-    Factory() {
+    Repository() {
         this->container = DI::GetContainer();
     }
 
@@ -37,4 +36,3 @@ class Factory {
     }
 };
 
-#endif

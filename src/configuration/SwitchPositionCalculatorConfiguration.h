@@ -2,7 +2,6 @@
 
 #include "SensorBasedCalculatorConfiguration.h"
 #include "../calculators/SwitchPositionCalculator.h"
-#include "../factories/SensorFactory.h"
 #include "../Measurements.h"
 
 class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
@@ -27,7 +26,7 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
 
     virtual std::shared_ptr<SpeedCalculator> createInstance() {
         std::string sensorId = this->getOption("sensor").toStr();
-        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorFactory>()->fromUuid(sensorId);
+        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->fromUuid(sensorId);
         if (sensor == nullptr) {
             Log.errorln("Unable to resolve sensor %s in calculator %s", sensorId.c_str(), this->getUuid().c_str());
             return nullptr;

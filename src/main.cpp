@@ -5,8 +5,8 @@
 #include "DependencyInjectionContainer.hpp"
 #include "constants.h"
 #include "configuration/Configuration.h"
-#include "factories/CalculatorFactory.hpp"
-#include "factories/SensorFactory.h"
+#include "repositories/CalculatorRepository.hpp"
+#include "repositories/SensorRepository.hpp"
 #include "inputs/tachometer.h"
 #include "outputs/fan.h"
 #include "interface/web.h"
@@ -14,7 +14,7 @@
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 std::shared_ptr<Configuration> config;
-CalculatorFactory calculatorFactory;
+CalculatorRepository calculatorFactory;
 
 Web webInterface;
 
@@ -70,7 +70,7 @@ void loop() {
   webInterface.loop();
 
   if (config->isDirty()) {
-    DI::GetContainer()->resolve<SensorFactory>().get()->destroyInstances();
+    DI::GetContainer()->resolve<SensorRepository>().get()->destroyInstances();
     calculatorFactory.destroyInstances();
 
     config->markClean();

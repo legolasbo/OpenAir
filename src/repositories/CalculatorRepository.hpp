@@ -1,12 +1,11 @@
-#ifndef CALCULATOR_FACTORY_H
-#define CALCULATOR_FACTORY_H
+#pragma once
 
 #include "../calculators/SpeedCalculator.h"
 #include "../configuration/CalculatorConfigurations.h"
 
-class CalculatorFactory : public Factory<SpeedCalculator> {
+class CalculatorRepository : public Repository<SpeedCalculator> {
     public: 
-    CalculatorFactory (): Factory<SpeedCalculator>() {}
+    CalculatorRepository (): Repository<SpeedCalculator>() {}
 
     std::shared_ptr<SpeedCalculator> fromUuid(std::string uuid) {
         std::shared_ptr<SpeedCalculator> calculator = this->getInstance(uuid);
@@ -28,4 +27,3 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
 
 };
 
-#endif

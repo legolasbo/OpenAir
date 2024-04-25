@@ -28,7 +28,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument availableCalculatorTypes() {
         JsonDocument doc;
 
-        Measurements::MeasurementTypeList types = DI::GetContainer()->resolve<SensorFactory>()->availableMeasurementTypes();
+        Measurements::MeasurementTypeList types = DI::GetContainer()->resolve<SensorRepository>()->availableMeasurementTypes();
 
         for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);
