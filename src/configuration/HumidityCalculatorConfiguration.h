@@ -34,18 +34,18 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
         return doc;
     }
 
-    virtual SpeedCalculator * createInstance() {
+    virtual std::shared_ptr<SpeedCalculator> createInstance() {
         if (!this->isConfiguredOption("sensor")) {
             return nullptr;
         }
 
-        Sensor * sensor = this->container.resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
+        std::shared_ptr<Sensor> sensor = this->container.resolve<SensorFactory>()->fromUuid(this->getOption("sensor").toStr());
         if (sensor == nullptr) {
             return nullptr;
         }
 
         if (auto m = sensor->toMeasurement<Measurements::Humidity>()) {
-            return new HumidityCalculator(m);
+            return std::make_shared<HumidityCalculator>(m);
         }
         return nullptr;
     }

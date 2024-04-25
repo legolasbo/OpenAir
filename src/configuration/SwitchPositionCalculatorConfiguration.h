@@ -25,16 +25,16 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
         return doc;
     }
 
-    virtual SpeedCalculator * createInstance() {
+    virtual std::shared_ptr<SpeedCalculator> createInstance() {
         std::string sensorId = this->getOption("sensor").toStr();
-        Sensor * sensor = this->container.resolve<SensorFactory>()->fromUuid(sensorId);
+        std::shared_ptr<Sensor> sensor = this->container.resolve<SensorFactory>()->fromUuid(sensorId);
         if (sensor == nullptr) {
             Log.errorln("Unable to resolve sensor %s in calculator %s", sensorId.c_str(), this->getUuid().c_str());
             return nullptr;
         }
 
         if (auto m = sensor->toMeasurement<Measurements::SwitchPosition>()) {
-            return new SwitchPositionCalculator(m);
+            return std::make_shared<SwitchPositionCalculator>(m);
         }
         return nullptr;
     }

@@ -85,7 +85,7 @@ void loop() {
       continue;
     }
 
-    SpeedCalculator * c = calculatorFactory.fromUuid(uuid);
+    std::shared_ptr<SpeedCalculator> c = calculatorFactory.fromUuid(uuid);
     if (c != nullptr) {
       newSpeed = max(c->calculate(), newSpeed);
     }

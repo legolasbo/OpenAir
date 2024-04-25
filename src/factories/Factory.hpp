@@ -6,19 +6,19 @@
 template <typename Type>
 class Factory {
     private:
-    std::map<std::string, Type*> instances;
+    std::map<std::string, std::shared_ptr<Type>> instances;
 
     protected:
     DI &container;
 
-    void registerInstance(std::string uuid, Type * instance) {
+    void registerInstance(std::string uuid, std::shared_ptr<Type> instance) {
         if (this->getInstance(uuid) != nullptr) {
             return;
         }
-        this->instances.insert(std::pair<std::string, Type *>(uuid, instance));
+        this->instances.emplace(uuid, instance);
     }
 
-    Type * getInstance(std::string uuid) {
+    std::shared_ptr<Type> getInstance(std::string uuid) {
         for ( auto instance : this->instances) {
             if (instance.first == uuid) {
                 return instance.second;
@@ -31,9 +31,6 @@ class Factory {
     Factory(DI &container) : container(container) {}
 
     void destroyInstances() {
-        for (auto instance : this->instances) {
-            delete(instance.second);
-        }
         this->instances.clear();
     }
 };

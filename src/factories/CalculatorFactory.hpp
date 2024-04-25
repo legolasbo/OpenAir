@@ -8,8 +8,8 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
     public: 
     CalculatorFactory (DI &container): Factory<SpeedCalculator>(container) {}
 
-    SpeedCalculator * fromUuid(std::string uuid) {
-        SpeedCalculator * calculator = this->getInstance(uuid);
+    std::shared_ptr<SpeedCalculator> fromUuid(std::string uuid) {
+        std::shared_ptr<SpeedCalculator> calculator = this->getInstance(uuid);
         if (calculator != nullptr) {
             return calculator;
         }
@@ -19,7 +19,7 @@ class CalculatorFactory : public Factory<SpeedCalculator> {
             return nullptr;
         }
 
-        SpeedCalculator * instance = config->createInstance();
+        std::shared_ptr<SpeedCalculator> instance = config->createInstance();
         if (instance != nullptr) {
             this->registerInstance(uuid, instance);
         }

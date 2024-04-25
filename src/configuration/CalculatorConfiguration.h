@@ -42,6 +42,6 @@ class CalculatorConfiguration : public GenericConfiguration {
         return doc;
     }
 
-    virtual SpeedCalculator * createInstance() = 0;
+    virtual std::shared_ptr<SpeedCalculator> createInstance() = 0;
 };
 

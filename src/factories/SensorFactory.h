@@ -14,19 +14,19 @@
 class SensorFactory : public Factory<Sensor> {
     private:
 
-        I2CSensor* createI2CSensor(SensorConfiguration * config) {
+        std::shared_ptr<Sensor> createI2CSensor(SensorConfiguration * config) {
             auto i2cManager = this->container.resolve<I2CManager>();
             TwoWire &connector = i2cManager->fromConnector(config->getSensorConnector());
 
             switch (config->getSensorType()) {
-                case SHT20Sensor: return new SHT20Reader(config->getUuid(), connector);
-                case ThreePositionSwitchSensor: return new ThreePositionSwitch(config->getUuid(), connector);
+                case SHT20Sensor: return std::make_shared<SHT20Reader>(config->getUuid(), connector);
+                case ThreePositionSwitchSensor: return std::make_shared<ThreePositionSwitch>(config->getUuid(), connector);
                 default: throw std::invalid_argument("Unknown sensor type");
             }
         }
 
 
-        Sensor* createUnconfiguredSensorFromConfiguration(SensorConfiguration* config) {
+        std::shared_ptr<Sensor> createUnconfiguredSensorFromConfiguration(SensorConfiguration* config) {
             switch (config->getConnectionType()) {
                 case I2C: return createI2CSensor(config);
                 case UART: throw std::invalid_argument("Uart is not implemented yet");
@@ -34,8 +34,8 @@ class SensorFactory : public Factory<Sensor> {
             }
         }
 
-        Sensor* createSensorFromConfiguration(SensorConfiguration* config) {
-            Sensor * sensor = this->createUnconfiguredSensorFromConfiguration(config);
+        std::shared_ptr<Sensor> createSensorFromConfiguration(SensorConfiguration* config) {
+            std::shared_ptr<Sensor> sensor = this->createUnconfiguredSensorFromConfiguration(config);
 
             sensor->setOption("address", Option(32));
             
@@ -45,8 +45,8 @@ class SensorFactory : public Factory<Sensor> {
     public:
         SensorFactory(DI& container) : Factory<Sensor>(container) {}
 
-        Sensor * fromUuid(std::string uuid) {
-            Sensor * foundSensor = this->getInstance(uuid);
+        std::shared_ptr<Sensor> fromUuid(std::string uuid) {
+            std::shared_ptr<Sensor> foundSensor = this->getInstance(uuid);
             if (foundSensor != nullptr) {
                 return foundSensor;
             }
@@ -57,13 +57,13 @@ class SensorFactory : public Factory<Sensor> {
 
             SensorConfiguration * sensorConfig = this->container.resolve<SensorConfigurations>()->get(uuid);
 
-            Sensor * createdSensor = this->createSensorFromConfiguration(sensorConfig);
+            std::shared_ptr<Sensor> createdSensor = this->createSensorFromConfiguration(sensorConfig);
             this->registerInstance(uuid, createdSensor);
 
             return createdSensor;
         }
 
-        Sensor* fromConfiguration(SensorConfiguration* config) {
+        std::shared_ptr<Sensor> fromConfiguration(SensorConfiguration* config) {
             return this->fromUuid(config->getUuid());
         }
 
@@ -84,11 +84,11 @@ class SensorFactory : public Factory<Sensor> {
             return types;
         }
 
-        std::set<Sensor*> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
-            std::set<Sensor *> sensors;
+        std::set<std::shared_ptr<Sensor>> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
+            std::set<std::shared_ptr<Sensor>> sensors;
 
             for (std::string uuid : this->container.resolve<SensorConfigurations>()->getUuids()) {
-                Sensor* instance = this->fromUuid(uuid);
+                std::shared_ptr<Sensor> instance = this->fromUuid(uuid);
                 if (instance == nullptr) {
                     continue;
                 }
