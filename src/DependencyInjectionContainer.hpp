@@ -19,14 +19,19 @@ public:
 
 	template<typename T>
 	void registerInstance(T* instance) {
+		this->registerInstance(std::shared_ptr<T>(instance));
+	}
+
+	template<typename T>
+	void registerInstance(std::shared_ptr<T> instance) {
 		const size_t typeId = typeid(T).hash_code();
 		if (instances.find(typeId) == instances.end())
-			instances.emplace(typeId, std::shared_ptr<void>(instance));
+			instances.emplace(typeId, instance);
 	}
 
 	template<typename T>
 	void registerInstance(T &instance) {
-		this->registerInstance(&instance);
+		this->registerInstance(std::shared_ptr<T>(&instance));
 	}
 
 	template<typename T>
