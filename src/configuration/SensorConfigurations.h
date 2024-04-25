@@ -25,8 +25,8 @@ class SensorConfigurations : public ConfigurationCollection<SensorConfiguration>
         return sensors;
     }
 
-    static SensorConfigurations * fromJson(DI &container, JsonObject sensors) {
-        SensorConfigurations * instance = new SensorConfigurations(container);
+    static std::shared_ptr<SensorConfigurations> fromJson(DI &container, JsonObject sensors) {
+        std::shared_ptr<SensorConfigurations> instance = std::make_shared<SensorConfigurations>(container);
 
         for (JsonPair p : sensors) {
             try

@@ -29,7 +29,7 @@ void setup() {
   config = Configuration::fromFile(container, "/config.json");
   container.registerInstance<I2CManager>(i2cManager);
   container.registerInstance<Configuration>(config);
-  container.registerInstance<SensorConfigurations>(config->getSensors());
+  container.registerInstance<SensorConfigurations>(config->getSensors().get());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());
   container.registerInstance<SensorFactory>(new SensorFactory(container));
   calculatorFactory = new CalculatorFactory(container);
