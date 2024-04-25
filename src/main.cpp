@@ -14,8 +14,8 @@
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 std::shared_ptr<Configuration> config;
-CalculatorFactory * calculatorFactory;
 DI container;
+CalculatorFactory calculatorFactory(container);
 I2CManager i2cManager;
 
 Web webInterface(container);
@@ -32,7 +32,6 @@ void setup() {
   container.registerInstance<SensorConfigurations>(config->getSensors());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators());
   container.registerInstance<SensorFactory>(std::make_shared<SensorFactory>(container));
-  calculatorFactory = new CalculatorFactory(container);
 
   webInterface.begin();
 
@@ -74,7 +73,7 @@ void loop() {
 
   if (config->isDirty()) {
     container.resolve<SensorFactory>().get()->destroyInstances();
-    calculatorFactory->destroyInstances();
+    calculatorFactory.destroyInstances();
 
     config->markClean();
     Log.traceln("Config updated");
@@ -86,7 +85,7 @@ void loop() {
       continue;
     }
 
-    SpeedCalculator * c = calculatorFactory->fromUuid(uuid);
+    SpeedCalculator * c = calculatorFactory.fromUuid(uuid);
     if (c != nullptr) {
       newSpeed = max(c->calculate(), newSpeed);
     }
