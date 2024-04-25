@@ -4,7 +4,7 @@
 
 class SwitchPositionCalculator : public SpeedCalculator {
     private:
-        Measurements::SwitchPosition * sensor;
+        std::shared_ptr<Measurements::SwitchPosition> sensor;
         std::vector<int> positionMap;
 
         void initializePositionMap() {
@@ -33,7 +33,7 @@ class SwitchPositionCalculator : public SpeedCalculator {
         }
 
     public:
-        SwitchPositionCalculator(Measurements::SwitchPosition * sensor) {
+        SwitchPositionCalculator(std::shared_ptr<Measurements::SwitchPosition> sensor) {
             this->sensor = sensor;
             this->initializePositionMap();
         }

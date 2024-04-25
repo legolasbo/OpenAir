@@ -30,8 +30,8 @@ class Sensor : public Configurable, public Measurements::Measurement {
         }
 
         template <typename T>
-        T* toMeasurement() {
-            T * measurement = dynamic_cast<T*>(this);
+        std::shared_ptr<T> toMeasurement() {
+            std::shared_ptr<T> measurement = std::shared_ptr<T>(dynamic_cast<T*>(this));
             if (measurement == nullptr) {
                 Log.errorln("Could not cast sensor to %s Actual type %s", typeid(T*).name(), typeid(*this).name());
                 return nullptr;

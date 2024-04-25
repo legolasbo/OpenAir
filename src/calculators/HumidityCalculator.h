@@ -5,7 +5,7 @@
   
 class HumidityCalculator : public SpeedCalculator {
     private:
-        Measurements::Humidity * sensor;
+        std::shared_ptr<Measurements::Humidity> sensor;
     
     protected:
         int _calculate() {
@@ -16,7 +16,7 @@ class HumidityCalculator : public SpeedCalculator {
         }
 
     public:
-        HumidityCalculator(Measurements::Humidity *sensor) {
+        HumidityCalculator(std::shared_ptr<Measurements::Humidity>sensor) {
             this->sensor = sensor;
         }
 
