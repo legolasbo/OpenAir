@@ -35,14 +35,17 @@ public:
 	}
 
 	template<typename T>
-	std::shared_ptr<T> resolve() const {
+	std::shared_ptr<T> resolve() {
 		const size_t typeId = typeid(T).hash_code();
 		auto itr1 = instances.find(typeId);
 		if (itr1 != instances.end())
 			return std::static_pointer_cast<T>(itr1->second);
 
-		return nullptr;
+		std::shared_ptr<T> instance(new T());
+		this->registerInstance<T>(instance);
+		return instance;
 	}
+
 
 private:
 	std::unordered_map<size_t, std::shared_ptr<void>> instances;

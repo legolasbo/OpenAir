@@ -8,7 +8,7 @@
 class SensorApi : public API {
     public:
 
-    SensorApi(std::shared_ptr<DI> container, AsyncWebServer & server) : API(container, server) {
+    SensorApi(AsyncWebServer & server) : API(server) {
 
         server.on("/api/sensors/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(SensorFactory::knownSensorTypesJson(), request);
@@ -49,7 +49,7 @@ class SensorApi : public API {
 };
 
 void SensorApi::options(AsyncWebServerRequest * request) {
-    auto configs = this->container->resolve<SensorConfigurations>();
+    auto configs = DI::GetContainer()->resolve<SensorConfigurations>();
     std::string uuid = this->extractUuid(request);
     SensorConfiguration * sensor = configs->get(uuid);
 
@@ -83,7 +83,7 @@ void SensorApi::details(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to determine the uuid");
     }
 
-    SensorConfiguration * sensor = this->container->resolve<SensorConfigurations>()->get(uuid);
+    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
     if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid");
     }
@@ -94,7 +94,7 @@ void SensorApi::details(AsyncWebServerRequest * request) {
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
     Log.infoln("Listing sensors");
     JsonDocument doc;
-    auto sensors = this->container->resolve<SensorConfigurations>();
+    auto sensors = DI::GetContainer()->resolve<SensorConfigurations>();
 
     for (auto uuid : sensors->getUuids()) {
         SensorConfiguration* sensor = sensors->get(uuid);
@@ -113,8 +113,8 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
     ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
     SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
-    SensorConfiguration * sensorConfig = new SensorConfiguration(this->container, sensType);
-    auto config = this->container->resolve<Configuration>();
+    SensorConfiguration * sensorConfig = new SensorConfiguration(sensType);
+    auto config = DI::GetContainer()->resolve<Configuration>();
 
     if (config->getSensors()->identicalConfigExists(sensorConfig)) {
         return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
@@ -133,7 +133,7 @@ void SensorApi::sensorJson(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
 
-    SensorConfiguration * sensor = this->container->resolve<SensorConfigurations>()->get(uuid);
+    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
     if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
@@ -149,7 +149,7 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
 
     auto uuid = request->arg("uuid").c_str();
 
-    auto config = this->container->resolve<Configuration>();
+    auto config = DI::GetContainer()->resolve<Configuration>();
     for (auto calcId : config->getCalculators()->getUuids()) {
         if (config->getCalculators()->get(calcId)->dependsOn(uuid)) {
             config->getCalculators()->erase(calcId);
@@ -168,11 +168,11 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
     }
 
     String errors;
-    SensorConfiguration * sensor = this->container->resolve<SensorConfigurations>()->get(uuid);
+    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
 
     this->processFormValues(sensor, request);
 
-    this->container->resolve<Configuration>()->save();
+    DI::GetContainer()->resolve<Configuration>()->save();
     request->redirect("/sensors");
 }
 

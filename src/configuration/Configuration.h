@@ -9,16 +9,15 @@
 
 class Configuration {
     private:
-    std::shared_ptr<DI> container;
     std::shared_ptr<SensorConfigurations>sensors;
     std::shared_ptr<CalculatorConfigurations>calculators;
 
     public:
-    Configuration(std::shared_ptr<DI> container) : container(container) {
-        this->sensors = std::make_shared<SensorConfigurations>(container);
-        this->calculators = std::make_shared<CalculatorConfigurations>(container);
+    Configuration() {
+        this->sensors = std::make_shared<SensorConfigurations>();
+        this->calculators = std::make_shared<CalculatorConfigurations>();
     }
-    Configuration(std::shared_ptr<DI> container, std::shared_ptr<SensorConfigurations>sensors, std::shared_ptr<CalculatorConfigurations> calculators) : container(container) {
+    Configuration(std::shared_ptr<SensorConfigurations>sensors, std::shared_ptr<CalculatorConfigurations> calculators) {
         this->sensors = sensors;
         this->calculators = calculators;
     }
@@ -32,8 +31,8 @@ class Configuration {
         this->calculators->markClean();
     }
 
-    static std::shared_ptr<Configuration> load(std::shared_ptr<DI> container) {
-        return Configuration::fromFile(container, CONFIGURATION_FILE_PATH);
+    static std::shared_ptr<Configuration> load() {
+        return Configuration::fromFile(CONFIGURATION_FILE_PATH);
     }
 
     void save() {
@@ -53,16 +52,16 @@ class Configuration {
         f.close();
     }
 
-    static std::shared_ptr<Configuration> fromFile(std::shared_ptr<DI> container, const char * name) {
+    static std::shared_ptr<Configuration> fromFile( const char * name) {
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
-            return std::make_shared<Configuration>(container);
+            return std::make_shared<Configuration>();
         }
 
         File file = SPIFFS.open(name);
         if (!file || file.isDirectory()) {
             Serial.printf("Failed to open file: %s\n", name);
-            return std::make_shared<Configuration>(container);
+            return std::make_shared<Configuration>();
         }
 
         JsonDocument doc;
@@ -71,10 +70,10 @@ class Configuration {
         file.close();
         if (err != err.Ok) {
             Serial.printf("Failed to deserialize %s because of %d\n", name, err);
-            return std::make_shared<Configuration>(container);
+            return std::make_shared<Configuration>();
         }
 
-        return fromJson(container, doc);
+        return fromJson(doc);
     }
 
     std::shared_ptr<SensorConfigurations> getSensors() {
@@ -85,14 +84,14 @@ class Configuration {
         return this->calculators;
     }
 
-    static std::shared_ptr<Configuration> fromJson(std::shared_ptr<DI> container, JsonDocument &json) {
+    static std::shared_ptr<Configuration> fromJson(JsonDocument &json) {
         JsonObject sensorsJson = json["sensors"].as<JsonObject>();
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 
-        std::shared_ptr<SensorConfigurations> sensors = SensorConfigurations::fromJson(container, sensorsJson);
-        std::shared_ptr<CalculatorConfigurations> calculators = CalculatorConfigurations::fromJson(container, calculatorsJson);
+        std::shared_ptr<SensorConfigurations> sensors = SensorConfigurations::fromJson(sensorsJson);
+        std::shared_ptr<CalculatorConfigurations> calculators = CalculatorConfigurations::fromJson(calculatorsJson);
 
-        return std::make_shared<Configuration>(container, sensors, calculators);
+        return std::make_shared<Configuration>(sensors, calculators);
     }
 
     JsonDocument toJson() {

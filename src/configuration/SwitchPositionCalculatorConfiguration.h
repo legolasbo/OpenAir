@@ -7,7 +7,7 @@
 
 class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfiguration {
     public:
-    SwitchPositionCalculatorConfiguration(std::shared_ptr<DI> container) : SensorBasedCalculatorConfiguration(container) {}
+    SwitchPositionCalculatorConfiguration() : SensorBasedCalculatorConfiguration() {}
 
     Measurements::MeasurementTypeList supportedMeasurementTypes() {
         return Measurements::MeasurementTypeList {
@@ -27,7 +27,7 @@ class SwitchPositionCalculatorConfiguration : public SensorBasedCalculatorConfig
 
     virtual std::shared_ptr<SpeedCalculator> createInstance() {
         std::string sensorId = this->getOption("sensor").toStr();
-        std::shared_ptr<Sensor> sensor = this->container->resolve<SensorFactory>()->fromUuid(sensorId);
+        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorFactory>()->fromUuid(sensorId);
         if (sensor == nullptr) {
             Log.errorln("Unable to resolve sensor %s in calculator %s", sensorId.c_str(), this->getUuid().c_str());
             return nullptr;

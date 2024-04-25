@@ -15,12 +15,12 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         }
 
     public:
-    CalculatorConfigurations(std::shared_ptr<DI> container) : ConfigurationCollection<CalculatorConfiguration>(container) {}
+    CalculatorConfigurations() : ConfigurationCollection<CalculatorConfiguration>() {}
 
     CalculatorConfiguration * create(CalculatorType type) {
         switch (type) {
-            case HUMIDITY_CALCULATOR: return new HumidityCalculatorConfiguration(this->container);
-            case SWITCH_POSITION_CALCULATOR: return new SwitchPositionCalculatorConfiguration(this->container);
+            case HUMIDITY_CALCULATOR: return new HumidityCalculatorConfiguration();
+            case SWITCH_POSITION_CALCULATOR: return new SwitchPositionCalculatorConfiguration();
             default: return nullptr;
         }
     }
@@ -28,7 +28,7 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
     JsonDocument availableCalculatorTypes() {
         JsonDocument doc;
 
-        Measurements::MeasurementTypeList types = this->container->resolve<SensorFactory>()->availableMeasurementTypes();
+        Measurements::MeasurementTypeList types = DI::GetContainer()->resolve<SensorFactory>()->availableMeasurementTypes();
 
         for (auto calculatorType : KnownCalculatorTypes()) {
             CalculatorConfiguration * conf = this->create(calculatorType);
@@ -46,8 +46,8 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return doc;
     }
 
-    static std::shared_ptr<CalculatorConfigurations> fromJson(std::shared_ptr<DI> container, JsonObject calculators) {
-        std::shared_ptr<CalculatorConfigurations> instance = std::make_shared<CalculatorConfigurations>(container);
+    static std::shared_ptr<CalculatorConfigurations> fromJson(JsonObject calculators) {
+        std::shared_ptr<CalculatorConfigurations> instance = std::make_shared<CalculatorConfigurations>();
         
         for (JsonPair p : calculators) {
             JsonObject json = p.value().as<JsonObject>();

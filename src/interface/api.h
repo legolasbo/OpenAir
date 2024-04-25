@@ -7,7 +7,6 @@
 
 class API {
     protected:
-    std::shared_ptr<DI> container;
     AsyncWebServer &server;
 
     void processFormValues(Configurable * conf, AsyncWebServerRequest * request) {
@@ -38,7 +37,6 @@ class API {
     }
 
     public:
-    API(std::shared_ptr<DI> container, AsyncWebServer &server) : container(container), server(server) {
-    }
+    API(AsyncWebServer &server) : server(server) {}
 };
 

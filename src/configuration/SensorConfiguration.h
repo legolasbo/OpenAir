@@ -12,11 +12,11 @@ class SensorConfiguration : public GenericConfiguration {
         SensorType          sensorType;
 
     public:
-    SensorConfiguration(std::shared_ptr<DI> container) : GenericConfiguration(container) {}
-    SensorConfiguration(std::shared_ptr<DI> container, SensorType sensorType) : GenericConfiguration(container) {
+    SensorConfiguration() : GenericConfiguration() {}
+    SensorConfiguration(SensorType sensorType) : GenericConfiguration() {
         this->sensorType = sensorType;
     }
-    SensorConfiguration(std::shared_ptr<DI> container, SensorType sensorType, const char * uuid) : GenericConfiguration(container, uuid) {
+    SensorConfiguration(SensorType sensorType, const char * uuid) : GenericConfiguration(uuid) {
         this->sensorType = sensorType;
     }
 
@@ -94,7 +94,7 @@ class SensorConfiguration : public GenericConfiguration {
         return doc;
     }
 
-    static SensorConfiguration * fromJson(std::shared_ptr<DI> container, JsonObject doc) {
+    static SensorConfiguration * fromJson(JsonObject doc) {
         const char * uuid = doc["uuid"].as<const char *>();
         const char * sensorTypeName = doc["type"].as<const char *>();
         if (sensorTypeName == nullptr || uuid == nullptr) {  
@@ -103,7 +103,7 @@ class SensorConfiguration : public GenericConfiguration {
         }
 
         SensorType sensorType = SensorTypeFromMachineName(sensorTypeName);
-        SensorConfiguration * config = new SensorConfiguration(container, sensorType, uuid);
+        SensorConfiguration * config = new SensorConfiguration(sensorType, uuid);
 
         config->configureFromJson(doc);
 

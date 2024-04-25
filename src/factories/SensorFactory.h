@@ -43,7 +43,7 @@ class SensorFactory : public Factory<Sensor> {
         }
 
     public:
-        SensorFactory(std::shared_ptr<DI> container) : Factory<Sensor>(container) {}
+        SensorFactory() : Factory<Sensor>() {}
 
         std::shared_ptr<Sensor> fromUuid(std::string uuid) {
             std::shared_ptr<Sensor> foundSensor = this->getInstance(uuid);

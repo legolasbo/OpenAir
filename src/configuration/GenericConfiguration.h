@@ -20,7 +20,6 @@ class GenericConfiguration: public Configurable {
     }
 
     protected:
-        std::shared_ptr<DI> container;
         std::string uuid;
         bool dirty = true;
 
@@ -29,10 +28,10 @@ class GenericConfiguration: public Configurable {
     }
 
     public:
-    GenericConfiguration(std::shared_ptr<DI> container) : container(container) {
+    GenericConfiguration() {
         this->uuid = GenericConfiguration::generateUuid();
     }
-    GenericConfiguration(std::shared_ptr<DI> container, std::string uuid) : GenericConfiguration(container) {
+    GenericConfiguration(std::string uuid) {
         this->uuid = uuid;
     }
 

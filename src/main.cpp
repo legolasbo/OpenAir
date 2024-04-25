@@ -2,6 +2,7 @@
 #include <ArduinoLog.h>
 #include <vector>
 
+#include "DependencyInjectionContainer.hpp"
 #include "constants.h"
 #include "configuration/Configuration.h"
 #include "factories/CalculatorFactory.hpp"
@@ -9,15 +10,13 @@
 #include "inputs/tachometer.h"
 #include "outputs/fan.h"
 #include "interface/web.h"
-#include "DependencyInjectionContainer.hpp"
 
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 std::shared_ptr<Configuration> config;
-CalculatorFactory calculatorFactory(DI::GetContainer());
-I2CManager i2cManager;
+CalculatorFactory calculatorFactory;
 
-Web webInterface(DI::GetContainer());
+Web webInterface;
 
 void setup() {
   Serial.begin(115200);
@@ -27,17 +26,15 @@ void setup() {
 
   auto container = DI::GetContainer();
 
-  config = Configuration::fromFile(container, "/config.json");
-  container->registerInstance<I2CManager>(i2cManager);
+  config = Configuration::fromFile("/config.json");
   container->registerInstance<Configuration>(config);
   container->registerInstance<SensorConfigurations>(config->getSensors());
   container->registerInstance<CalculatorConfigurations>(config->getCalculators());
-  container->registerInstance<SensorFactory>(std::make_shared<SensorFactory>(container));
 
   webInterface.begin();
 
 #if DEVELOPMENT_MODE == true
-  SensorConfiguration * defaultSensor = new SensorConfiguration(container, SHT20Sensor);
+  SensorConfiguration * defaultSensor = new SensorConfiguration(SHT20Sensor);
   if (config->getSensors()->getUuids().size() == 0) {
     defaultSensor->setOption("name", "Default sensor");
     defaultSensor->setOption("connector", X4);
@@ -46,7 +43,7 @@ void setup() {
     Serial.printf("Added default sensor: %s\n", defaultSensor->getUuid().c_str());
   }
 
-  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration(container);
+  CalculatorConfiguration * defaultCalculator = new HumidityCalculatorConfiguration();
   if (config->getCalculators()->getUuids().size() == 0) {
     defaultCalculator->setOption("name", "Default calculator");
     defaultCalculator->setOption("sensor", defaultSensor->getUuid());

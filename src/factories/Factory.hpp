@@ -28,8 +28,8 @@ class Factory {
     }
 
     public:
-    Factory(std::shared_ptr<DI> container) {
-        this->container = container;
+    Factory() {
+        this->container = DI::GetContainer();
     }
 
     void destroyInstances() {
