@@ -13,7 +13,7 @@
 
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
-Configuration * config;
+std::shared_ptr<Configuration> config;
 CalculatorFactory * calculatorFactory;
 DI container;
 I2CManager i2cManager;
@@ -28,7 +28,7 @@ void setup() {
 
   config = Configuration::fromFile(container, "/config.json");
   container.registerInstance<I2CManager>(i2cManager);
-  container.registerInstance<Configuration>(config);
+  container.registerInstance<Configuration>(config.get());
   container.registerInstance<SensorConfigurations>(config->getSensors().get());
   container.registerInstance<CalculatorConfigurations>(config->getCalculators().get());
   container.registerInstance<SensorFactory>(new SensorFactory(container));

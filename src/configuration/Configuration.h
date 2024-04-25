@@ -32,7 +32,7 @@ class Configuration {
         this->calculators->markClean();
     }
 
-    static Configuration * load(DI &container) {
+    static std::shared_ptr<Configuration> load(DI &container) {
         return Configuration::fromFile(container, CONFIGURATION_FILE_PATH);
     }
 
@@ -53,16 +53,16 @@ class Configuration {
         f.close();
     }
 
-    static Configuration * fromFile(DI &container, const char * name) {
+    static std::shared_ptr<Configuration> fromFile(DI &container, const char * name) {
         if (!SPIFFS.begin(true)) {
             Serial.println("SPIFFS MOUNT FAILED!");
-            return new Configuration(container);
+            return std::make_shared<Configuration>(container);
         }
 
         File file = SPIFFS.open(name);
         if (!file || file.isDirectory()) {
             Serial.printf("Failed to open file: %s\n", name);
-            return new Configuration(container);
+            return std::make_shared<Configuration>(container);
         }
 
         JsonDocument doc;
@@ -71,7 +71,7 @@ class Configuration {
         file.close();
         if (err != err.Ok) {
             Serial.printf("Failed to deserialize %s because of %d\n", name, err);
-            return new Configuration(container);
+            return std::make_shared<Configuration>(container);
         }
 
         return fromJson(container, doc);
@@ -85,14 +85,14 @@ class Configuration {
         return this->calculators;
     }
 
-    static Configuration * fromJson(DI &container, JsonDocument &json) {
+    static std::shared_ptr<Configuration> fromJson(DI &container, JsonDocument &json) {
         JsonObject sensorsJson = json["sensors"].as<JsonObject>();
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 
         std::shared_ptr<SensorConfigurations> sensors = SensorConfigurations::fromJson(container, sensorsJson);
         std::shared_ptr<CalculatorConfigurations> calculators = CalculatorConfigurations::fromJson(container, calculatorsJson);
 
-        return new Configuration(container, sensors, calculators);
+        return std::make_shared<Configuration>(container, sensors, calculators);
     }
 
     JsonDocument toJson() {
