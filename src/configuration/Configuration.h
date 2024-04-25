@@ -11,14 +11,14 @@ class Configuration {
     private:
     DI &container;
     std::shared_ptr<SensorConfigurations>sensors;
-    CalculatorConfigurations *calculators;
+    std::shared_ptr<CalculatorConfigurations>calculators;
 
     public:
     Configuration(DI &container) : container(container) {
         this->sensors = std::make_shared<SensorConfigurations>(container);
-        this->calculators = new CalculatorConfigurations(container);
+        this->calculators = std::make_shared<CalculatorConfigurations>(container);
     }
-    Configuration(DI &container, std::shared_ptr<SensorConfigurations>sensors, CalculatorConfigurations* calculators) : container(container) {
+    Configuration(DI &container, std::shared_ptr<SensorConfigurations>sensors, std::shared_ptr<CalculatorConfigurations> calculators) : container(container) {
         this->sensors = sensors;
         this->calculators = calculators;
     }
@@ -81,7 +81,7 @@ class Configuration {
         return this->sensors;
     }
 
-    CalculatorConfigurations * getCalculators() {
+    std::shared_ptr<CalculatorConfigurations> getCalculators() {
         return this->calculators;
     }
 
@@ -90,7 +90,7 @@ class Configuration {
         JsonObject calculatorsJson = json["calculators"].as<JsonObject>();
 
         std::shared_ptr<SensorConfigurations> sensors = SensorConfigurations::fromJson(container, sensorsJson);
-        CalculatorConfigurations * calculators = CalculatorConfigurations::fromJson(container, calculatorsJson);
+        std::shared_ptr<CalculatorConfigurations> calculators = CalculatorConfigurations::fromJson(container, calculatorsJson);
 
         return new Configuration(container, sensors, calculators);
     }

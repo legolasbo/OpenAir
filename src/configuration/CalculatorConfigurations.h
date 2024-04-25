@@ -46,8 +46,8 @@ class CalculatorConfigurations : public ConfigurationCollection<CalculatorConfig
         return doc;
     }
 
-    static CalculatorConfigurations * fromJson(DI &container, JsonObject calculators) {
-        CalculatorConfigurations * instance = new CalculatorConfigurations(container);
+    static std::shared_ptr<CalculatorConfigurations> fromJson(DI &container, JsonObject calculators) {
+        std::shared_ptr<CalculatorConfigurations> instance = std::make_shared<CalculatorConfigurations>(container);
         
         for (JsonPair p : calculators) {
             JsonObject json = p.value().as<JsonObject>();

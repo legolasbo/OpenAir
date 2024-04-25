@@ -30,7 +30,7 @@ void setup() {
   container.registerInstance<I2CManager>(i2cManager);
   container.registerInstance<Configuration>(config);
   container.registerInstance<SensorConfigurations>(config->getSensors().get());
-  container.registerInstance<CalculatorConfigurations>(config->getCalculators());
+  container.registerInstance<CalculatorConfigurations>(config->getCalculators().get());
   container.registerInstance<SensorFactory>(new SensorFactory(container));
   calculatorFactory = new CalculatorFactory(container);
 
