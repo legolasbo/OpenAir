@@ -113,18 +113,7 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
     ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
     SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
-    SensorConfiguration * sensorConfig = new SensorConfiguration(sensType);
-    auto config = DI::GetContainer()->resolve<Configuration>();
-
-    if (config->getSensors()->identicalConfigExists(sensorConfig)) {
-        return internalServerErrorResponse(request, "Unable to add this configuration. it is already present");
-    }
-
-    this->processFormValues(sensorConfig, request);
-
-    config->getSensors()->add(sensorConfig);
     request->redirect("/sensors");
-    config->save();
 }
 
 void SensorApi::sensorJson(AsyncWebServerRequest * request) {
@@ -149,15 +138,8 @@ void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
 
     auto uuid = request->arg("uuid").c_str();
 
-    auto config = DI::GetContainer()->resolve<Configuration>();
-    for (auto calcId : config->getCalculators()->getUuids()) {
-        if (config->getCalculators()->get(calcId)->dependsOn(uuid)) {
-            config->getCalculators()->erase(calcId);
-        }
-    }
-
-    config->getSensors()->erase(uuid);
-    config->save();
+    DI::GetContainer()->resolve<SensorRepository>()->remove(uuid);
+    DI::GetContainer()->resolve<Configuration>()->save();
     request->redirect("/sensors");
 }
 

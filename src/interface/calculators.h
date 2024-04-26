@@ -93,10 +93,8 @@ void CalculatorApi::remove(AsyncWebServerRequest * request) {
         return request->redirect("/");
     }
 
-    auto config = DI::GetContainer()->resolve<Configuration>();
-
-    config->getCalculators()->erase(request->arg("uuid").c_str());
-    config->save();
+    DI::GetContainer()->resolve<CalculatorRepository>()->remove(request->arg("uuid").c_str());
+    DI::GetContainer()->resolve<Configuration>()->save();
     request->redirect("/calculators");
 }
 

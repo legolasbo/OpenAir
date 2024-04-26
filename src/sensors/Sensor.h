@@ -6,17 +6,11 @@
 #include "../options/Configurable.h"
 
 class Sensor : public Configurable, public Measurements::Measurement {
-    private:
-        std::string uuid;
-
     public:
+        Sensor() : Configurable() {}
+        Sensor(std::string uuid) : Configurable(uuid) {}
+
         virtual ~Sensor() = default;
-        Sensor(std::string uuid) {
-            this->uuid = uuid;
-        }
-        std::string getUuid() {
-            return this->uuid;
-        }
         virtual SensorType getSensorType() = 0;
         virtual ConnectionType getConnectionType() = 0;
         virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;

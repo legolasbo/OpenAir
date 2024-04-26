@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../calculators/SpeedCalculator.h"
+#include "../calculators/HumidityCalculator.h"
+#include "../calculators/SwitchPositionCalculator.h"
+#include "../calculators/UnknownCalculator.h"
 #include "../configuration/CalculatorConfigurations.h"
 
 class CalculatorRepository : public Repository<SpeedCalculator> {
@@ -23,7 +25,18 @@ class CalculatorRepository : public Repository<SpeedCalculator> {
             this->registerInstance(uuid, instance);
         }
         return instance;
-    }    
+    }
 
+    std::shared_ptr<SpeedCalculator> create(CalculatorType type) {
+        switch (type) {
+            case HUMIDITY_CALCULATOR: return std::make_shared<HumidityCalculator>();
+            case SWITCH_POSITION_CALCULATOR: return std::make_shared<SwitchPositionCalculator>();
+            default: return std::make_shared<UnknownCalculator>();
+        }
+    }
+
+    std::shared_ptr<SpeedCalculator> create(std::string type) {
+        return this->create(CalculatorTypeFromMachineName(type));
+    }
 };
 

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "Option.h"
+#include <UUID.h>
 
 class Configurable {
     private:
@@ -18,8 +19,28 @@ class Configurable {
             }
         }
 
+    protected:
+        static std::string generateUuid() {
+            UUID uuid;
+            uuid.seed(esp_random(), esp_random());
+            uuid.setRandomMode();
+            uuid.generate();
+            return std::string(uuid.toCharArray());
+        }
+        std::string uuid;
+
     public:
+        Configurable() {
+            this->uuid = Configurable::generateUuid();
+        }
+        Configurable(std::string uuid) {
+            this->uuid = uuid;
+        }
         virtual ~Configurable() = default;
+
+        const std::string getUuid() {
+            return this->uuid;
+        }
 
         virtual std::unordered_map<std::string, Option> availableOptions() = 0;
 

@@ -8,70 +8,32 @@
 #include "../sensors/I2CSensor.h"
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/ThreePositionSwitch.h"
+#include "../sensors/UnknownSensor.h"
 #include "../configuration/SensorConfigurations.h"
 #include "Repository.hpp"
 
 class SensorRepository : public Repository<Sensor> {
     private:
 
-        std::shared_ptr<Sensor> createI2CSensor(SensorConfiguration * config) {
-            auto i2cManager = this->container->resolve<I2CManager>();
-            TwoWire &connector = i2cManager->fromConnector(config->getSensorConnector());
-
-            switch (config->getSensorType()) {
-                case SHT20Sensor: return std::make_shared<SHT20Reader>(config->getUuid(), connector);
-                case ThreePositionSwitchSensor: return std::make_shared<ThreePositionSwitch>(config->getUuid(), connector);
-                default: throw std::invalid_argument("Unknown sensor type");
-            }
-        }
-
-
-        std::shared_ptr<Sensor> createUnconfiguredSensorFromConfiguration(SensorConfiguration* config) {
-            switch (config->getConnectionType()) {
-                case I2C: return createI2CSensor(config);
-                case UART: throw std::invalid_argument("Uart is not implemented yet");
-                default: throw std::invalid_argument("unsupported connection type");
-            }
-        }
-
-        std::shared_ptr<Sensor> createSensorFromConfiguration(SensorConfiguration* config) {
-            std::shared_ptr<Sensor> sensor = this->createUnconfiguredSensorFromConfiguration(config);
-
-            sensor->setOption("address", Option(32));
-            
-            return sensor;
-        }
-
     public:
-        SensorRepository() : Repository<Sensor>() {}
 
-        std::shared_ptr<Sensor> fromUuid(std::string uuid) {
-            std::shared_ptr<Sensor> foundSensor = this->getInstance(uuid);
-            if (foundSensor != nullptr) {
-                return foundSensor;
+        std::shared_ptr<Sensor> create(SensorType type) {
+            switch (type) {
+                case SHT20Sensor: return std::make_shared<SHT20Reader>();
+                case ThreePositionSwitchSensor: return std::make_shared<ThreePositionSwitch>();
+                default: return std::make_shared<UnknownSensor>();
             }
-
-            if (!this->container->resolve<SensorConfigurations>()->exists(uuid)) {
-                return nullptr;
-            }
-
-            SensorConfiguration * sensorConfig = this->container->resolve<SensorConfigurations>()->get(uuid);
-
-            std::shared_ptr<Sensor> createdSensor = this->createSensorFromConfiguration(sensorConfig);
-            this->registerInstance(uuid, createdSensor);
-
-            return createdSensor;
         }
 
-        std::shared_ptr<Sensor> fromConfiguration(SensorConfiguration* config) {
-            return this->fromUuid(config->getUuid());
+        std::shared_ptr<Sensor> create(std::string type) {
+            return this->create(SensorTypeFromMachineName(type));
         }
 
         Measurements::MeasurementTypeList availableMeasurementTypes() {
             Measurements::MeasurementTypeList types;
 
-            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
-                auto instance = this->fromUuid(uuid);
+            for (std::string uuid : DI::GetContainer()->resolve<SensorConfigurations>()->getUuids()) {
+                auto instance = this->getInstance(uuid);
                 if (instance == nullptr) {
                     Serial.printf("Could not load %s\n", uuid);
                     continue;
@@ -87,8 +49,8 @@ class SensorRepository : public Repository<Sensor> {
         std::set<std::shared_ptr<Sensor>> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
             std::set<std::shared_ptr<Sensor>> sensors;
 
-            for (std::string uuid : this->container->resolve<SensorConfigurations>()->getUuids()) {
-                std::shared_ptr<Sensor> instance = this->fromUuid(uuid);
+            for (std::string uuid : DI::GetContainer()->resolve<SensorConfigurations>()->getUuids()) {
+                std::shared_ptr<Sensor> instance = this->getInstance(uuid);
                 if (instance == nullptr) {
                     continue;
                 }

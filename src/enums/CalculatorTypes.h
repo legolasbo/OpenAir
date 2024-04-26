@@ -27,6 +27,10 @@ const char* ToMachineName(CalculatorType v) {
     }
 }
 
+CalculatorType CalculatorTypeFromMachineName(std::string name) {
+    return CalculatorTypeFromMachineName(name.c_str());
+}
+
 CalculatorType CalculatorTypeFromMachineName(const char * name) {
     if (strcmp(name, ToMachineName(HUMIDITY_CALCULATOR)) == 0) {
         return HUMIDITY_CALCULATOR;

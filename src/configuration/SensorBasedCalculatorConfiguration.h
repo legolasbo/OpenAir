@@ -28,7 +28,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool isValid() {
-        return DI::GetContainer()->resolve<SensorRepository>()->fromUuid(this->getOption("sensor").toStr()) != nullptr;
+        return DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor").toStr()) != nullptr;
     }
 
     virtual JsonDocument getConfigurationOptions() {

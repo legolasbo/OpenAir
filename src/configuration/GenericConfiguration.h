@@ -11,13 +11,6 @@
 
 class GenericConfiguration: public Configurable {
     private:
-    static std::string generateUuid() {
-        UUID uuid;
-        uuid.seed(esp_random(), esp_random());
-        uuid.setRandomMode();
-        uuid.generate();
-        return std::string(uuid.toCharArray());
-    }
 
     protected:
         std::string uuid;
@@ -28,12 +21,8 @@ class GenericConfiguration: public Configurable {
     }
 
     public:
-    GenericConfiguration() {
-        this->uuid = GenericConfiguration::generateUuid();
-    }
-    GenericConfiguration(std::string uuid) {
-        this->uuid = uuid;
-    }
+    GenericConfiguration() : Configurable() {}
+    GenericConfiguration(std::string uuid) : Configurable(uuid) {}
 
     virtual std::unordered_map<std::string, Option> availableOptions() {
         return {
@@ -66,10 +55,6 @@ class GenericConfiguration: public Configurable {
     virtual void setUuid(std::string uuid) {
         this->uuid = uuid;
         this->markDirty();
-    }
-
-    virtual std::string getUuid() {
-        return this->uuid;
     }
 
     virtual bool isValid() = 0;
