@@ -15,8 +15,8 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
     static const int defaultAddress = 32;
 
     int getAddress() {
-      Option address = this->getOption("address");
-      return address.toIntOr(this->defaultAddress);
+      std::shared_ptr<Option> address = this->getOption("address");
+      return address->toIntOr(this->defaultAddress);
     }
                                   
   public:
@@ -32,13 +32,11 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
       };
     }
 
-    std::unordered_map<std::string, Option> availableOptions() {
+    std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+      std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
       return {
-        {"connector", ListOption(X4, {
-          Option(X4, ToString(X4)),
-          Option(X6, ToString(X6)),
-        }, "Connector", true)},
-        {"address", BoundedOption(this->defaultAddress, 32, 39, "Address", true)}
+        {"connector", std::make_shared<ListOption>(X4, defaultConnectorOptions, "Connector", true)},
+        {"address", std::make_shared<BoundedOption>(this->defaultAddress, 32, 39, "Address", true)}
       };
     }
 
@@ -51,7 +49,7 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
     }
 
     SelectedMode read() {
-      SensorConnector conn = this->getOption("connector").toConnector();
+      SensorConnector conn = this->getOption("connector")->toConnector();
 
       if (conn == UNKNOWN_CONNECTOR) {
         Log.errorln("Unable to read three position switch: unknown connector.");

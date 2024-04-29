@@ -20,7 +20,7 @@ class UnknownCalculator : public SpeedCalculator {
             return false;
         }
 
-        virtual std::unordered_map<std::string, Option> availableOptions() {
+        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {};
         };
 };

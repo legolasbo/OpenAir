@@ -15,7 +15,7 @@ class UnknownSensor : public Sensor {
             return {};
         }
 
-        std::unordered_map<std::string, Option> availableOptions() {
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {};
         }
 

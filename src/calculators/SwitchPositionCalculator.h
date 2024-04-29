@@ -53,10 +53,10 @@ class SwitchPositionCalculator : public SpeedCalculator {
             return "Switch position";
         }
 
-        virtual std::unordered_map<std::string, Option> availableOptions() {
+        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {
-                {"name", Option(this->name())},
-                {"sensor", Option()},
+                {"name", std::make_shared<Option>(this->name())},
+                {"sensor", std::make_shared<Option>()},
             };
         }
 

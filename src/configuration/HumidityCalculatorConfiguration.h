@@ -38,14 +38,14 @@ class HumidityCalculatorConfiguration : public SensorBasedCalculatorConfiguratio
             return nullptr;
         }
 
-        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor").toStr());
+        std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor")->toStr());
         if (sensor == nullptr) {
             return nullptr;
         }
 
         if (auto m = sensor->toMeasurement<Measurements::Humidity>()) {
             auto calc = std::make_shared<HumidityCalculator>();
-            calc->setOption("sensor", Option(sensor->getUuid()));
+            calc->setOption("sensor", std::make_shared<Option>(sensor->getUuid()));
             return calc;
         }
         return nullptr;

@@ -6,7 +6,7 @@ const getNumberConstraintsFromInfo = (info) => {
         return "";
     }
 
-    constraints = ["min", "max"];
+    let constraints = ["min", "max"];
     constraints.map(val => info.constrain[val] ? `${val}="${info.constrain[val]}"` : "");
     return constraints.join(" ");
 }

@@ -10,14 +10,14 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     SensorBasedCalculatorConfiguration() : CalculatorConfiguration() {}
 
 
-    virtual std::unordered_map<std::string, Option> availableOptions() {
+    virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
         auto options = CalculatorConfiguration::availableOptions();
-        options.emplace("sensor", Option(""));
+        options.emplace("sensor", std::make_shared<Option>(""));
         return options;
     };
 
     virtual bool dependsOn(std::string uuid) {
-        return this->getOption("sensor").toStr() == uuid;
+        return this->getOption("sensor")->toStr() == uuid;
     }
 
     bool setSensor(std::string value) {
@@ -27,7 +27,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
     }
 
     virtual bool isValid() {
-        return DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor").toStr()) != nullptr;
+        return DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor")->toStr()) != nullptr;
     }
 
     virtual JsonDocument getConfigurationOptions() {
@@ -52,7 +52,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
         JsonDocument doc = CalculatorConfiguration::toDetails();        
 
         doc["sensor"]["label"] = "Sensor";
-        doc["sensor"]["value"] = this->getOption("sensor").toStr();
+        doc["sensor"]["value"] = this->getOption("sensor")->toStr();
         doc["sensor"]["type"] = "sensor";
 
         return doc;

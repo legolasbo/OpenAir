@@ -24,9 +24,9 @@ class GenericConfiguration: public Configurable {
     GenericConfiguration() : Configurable() {}
     GenericConfiguration(std::string uuid) : Configurable(uuid) {}
 
-    virtual std::unordered_map<std::string, Option> availableOptions() {
+    virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
         return {
-            {"name", Option("Unnamed")}
+            {"name", std::make_shared<Option>("Unnamed")}
         };
     };
 
@@ -43,11 +43,11 @@ class GenericConfiguration: public Configurable {
     }
 
     virtual std::string getName() {
-        return this->getOption("name").toStr();
+        return this->getOption("name")->toStr();
     }
 
     bool setName(std::string name) {
-        return this->setOption("name", Option(name));
+        return this->setOption("name", name);
         this->markDirty();
         return true;
     }

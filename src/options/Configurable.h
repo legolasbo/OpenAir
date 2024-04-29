@@ -6,16 +6,16 @@
 
 class Configurable {
     private:
-        std::unordered_map<std::string, Option> options;
+        std::unordered_map<std::string, std::shared_ptr<Option>> options;
 
         void logOptions() {
             Log.traceln("%s: Available options:", typeid(*this).name());
             for (auto &&i : this->availableOptions()) {
-                Log.traceln("%s: %s", i.first.c_str(), i.second.toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second->toCharPtr());
             }
             Log.traceln("%s: Configured options:", typeid(*this).name());
             for (auto &&i : this->options) {
-                Log.traceln("%s: %s", i.first.c_str(), i.second.toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second->toCharPtr());
             }
         }
 
@@ -42,7 +42,7 @@ class Configurable {
             return this->uuid;
         }
 
-        virtual std::unordered_map<std::string, Option> availableOptions() = 0;
+        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() = 0;
 
         bool isAvailableOption(std::string name) {
             auto opts = this->availableOptions();
@@ -53,15 +53,15 @@ class Configurable {
             return this->options.find(name) != this->options.end();
         }
 
-        Option getOption(std::string name) {
+        std::shared_ptr<Option> getOption(std::string name) {
             if (!this->isAvailableOption(name)) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
-                return Option();
+                return std::make_shared<Option>();
             }
 
             if (this->options.find(name) == this->options.end()) {
-                Option defaultValue = this->availableOptions().at(name);
-                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue.toCharPtr());
+                std::shared_ptr<Option> defaultValue = this->availableOptions().at(name);
+                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue->toCharPtr());
                 return defaultValue;
             }
 
@@ -69,27 +69,27 @@ class Configurable {
         }
 
         bool setOption(std::string name, std::string value) {
-            switch(this->getOption(name).getType()) {
-                case Option::Type::INTEGER : return this->setOption(name, Option(atoi(value.c_str())));
+            switch(this->getOption(name)->getType()) {
+                case Option::Type::INTEGER : return this->setOption(name, std::make_shared<Option>(atoi(value.c_str())));
             }
-            return this->setOption(name, Option(value));
+            return this->setOption(name, std::make_shared<Option>(value));
         }
 
-        bool setOption(std::string name, Option value) {
+        bool setOption(std::string name, std::shared_ptr<Option> value) {
             if (!this->isAvailableOption(name)) {
                 Log.warningln("Option %s is not one of the available options.", name.c_str());
                 this->logOptions();
                 return false;
             }
 
-            if (this->availableOptions().at(name).getType() != value.getType()) {
-                Log.warningln("Unable to set option %s to %s. Types don't match", name.c_str(), value.toStr());
+            if (this->availableOptions().at(name)->getType() != value->getType()) {
+                Log.warningln("Unable to set option %s to %s. Types don't match", name.c_str(), value->toStr());
                 return false;
             }
 
             this->options.erase(name);
             bool success = this->options.emplace(name, value).second;
-            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value.toCharPtr(), success ? "succeeded" : "failed");
+            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value->toCharPtr(), success ? "succeeded" : "failed");
             return success;
         }
         
@@ -103,10 +103,10 @@ class Configurable {
 
                 doc[p.first]["label"] = label;
                 doc[p.first]["type"] = "key/value";
-                doc[p.first]["value"] = p.second.toStr();
+                doc[p.first]["value"] = p.second->toStr();
 
                 if (this->isConfiguredOption(p.first)) {
-                    doc[p.first]["value"] = this->getOption(p.first).toStr();
+                    doc[p.first]["value"] = this->getOption(p.first)->toStr();
                 }
             }
 
@@ -119,10 +119,10 @@ class Configurable {
             for (auto p : this->availableOptions()) {
 
                 if (this->isConfiguredOption(p.first)) {
-                    doc[p.first] = this->getOption(p.first).toInterfaceOption();
+                    doc[p.first] = this->getOption(p.first)->toInterfaceOption();
                 }
                 else {
-                    doc[p.first] = p.second.toInterfaceOption();
+                    doc[p.first] = p.second->toInterfaceOption();
                 }
             }
 
@@ -148,7 +148,7 @@ class Configurable {
             JsonDocument doc;
 
             for (auto p : this->options) {
-                doc["options"][p.first] = p.second.toStr();
+                doc["options"][p.first] = p.second->toStr();
             }
 
             return doc;

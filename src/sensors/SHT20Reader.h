@@ -47,16 +47,11 @@ class SHT20Reader : public Sensor,
             };
         }
 
-        std::unordered_map<std::string, Option> availableOptions() {
-        return {
-            {
-                "connector",
-                ListOption(X4, {
-                    Option(X4, ToString(X4)),
-                    Option(X6, ToString(X6)),
-                }, "Connector", true)
-            }
-        };
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+            std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
+            return {
+                {"connector", std::make_shared<ListOption>(X4, defaultConnectorOptions, "Connector", true)}
+            };
         }
 
         SHT20Reading takeReading() {
