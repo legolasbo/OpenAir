@@ -68,6 +68,10 @@ class Configuration {
 
             serializeJson(this->toJson(), f);
 
+            if (Log.getLevel() >= LOG_LEVEL_TRACE) {
+                serializeJsonPretty(this->toJson(), Serial);
+            }
+
             f.close();
         }
 

@@ -13,6 +13,8 @@ class Sensor : public Configurable, public Measurements::Measurement {
         virtual ~Sensor() = default;
         virtual SensorType getSensorType() = 0;
         virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;
+        virtual std::vector<ConnectionType> getSupportedConnectionTypes() = 0;
+
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {
                 if (t == type) {
@@ -32,11 +34,38 @@ class Sensor : public Configurable, public Measurements::Measurement {
             return measurement;
         }
 
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+            std::unordered_map<std::string, std::shared_ptr<Option>> options;
+            options.emplace("name", std::make_shared<Option>(ToString(this->getSensorType()), "Name", true));
+
+            std::vector<ConnectionType> supportedTypes = this->getSupportedConnectionTypes();
+            if (supportedTypes.size() == 0) {
+                return options;
+            }
+
+            std::vector<Option> supportedTypeOptions;
+            for (ConnectionType t : supportedTypes) {
+                supportedTypeOptions.push_back(Option(t));
+            }
+
+            options.emplace("connection", std::make_shared<ListOption>(supportedTypes.at(0), supportedTypeOptions, "Connection", true));
+
+            return options;
+        }
+
         virtual JsonDocument toInterfaceOptions() {
             JsonDocument doc = Configurable::toInterfaceOptions();
 
             doc["type"]["type"] = "hidden";
             doc["type"]["value"] = ToMachineName(this->getSensorType());
+
+            return doc;
+        }
+
+        virtual JsonDocument toJson() {
+            JsonDocument doc = Configurable::toJson();
+            
+            doc["type"] = ToMachineName(this->getSensorType());
 
             return doc;
         }

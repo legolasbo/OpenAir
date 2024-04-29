@@ -34,6 +34,9 @@ class Configurable {
             this->uuid = Configurable::generateUuid();
         }
         Configurable(std::string uuid) {
+            if (uuid == "") {
+                uuid = Configurable::generateUuid();
+            }
             this->uuid = uuid;
         }
         virtual ~Configurable() = default;
@@ -133,6 +136,10 @@ class Configurable {
         }
 
         virtual bool configureFromJson(JsonObject doc) {
+            if (doc.containsKey("uuid")) {
+                this->uuid = doc["uuid"].as<std::string>();
+            }
+
             if (!doc.containsKey("options")) {
                 return true;
             }
@@ -146,6 +153,8 @@ class Configurable {
 
         virtual JsonDocument toJson() {
             JsonDocument doc;
+
+            doc["uuid"] = this->uuid;
 
             for (auto p : this->options) {
                 doc["options"][p.first] = p.second->toStr();

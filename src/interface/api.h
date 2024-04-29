@@ -17,7 +17,10 @@ class API {
     void processFormValues(Configurable * conf, AsyncWebServerRequest * request) {
         for (size_t i = 0; i < request->args(); i++) {
             auto argName = request->argName(i).c_str();
-            Serial.printf("Processing option %d: %s -> %s\n", i, argName, request->arg(argName).c_str());
+            if (!conf->isAvailableOption(argName)) {
+                continue;
+            }
+            Log.infoln("Processing option %d: %s -> %s\n", i, argName, request->arg(argName).c_str());
             conf->setOption(argName, request->arg(argName).c_str());
         }
     }

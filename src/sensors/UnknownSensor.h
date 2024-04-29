@@ -19,5 +19,9 @@ class UnknownSensor : public Sensor {
             return {};
         }
 
+        std::vector<ConnectionType> getSupportedConnectionTypes() {
+            return {};
+        }
+
 };
 

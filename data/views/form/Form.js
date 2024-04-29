@@ -6,9 +6,9 @@ const getNumberConstraintsFromInfo = (info) => {
         return "";
     }
 
-    let constraints = ["min", "max"];
-    constraints.map(val => info.constrain[val] ? `${val}="${info.constrain[val]}"` : "");
-    return constraints.join(" ");
+    return ["min", "max"]
+        .map(val => Object.keys(info.constrain).includes(val) ? `${val}="${info.constrain[val]}"` : "")
+        .join(" ");
 }
 
 const mapToRenderer = (type) => { 

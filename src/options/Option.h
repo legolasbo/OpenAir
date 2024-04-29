@@ -74,7 +74,6 @@ class Option {
         }
 
         virtual JsonDocument toInterfaceOption() {
-            Log.traceln("Option::toInterfaceOption from %s label: %s", typeid(*this).name(), this->getLabel().c_str());
             JsonDocument doc;
 
             switch (this->type) {
@@ -169,6 +168,43 @@ class ListOption : public Option {
         ListOption(T value, std::vector<Option> options, std::string label = "", bool editable = false) : Option(value, label, editable) {
             this->options = options;
         }
+
+        Option newValue(Option value) {
+            if (this->type != value.getType()) {
+                return *this;
+            }
+
+            for (Option opt : this->options) {
+                if (value.toStr() == opt.toStr()) {
+                    switch (this->type) {
+                        case INTEGER:
+                            return ListOption(value.toInt(), this->options, this->getLabel(), this->isEditable());
+                        case CONNECTION:
+                            return ListOption(value.toConnection(), this->options, this->getLabel(), this->isEditable());
+                        case CONNECTOR:
+                            return ListOption(value.toConnector(), this->options, this->getLabel(), this->isEditable());
+                        default:
+                            return ListOption(value.toStr(), this->options, this->getLabel(), this->isEditable());
+                    }
+                }
+            }
+            
+            return *this;
+        }
+
+        virtual JsonDocument toInterfaceOption() {
+            auto doc = Option::toInterfaceOption();
+
+            for (auto option : this->options) {
+                std::string label = option.getLabel();
+                if (label == "") {
+                    label = option.toStr();
+                }
+                doc["options"][option.toStr()] = label;
+            }
+
+            return doc;
+        }
 };
 
 class BoundedOption : public Option {
@@ -206,7 +242,6 @@ class BoundedOption : public Option {
         }
 
         virtual JsonDocument toInterfaceOption() {
-            Log.traceln("Option::toInterfaceOption from %s label: %s", typeid(*this).name(), this->getLabel().c_str());
             auto doc = Option::toInterfaceOption();
 
             doc["constrain"]["min"] = this->lower.toInt();

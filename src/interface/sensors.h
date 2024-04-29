@@ -104,11 +104,13 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
     if (!request->hasArg("type")) {
         return internalServerErrorResponse(request, "missing type parameter");
     }
-    
-    SensorType sensType = SensorType(SensorTypeFromMachineName(request->arg("type").c_str()));
-    ConnectionType connType = ConnectionType(ConnectionTypeFromMachineName(request->arg("connection").c_str()));
-    SensorConnector connector = SensorConnector(SensorConnectorFromMachineName(request->arg("connector").c_str()));
 
+    auto repo = DI::GetContainer()->resolve<SensorRepository>();
+    auto sensor = repo->create(request->arg("type").c_str());
+    this->processFormValues(sensor, request);
+    repo->addInstance(sensor);
+
+    DI::GetContainer()->resolve<Configuration>()->save();
     request->redirect("/sensors");
 }
 
@@ -145,7 +147,6 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to edit a sensor without a uuid");
     }
 
-    String errors;
     std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
 
     this->processFormValues(sensor, request);

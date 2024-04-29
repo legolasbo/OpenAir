@@ -29,7 +29,7 @@ class Repository {
             }
             auto instance = this->create(definitions[p.key()]["type"]);
             instance->configureFromJson(p.value());
-            this->registerInstance(uuid, instance);
+            this->registerInstance(instance->getUuid(), instance);
         }
     };
 
@@ -51,6 +51,10 @@ class Repository {
         }
 
         return uuids;
+    }
+
+    void addInstance(std::shared_ptr<Type> instance) {
+        this->instances.emplace(instance->getUuid(), instance);
     }
 
     std::shared_ptr<Type> getInstance(std::shared_ptr<Option> opt) {

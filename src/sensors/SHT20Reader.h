@@ -48,10 +48,16 @@ class SHT20Reader : public Sensor,
         }
 
         std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+            auto options = Sensor::availableOptions();
+
             std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
-            return {
-                {"connector", std::make_shared<ListOption>(X4, defaultConnectorOptions, "Connector", true)}
-            };
+            options.emplace("connector", std::make_shared<ListOption>(X4, defaultConnectorOptions, "Connector", true));
+
+            return options;
+        }
+
+        std::vector<ConnectionType> getSupportedConnectionTypes() {
+            return {I2C};
         }
 
         SHT20Reading takeReading() {
