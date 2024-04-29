@@ -5,10 +5,8 @@
 
 template <typename Type>
 class Repository {
-    private:
-    std::map<std::string, std::shared_ptr<Type>> instances;
-
     protected:
+    std::map<std::string, std::shared_ptr<Type>> instances;
 
     void registerInstance(std::string uuid, std::shared_ptr<Type> instance) {
         if (this->getInstance(uuid) != nullptr) {

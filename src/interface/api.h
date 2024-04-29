@@ -9,6 +9,11 @@ class API {
     protected:
     AsyncWebServer &server;
 
+    void processFormValues(std::shared_ptr<Configurable> conf, AsyncWebServerRequest * request) {
+        this->processFormValues(conf.get(), request);
+    }
+
+    // @deprecated use shared pointers instead.
     void processFormValues(Configurable * conf, AsyncWebServerRequest * request) {
         for (size_t i = 0; i < request->args(); i++) {
             auto argName = request->argName(i).c_str();

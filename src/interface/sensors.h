@@ -3,7 +3,6 @@
 #include "api.h"
 #include "../repositories/SensorRepository.hpp"
 #include "../configuration/Configuration.h"
-#include "../configuration/SensorConfiguration.h"
 
 class SensorApi : public API {
     public:
@@ -80,7 +79,7 @@ void SensorApi::details(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to determine the uuid");
     }
 
-    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
+    auto sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
     if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid");
     }
@@ -91,10 +90,10 @@ void SensorApi::details(AsyncWebServerRequest * request) {
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
     Log.infoln("Listing sensors");
     JsonDocument doc;
-    auto sensors = DI::GetContainer()->resolve<SensorConfigurations>();
+    auto sensors = DI::GetContainer()->resolve<SensorRepository>();
 
     for (auto uuid : sensors->getUuids()) {
-        SensorConfiguration* sensor = sensors->get(uuid);
+        auto sensor = sensors->getInstance(uuid);
         doc[uuid] = sensor->toJson();
     }
 
@@ -119,7 +118,7 @@ void SensorApi::sensorJson(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
 
-    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
+    auto sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
     if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
@@ -147,7 +146,7 @@ void SensorApi::editSensor(AsyncWebServerRequest * request) {
     }
 
     String errors;
-    SensorConfiguration * sensor = DI::GetContainer()->resolve<SensorConfigurations>()->get(uuid);
+    std::shared_ptr<Sensor> sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
 
     this->processFormValues(sensor, request);
 

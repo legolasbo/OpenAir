@@ -8,7 +8,6 @@
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/ThreePositionSwitch.h"
 #include "../sensors/UnknownSensor.h"
-#include "../configuration/SensorConfigurations.h"
 #include "Repository.hpp"
 
 class SensorRepository : public Repository<Sensor> {
@@ -31,12 +30,8 @@ class SensorRepository : public Repository<Sensor> {
         Measurements::MeasurementTypeList availableMeasurementTypes() {
             Measurements::MeasurementTypeList types;
 
-            for (std::string uuid : DI::GetContainer()->resolve<SensorConfigurations>()->getUuids()) {
-                auto instance = this->getInstance(uuid);
-                if (instance == nullptr) {
-                    Serial.printf("Could not load %s\n", uuid);
-                    continue;
-                }
+            for (auto itr : this->instances) {
+                auto instance = itr.second;
 
                 auto mtypes = instance->getMeasurementTypes();
                 types.insert(mtypes.begin(), mtypes.end());
@@ -48,12 +43,8 @@ class SensorRepository : public Repository<Sensor> {
         std::set<std::shared_ptr<Sensor>> getSensorsSupportingMeasurements(Measurements::MeasurementTypeList measurements) {
             std::set<std::shared_ptr<Sensor>> sensors;
 
-            for (std::string uuid : DI::GetContainer()->resolve<SensorConfigurations>()->getUuids()) {
-                std::shared_ptr<Sensor> instance = this->getInstance(uuid);
-                if (instance == nullptr) {
-                    continue;
-                }
-
+            for (auto itr : this->instances) {
+                auto instance = itr.second;
                 if (!instance->getMeasurementTypes().intersects(measurements)) {
                     continue;
                 }

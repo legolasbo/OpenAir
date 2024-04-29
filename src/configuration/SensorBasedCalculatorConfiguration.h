@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CalculatorConfiguration.h"
-#include "SensorConfigurations.h"
 #include "../enums/CalculatorTypes.h"
 #include "../repositories/SensorRepository.hpp"
 
@@ -42,16 +41,7 @@ class SensorBasedCalculatorConfiguration : public CalculatorConfiguration {
             doc["sensor"]["label"] = "Sensor";
 
             for (auto sensor : sensors) {
-                SensorConfiguration* sensorConfig = DI::GetContainer()->resolve<SensorConfigurations>()->get(sensor->getUuid());
-                std::string name = "";
-                if (sensorConfig != nullptr) {
-                    name = sensorConfig->getName();
-                }
-                if (name == "") {
-                    name.append("Unnamed ");
-                    name.append(ToString(sensor->getSensorType()));
-                }
-                doc["sensor"]["options"][sensor->getUuid()] = name;
+                doc["sensor"]["options"][sensor->getUuid()] = sensor->getUuid();
             }
         }
 

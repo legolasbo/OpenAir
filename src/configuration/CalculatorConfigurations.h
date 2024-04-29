@@ -2,7 +2,6 @@
 
 #include "ConfigurationCollection.h"
 #include "CalculatorConfiguration.h"
-#include "SensorConfigurations.h"
 #include "HumidityCalculatorConfiguration.h"
 #include "SwitchPositionCalculatorConfiguration.h"
 
