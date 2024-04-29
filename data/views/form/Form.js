@@ -1,7 +1,15 @@
 import { createRadioButtons } from "./RadioButtons.js";
 
 const getElementValueFrom = (info) => info.value ? `value="${info.value}"` : '';
-const getNumberConstraintsFromInfo = (info) => `${info.constrain.min ? `min="${info.constrain.min}"` : ""} ${info.constrain.max ? `max="${info.constrain.max}"` : ""}`;
+const getNumberConstraintsFromInfo = (info) => {
+    if (!info.constrain) {
+        return "";
+    }
+
+    constraints = ["min", "max"];
+    constraints.map(val => info.constrain[val] ? `${val}="${info.constrain[val]}"` : "");
+    return constraints.join(" ");
+}
 
 const mapToRenderer = (type) => { 
     switch(type) {

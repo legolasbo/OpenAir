@@ -12,7 +12,6 @@ class Sensor : public Configurable, public Measurements::Measurement {
 
         virtual ~Sensor() = default;
         virtual SensorType getSensorType() = 0;
-        virtual ConnectionType getConnectionType() = 0;
         virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {
@@ -31,6 +30,15 @@ class Sensor : public Configurable, public Measurements::Measurement {
                 return nullptr;
             }
             return measurement;
+        }
+
+        virtual JsonDocument toInterfaceOptions() {
+            JsonDocument doc = Configurable::toInterfaceOptions();
+
+            doc["type"]["type"] = "hidden";
+            doc["type"]["value"] = ToMachineName(this->getSensorType());
+
+            return doc;
         }
 };
 

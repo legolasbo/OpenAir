@@ -113,6 +113,25 @@ class Configurable {
             return doc;
         }
 
+        virtual JsonDocument toInterfaceOptions() {
+            JsonDocument doc;
+
+            for (auto p : this->availableOptions()) {
+
+                if (this->isConfiguredOption(p.first)) {
+                    doc[p.first] = this->getOption(p.first).toInterfaceOption();
+                }
+                else {
+                    doc[p.first] = p.second.toInterfaceOption();
+                }
+            }
+
+            doc["uuid"]["type"] = "hidden";
+            doc["uuid"]["value"] = this->uuid;
+
+            return doc;
+        }
+
         virtual bool configureFromJson(JsonObject doc) {
             if (!doc.containsKey("options")) {
                 return true;

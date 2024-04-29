@@ -49,16 +49,16 @@ class SensorApi : public API {
 };
 
 void SensorApi::options(AsyncWebServerRequest * request) {
-    auto configs = DI::GetContainer()->resolve<SensorConfigurations>();
     std::string uuid = this->extractUuid(request);
-    SensorConfiguration * sensor = configs->get(uuid);
+    auto repository = DI::GetContainer()->resolve<SensorRepository>();
+    auto sensor = repository->getInstance(uuid);
 
     if (uuid != "" && sensor == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid was given");
     }
 
     if (sensor != nullptr) {
-        return this->respondJson(sensor->getConfigurationOptions(), request);
+        return this->respondJson(sensor->toInterfaceOptions(), request);
     }
 
     if (!request->hasParam("type")) {
@@ -70,11 +70,8 @@ void SensorApi::options(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unknown sensor type");
     }
 
-    sensor = configs->create(type);
-    JsonDocument options = sensor->getConfigurationOptions();
-    delete(sensor);
-
-    this->respondJson(options, request);
+    sensor = repository->create(type);
+    this->respondJson(sensor->toInterfaceOptions(), request);
 }
 
 void SensorApi::details(AsyncWebServerRequest * request) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "I2CSensor.h"
+#include "Sensor.h"
 #include "../Measurements.h"
 #include <uFire_SHT20.h>
 #include <Wire.h>
@@ -14,7 +14,7 @@ struct SHT20Reading {
     float pressure;
 };
 
-class SHT20Reader : public I2CSensor, 
+class SHT20Reader : public Sensor, 
                     public Measurements::Temperature,
                     public Measurements::Humidity,
                     public Measurements::DewPoint
@@ -35,12 +35,6 @@ class SHT20Reader : public I2CSensor,
 
     public:
         static const SensorType sensorType = SHT20Sensor;
-
-        SHT20Reader() : I2CSensor(Sensor::generateUuid(), Wire){}
-        SHT20Reader(std::string uuid, TwoWire &bus) : I2CSensor(uuid, bus) {
-            sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, bus);
-        }
-        
         SensorType getSensorType() {
             return SHT20Reader::sensorType;
         }
@@ -54,7 +48,15 @@ class SHT20Reader : public I2CSensor,
         }
 
         std::unordered_map<std::string, Option> availableOptions() {
-            return {};
+        return {
+            {
+                "connector",
+                ListOption(X4, {
+                    Option(X4, ToString(X4)),
+                    Option(X6, ToString(X6)),
+                }, "Connector", true)
+            }
+        };
         }
 
         SHT20Reading takeReading() {

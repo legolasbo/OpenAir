@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include "../I2CManager.h"
-#include "../sensors/I2CSensor.h"
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/ThreePositionSwitch.h"
 #include "../sensors/UnknownSensor.h"

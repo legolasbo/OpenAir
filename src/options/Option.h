@@ -11,6 +11,8 @@ class Option {
         ConnectionType ct;
         SensorConnector sc;
 
+        std::string label;
+
         bool editable = false;
 
         template <typename T, typename U>
@@ -22,7 +24,7 @@ class Option {
         enum Type {INTEGER, STRING, CONNECTOR, CONNECTION} type;
         virtual ~Option() = default;
         Option() : Option(0) {};
-        Option(std::string v, bool editable = false) {
+        Option(std::string v, std::string label = "", bool editable = false) {
             this->s = v;
             this->type = STRING;
             this->editable = editable;
@@ -35,32 +37,66 @@ class Option {
             if (this->ct != UNKNOWN_CONNECTION_TYPE) {
                 this->type = CONNECTION;
             }
+            this->label = label;
         };
         
-        Option(int v, bool editable = false) {
+        Option(int v, std::string label = "", bool editable = false) {
             this->i = v;
             this->type = INTEGER;
             this->editable = editable;
+            this->label = label;
         }
 
-        Option(ConnectionType v, bool editable = false) {
+        Option(ConnectionType v, std::string label = "", bool editable = false) {
             this->ct = v;
             this->type = CONNECTION;
             this->editable = editable;
+            this->label = label;
         }
 
-        Option(SensorConnector v, bool editable = false) {
+        Option(SensorConnector v, std::string label = "", bool editable = false) {
             this->sc = v;
             this->type = CONNECTOR;
             this->editable = editable;
+            this->label = label;
         }
 
         bool isEditable() {
             return this->editable;
         }
 
+        std::string getLabel() {
+            return this->label;
+        }
+
         virtual Type getType() {
             return this->type;
+        }
+
+        virtual JsonDocument toInterfaceOption() {
+            Log.traceln("Option::toInterfaceOption from %s label: %s", typeid(*this).name(), this->getLabel().c_str());
+            JsonDocument doc;
+
+            switch (this->type) {
+                case INTEGER:
+                    doc["type"] = "number";
+                    break;
+                case STRING: 
+                    doc["type"] = "text";
+                    break;
+                case CONNECTOR:
+                case CONNECTION:
+                    doc["type"] = "select";
+                    break;
+            }
+
+            if (!this->isEditable()) {
+                doc["type"] = "hidden";
+            }
+            doc["label"] = this->label;
+            doc["value"] = this->toStr();
+
+            return doc;
         }
 
         int toIntOr(int alternative) {
@@ -124,13 +160,24 @@ class Option {
         }
 };
 
+class ListOption : public Option {
+    private:
+        std::vector<Option> options;
+
+    public:
+        template <typename T>
+        ListOption(T value, std::vector<Option> options, std::string label = "", bool editable = false) : Option(value, label, editable) {
+            this->options = options;
+        }
+};
+
 class BoundedOption : public Option {
     private:
         Option lower;
         Option upper;
 
     public:
-        BoundedOption(int value, int lower, int upper) : Option(min(upper, max(lower, value))) {
+        BoundedOption(int value, int lower, int upper, std::string label = "", bool editable = false) : Option(min(upper, max(lower, value)), label, editable) {
             this->lower = Option(lower);
             this->upper = Option(upper);
         }
@@ -158,4 +205,13 @@ class BoundedOption : public Option {
             return BoundedOption(value, this->lower.toInt(), this->upper.toInt());
         }
 
+        virtual JsonDocument toInterfaceOption() {
+            Log.traceln("Option::toInterfaceOption from %s label: %s", typeid(*this).name(), this->getLabel().c_str());
+            auto doc = Option::toInterfaceOption();
+
+            doc["constrain"]["min"] = this->lower.toInt();
+            doc["constrain"]["max"] = this->upper.toInt();
+
+            return doc;
+        }
 };
