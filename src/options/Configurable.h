@@ -82,10 +82,11 @@ class Configurable {
         }
 
         bool setOption(std::string name, std::string value) {
-            switch(this->getDefaultOption(name)->getType()) {
-                case Option::Type::INTEGER : return this->setOption(name, std::make_shared<Option>(atoi(value.c_str())));
+            auto opt = this->getDefaultOption(name);
+            switch(opt->getType()) {
+                case Option::Type::INTEGER : return this->setOption(name, opt->newValue(atoi(value.c_str())));
             }
-            return this->setOption(name, std::make_shared<Option>(value));
+            return this->setOption(name, opt->newValue(value));
         }
 
         bool setOption(std::string name, std::shared_ptr<Option> value) {

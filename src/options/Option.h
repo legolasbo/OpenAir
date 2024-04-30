@@ -132,29 +132,19 @@ class Option {
             return this->toStr().c_str();
         }
 
-        virtual Option newValue(ConnectionType value) {
-            return Option(value);
+        template <typename T>
+        std::shared_ptr<Option> newValue(T value) {
+            return this->newValue(Option(value));
         }
 
-        virtual Option NewValue(SensorConnector value) {
-            return Option(value);
-        }
-
-        virtual Option newValue(String value) {
-            switch (this->type) {
-                case INTEGER: return Option(value.toInt());
-                default: return Option(value.c_str());
-            }
-        }
-
-        virtual Option newValue(Option value) {
+        virtual std::shared_ptr<Option> newValue(Option value) {
             if (this->type != value.getType()) {
-                return *this;
+                return this->newValue(*this);
             }
 
             switch (this->type) {
-                case INTEGER: return Option(this->toInt());
-                default: return Option(this->toStr());
+                case INTEGER: return std::make_shared<Option>(value.toInt(), this->getLabel(), this->isEditable());
+                default: return std::make_shared<Option>(value.toStr(), this->getLabel(), this->isEditable());
             }
         }
 };
@@ -169,27 +159,27 @@ class ListOption : public Option {
             this->options = options;
         }
 
-        Option newValue(Option value) {
+        std::shared_ptr<Option> newValue(Option value) {
             if (this->type != value.getType()) {
-                return *this;
+                return this->newValue(*this);
             }
 
             for (Option opt : this->options) {
                 if (value.toStr() == opt.toStr()) {
                     switch (this->type) {
                         case INTEGER:
-                            return ListOption(value.toInt(), this->options, this->getLabel(), this->isEditable());
+                            return std::make_shared<ListOption>(value.toInt(), this->options, this->getLabel(), this->isEditable());
                         case CONNECTION:
-                            return ListOption(value.toConnection(), this->options, this->getLabel(), this->isEditable());
+                            return std::make_shared<ListOption>(value.toConnection(), this->options, this->getLabel(), this->isEditable());
                         case CONNECTOR:
-                            return ListOption(value.toConnector(), this->options, this->getLabel(), this->isEditable());
+                            return std::make_shared<ListOption>(value.toConnector(), this->options, this->getLabel(), this->isEditable());
                         default:
-                            return ListOption(value.toStr(), this->options, this->getLabel(), this->isEditable());
+                            return std::make_shared<ListOption>(value.toStr(), this->options, this->getLabel(), this->isEditable());
                     }
                 }
             }
             
-            return *this;
+            return this->newValue(*this);
         }
 
         virtual JsonDocument toInterfaceOption() {
@@ -226,19 +216,15 @@ class BoundedOption : public Option {
             return this->upper;
         }
 
-        Option newValue(Option value) {
+        std::shared_ptr<Option> newValue(Option value) {
             if (this->type != value.getType()) {
-                return *this;
+                return this->newValue(*this);
             }
 
             switch(this->type) {
-                case INTEGER: return BoundedOption(value.toInt(), this->lower.toInt(), this->upper.toInt());
-                default: return *this;
+                case INTEGER: return std::make_shared<BoundedOption>(value.toInt(), this->lower.toInt(), this->upper.toInt());
+                default: return this->newValue(*this);
             }
-        }
-
-        BoundedOption newValue(int value) {
-            return BoundedOption(value, this->lower.toInt(), this->upper.toInt());
         }
 
         virtual JsonDocument toInterfaceOption() {
