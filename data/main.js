@@ -43,6 +43,7 @@ const router = async () => {
     console.log(match);
 
     const view = new match.route.view(match.result.groups);
+    document.querySelector("#app").innerHTML = '<div class="lds-dual-ring"></div>';
     document.querySelector("#app").innerHTML = await view.getHtml();
 }
 const navigateTo = url => {
