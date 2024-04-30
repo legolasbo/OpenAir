@@ -71,8 +71,18 @@ class Configurable {
             return this->options.at(name);
         }
 
+        std::shared_ptr<Option> getDefaultOption(std::string name) {
+            auto availableOptions = this->availableOptions();
+            if (availableOptions.find(name) == this->options.end()) {
+                Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
+                return std::make_shared<Option>();
+            }
+
+            return availableOptions.at(name);
+        }
+
         bool setOption(std::string name, std::string value) {
-            switch(this->getOption(name)->getType()) {
+            switch(this->getDefaultOption(name)->getType()) {
                 case Option::Type::INTEGER : return this->setOption(name, std::make_shared<Option>(atoi(value.c_str())));
             }
             return this->setOption(name, std::make_shared<Option>(value));
