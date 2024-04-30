@@ -26,6 +26,10 @@ class HumidityCalculator : public SpeedCalculator {
             return this->getSensor() != nullptr;
         }
 
+        virtual CalculatorType type() {
+            return HUMIDITY_CALCULATOR;
+        }
+
         virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {
                 {"name", std::make_shared<Option>(this->name())},

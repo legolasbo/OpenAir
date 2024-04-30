@@ -7,17 +7,17 @@ class CalculatorApi : public API {
 
     CalculatorApi(AsyncWebServer &server) : API(server) {
         server.on("/api/calculators/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
-            this->respondJson(DI::GetContainer()->resolve<CalculatorConfigurations>()->availableCalculatorTypes(), request);
+            this->respondJson(DI::GetContainer()->resolve<CalculatorRepository>()->availableCalculatorTypes(), request);
         });
 
         server.on("/api/calculators/add", HTTP_POST, [this](AsyncWebServerRequest * request) {
-            this->add(request);
+            this->create(request);
         });
         server.on("/api/calculators/get", HTTP_GET, [this](AsyncWebServerRequest * request) {
-            this->get(request);
+            this->read(request);
         });
         server.on("/api/calculators/edit", HTTP_POST, [this](AsyncWebServerRequest * request) {
-            this->edit(request);
+            this->update(request);
         });
         server.on("/api/calculators/delete", HTTP_POST, [this](AsyncWebServerRequest * request) {
             this->remove(request);
@@ -36,25 +36,25 @@ class CalculatorApi : public API {
     }
 
     void options(AsyncWebServerRequest * request);
-    void add(AsyncWebServerRequest * request);
-    void edit(AsyncWebServerRequest * request);
-    void get(AsyncWebServerRequest * request);
     void details(AsyncWebServerRequest * request);
     void list(AsyncWebServerRequest * request);
+    void create(AsyncWebServerRequest * request);
+    void read(AsyncWebServerRequest * request);
+    void update(AsyncWebServerRequest * request);
     void remove(AsyncWebServerRequest * request);
 };
 
 void CalculatorApi::options(AsyncWebServerRequest * request) {
-    auto configs = DI::GetContainer()->resolve<CalculatorConfigurations>();
     std::string uuid = this->extractUuid(request);
-    CalculatorConfiguration * calculator = configs->get(uuid);
+    auto repository = DI::GetContainer()->resolve<CalculatorRepository>();
+    auto calculator = repository->getInstance(uuid);
 
-    if (uuid != "" && calculator == nullptr) {
+    if (calculator == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid was given");
     }
 
     if (calculator != nullptr){ 
-        return this->respondJson(calculator->getConfigurationOptions(), request);
+        return this->respondJson(calculator->toInterfaceOptions(), request);
     }
 
     if (!request->hasParam("type")) {
@@ -66,45 +66,8 @@ void CalculatorApi::options(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unknown calculater type");
     }
 
-    calculator = configs->create(type);
-    JsonDocument options = calculator->getConfigurationOptions();
-    delete(calculator);
-
-    return this->respondJson(options, request);
-}
-
-void CalculatorApi::list(AsyncWebServerRequest * request) {
-    JsonDocument doc;
-    auto calculators = DI::GetContainer()->resolve<CalculatorConfigurations>();
-
-    for (auto uuid : calculators->getUuids()) {
-        CalculatorConfiguration* calculator = calculators->get(uuid);
-        doc[uuid]["name"] = calculator->getName();
-        doc[uuid]["type"] = ToMachineName(calculator->type());
-        doc[uuid]["valid"] = calculator->isValid();
-    }
-
-    this->respondJson(doc, request);
-}
-
-void CalculatorApi::remove(AsyncWebServerRequest * request) {
-    if (!request->hasArg("uuid")) {
-        Serial.println("No uuid param present");
-        return request->redirect("/");
-    }
-
-    DI::GetContainer()->resolve<CalculatorRepository>()->remove(request->arg("uuid").c_str());
-    DI::GetContainer()->resolve<Configuration>()->save();
-    request->redirect("/calculators");
-}
-
-void CalculatorApi::get(AsyncWebServerRequest * request) {
-    if (!request->hasArg("uuid")) {
-        Serial.println("No uuid param present");
-        return request->redirect("/");
-    }
-
-    this->respondJson(DI::GetContainer()->resolve<CalculatorConfigurations>()->get(request->arg("uuid").c_str())->toJson(), request);
+    calculator = repository->create(type);
+    this->respondJson(calculator->toInterfaceOptions(), request);
 }
 
 void CalculatorApi::details(AsyncWebServerRequest * request) {
@@ -113,7 +76,7 @@ void CalculatorApi::details(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Unable to determine the uuid");
     }
 
-    CalculatorConfiguration * calc = DI::GetContainer()->resolve<CalculatorConfigurations>()->get(uuid);
+    auto calc = DI::GetContainer()->resolve<CalculatorRepository>()->getInstance(uuid);
     if (calc == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid");
     }
@@ -121,39 +84,64 @@ void CalculatorApi::details(AsyncWebServerRequest * request) {
     this->respondJson(calc->toDetails(), request);
 }
 
-void CalculatorApi::add(AsyncWebServerRequest * request) {
+void CalculatorApi::create(AsyncWebServerRequest * request) {
     if (!request->hasArg("type")) {
         return internalServerErrorResponse(request, "Missing 'type' parameter");
     }
 
-    auto type = CalculatorTypeFromMachineName(request->arg("type").c_str());
-    if (type == UNKNOWN_CALCULATOR_TYPE) {
-        return internalServerErrorResponse(request, "Unknown type");
-    }
+    auto repo = DI::GetContainer()->resolve<SensorRepository>();
+    auto calculator = repo->create(request->arg("type").c_str());
+    this->processFormValues(calculator, request);
 
-    auto calculators = DI::GetContainer()->resolve<CalculatorConfigurations>();
-    CalculatorConfiguration * calc = calculators->create(type);
-    this->processFormValues(calc, request);
-
-    calculators->add(calc);
-    request->redirect("/calculators");
     DI::GetContainer()->resolve<Configuration>()->save();
+    request->redirect("/calculators");
 }
 
-void CalculatorApi::edit(AsyncWebServerRequest * request) {
-    if (!request->hasArg("uuid")) {
-        return internalServerErrorResponse(request, "Missing 'uuid' parameter");
-    }
-    std::string uuid = request->arg("uuid").c_str();
-    CalculatorConfiguration * calc = DI::GetContainer()->resolve<CalculatorConfigurations>()->get(uuid);
-    
-    if (calc == nullptr) {
-        return internalServerErrorResponse(request, "Unknown calculator");
-    }
-    this->processFormValues(calc, request);
+void CalculatorApi::list(AsyncWebServerRequest * request) {
+    JsonDocument doc;
+    auto calculators = DI::GetContainer()->resolve<CalculatorRepository>();
 
-    serializeJsonPretty(calc->toJson(), Serial);
+    for (auto uuid : calculators->getUuids()) {
+        auto calculator = calculators->getInstance(uuid);
+        doc[uuid]["name"] = calculator->getOption("name")->toStr();
+        doc[uuid]["type"] = ToMachineName(calculator->type());
+        doc[uuid]["valid"] = calculator->isValid();
+    }
 
-    request->redirect("/calculators");
+    this->respondJson(doc, request);
+}
+
+void CalculatorApi::read(AsyncWebServerRequest * request) {
+    std::string uuid = this->extractUuid(request);
+    auto calculator = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
+    if (calculator == nullptr) {
+        return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
+    }
+
+    this->respondJson(calculator->toJson(), request);
+}
+
+void CalculatorApi::remove(AsyncWebServerRequest * request) {
+    std::string uuid = this->extractUuid(request);
+    if (uuid == "") {
+        return internalServerErrorResponse(request, "Unable to remove without a valid uuid");
+    }
+
+    DI::GetContainer()->resolve<CalculatorRepository>()->remove(uuid);
     DI::GetContainer()->resolve<Configuration>()->save();
+    request->redirect("/calculators");
+}
+
+void CalculatorApi::update(AsyncWebServerRequest * request) {
+    std::string uuid = this->extractUuid(request);
+    if (uuid == "") {
+        return internalServerErrorResponse(request, "Unable to edit a calculator without a valid uuid");
+    }
+
+    std::shared_ptr<SpeedCalculator> calculator = DI::GetContainer()->resolve<CalculatorRepository>()->getInstance(uuid);
+
+    this->processFormValues(calculator, request);
+    
+    DI::GetContainer()->resolve<Configuration>()->save();
+    request->redirect("/calculators");
 }

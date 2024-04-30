@@ -52,7 +52,7 @@ void SensorApi::options(AsyncWebServerRequest * request) {
     auto repository = DI::GetContainer()->resolve<SensorRepository>();
     auto sensor = repository->getInstance(uuid);
 
-    if (uuid != "" && sensor == nullptr) {
+    if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unknown uuid was given");
     }
 
@@ -88,7 +88,6 @@ void SensorApi::details(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::listSensors(AsyncWebServerRequest * request) {
-    Log.infoln("Listing sensors");
     JsonDocument doc;
     auto sensors = DI::GetContainer()->resolve<SensorRepository>();
 
@@ -116,10 +115,6 @@ void SensorApi::addSensor(AsyncWebServerRequest * request) {
 
 void SensorApi::sensorJson(AsyncWebServerRequest * request) {
     std::string uuid = this->extractUuid(request);
-    if (uuid == "") {
-        return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
-    }
-
     auto sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
     if (sensor == nullptr) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
@@ -129,12 +124,10 @@ void SensorApi::sensorJson(AsyncWebServerRequest * request) {
 }
 
 void SensorApi::deleteSensor(AsyncWebServerRequest * request) {
-    if (!request->hasArg("uuid")) {
-        Serial.println("No uuid param present");
-        return request->redirect("/");
+    std::string uuid = this->extractUuid(request);
+    if (uuid == "") {
+        return internalServerErrorResponse(request, "Unable to remove without a valid uuid");
     }
-
-    auto uuid = request->arg("uuid").c_str();
 
     DI::GetContainer()->resolve<SensorRepository>()->remove(uuid);
     DI::GetContainer()->resolve<Configuration>()->save();

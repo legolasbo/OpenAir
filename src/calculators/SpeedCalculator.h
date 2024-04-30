@@ -2,6 +2,7 @@
 
 #include <string>
 #include "../options/Configurable.h"
+#include "../enums/CalculatorTypes.h"
 
 class SpeedCalculator : public Configurable {
     protected:
@@ -10,6 +11,7 @@ class SpeedCalculator : public Configurable {
 
     public:
     virtual bool isValid() = 0;
+    virtual CalculatorType type() = 0;
     int calculate() {
         if (!this->isValid()) {
             return 0;

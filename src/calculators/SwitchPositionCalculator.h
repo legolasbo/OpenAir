@@ -36,10 +36,6 @@ class SwitchPositionCalculator : public SpeedCalculator {
         }
     
     protected:
-        virtual bool isValid() {
-            return this->getSensor() != nullptr;
-        }
-
         virtual int _calculate() {
             uint8_t position = this->getSensor()->getSelectedPosition();
             if (position > this->getSensor()->getNumberOfPositions()) {
@@ -61,6 +57,12 @@ class SwitchPositionCalculator : public SpeedCalculator {
         }
 
     public:
-        SwitchPositionCalculator() {}
+        virtual CalculatorType type() {
+            return SWITCH_POSITION_CALCULATOR;
+        }
+
+        virtual bool isValid() {
+            return this->getSensor() != nullptr;
+        }
 
 };

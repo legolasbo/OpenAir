@@ -15,9 +15,12 @@ class UnknownCalculator : public SpeedCalculator {
         }
 
     public:
-        UnknownCalculator() {}
         virtual bool isValid() {
             return false;
+        }
+
+        virtual CalculatorType type() {
+            return UNKNOWN_CALCULATOR_TYPE;
         }
 
         virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
