@@ -4,9 +4,9 @@
 #include <string.h> 
 
 enum CalculatorType {
-    UNKNOWN_CALCULATOR_TYPE,
     HUMIDITY_CALCULATOR,
     SWITCH_POSITION_CALCULATOR,
+    UNKNOWN_CALCULATOR_TYPE,
 };
 
 const char* ToString(CalculatorType v) {
@@ -28,14 +28,10 @@ const char* ToMachineName(CalculatorType v) {
 }
 
 CalculatorType CalculatorTypeFromMachineName(std::string name) {
-    return CalculatorTypeFromMachineName(name.c_str());
-}
-
-CalculatorType CalculatorTypeFromMachineName(const char * name) {
-    if (strcmp(name, ToMachineName(HUMIDITY_CALCULATOR)) == 0) {
+    if (name == ToMachineName(HUMIDITY_CALCULATOR)) {
         return HUMIDITY_CALCULATOR;
     }
-    if (strcmp(name, ToMachineName(SWITCH_POSITION_CALCULATOR)) == 0) {
+    if (name == ToMachineName(SWITCH_POSITION_CALCULATOR)) {
         return SWITCH_POSITION_CALCULATOR;
     }
 

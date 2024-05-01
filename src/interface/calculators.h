@@ -49,12 +49,12 @@ void CalculatorApi::options(AsyncWebServerRequest * request) {
     auto repository = DI::GetContainer()->resolve<CalculatorRepository>();
     auto calculator = repository->getInstance(uuid);
 
-    if (calculator == nullptr) {
-        return internalServerErrorResponse(request, "Unknown uuid was given");
-    }
-
     if (calculator != nullptr){ 
         return this->respondJson(calculator->toInterfaceOptions(), request);
+    }
+
+    if (uuid != "") {
+        return internalServerErrorResponse(request, "Unknown uuid was given");
     }
 
     if (!request->hasParam("type")) {

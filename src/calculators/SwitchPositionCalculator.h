@@ -49,13 +49,6 @@ class SwitchPositionCalculator : public SpeedCalculator {
             return "Switch position";
         }
 
-        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
-            return {
-                {"name", std::make_shared<Option>(this->name())},
-                {"sensor", std::make_shared<Option>()},
-            };
-        }
-
     public:
         virtual CalculatorType type() {
             return SWITCH_POSITION_CALCULATOR;
@@ -65,4 +58,7 @@ class SwitchPositionCalculator : public SpeedCalculator {
             return this->getSensor() != nullptr;
         }
 
+        virtual Measurements::MeasurementTypeList supportedMeasurementTypes() {
+            return {Measurements::SwitchPositionMeasurement};
+        }
 };

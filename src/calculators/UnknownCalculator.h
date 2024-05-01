@@ -26,4 +26,8 @@ class UnknownCalculator : public SpeedCalculator {
         virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {};
         };
+        
+        virtual Measurements::MeasurementTypeList supportedMeasurementTypes() {
+            return {};
+        }
 };

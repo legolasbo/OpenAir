@@ -25,7 +25,18 @@ class CalculatorRepository : public Repository<SpeedCalculator> {
         JsonDocument doc;
 
         Measurements::MeasurementTypeList measurementTypes = DI::GetContainer()->resolve<SensorRepository>()->availableMeasurementTypes();
-        Log.errorln("IMPLEMENT CalculatorRepository::availableCalculatorTypes()");
+        auto repo = DI::GetContainer()->resolve<CalculatorRepository>();
+
+        auto next = CalculatorType(0);
+        do {
+            auto calc = repo->create(next);
+            if (calc->supportedMeasurementTypes().intersects(measurementTypes)) {
+                doc[ToMachineName(next)] = ToString(next);
+            }
+
+            next = CalculatorType(int(next) + 1);
+        }
+        while (next != UNKNOWN_CALCULATOR_TYPE);
 
         return doc;
     }

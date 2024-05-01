@@ -15,6 +15,10 @@ class Sensor : public Configurable, public Measurements::Measurement {
         virtual Measurements::MeasurementTypeList getMeasurementTypes() = 0;
         virtual std::vector<ConnectionType> getSupportedConnectionTypes() = 0;
 
+        std::string getName() {
+            return this->getOption("name")->toStr();
+        }
+
         bool supportsMeasurementType(Measurements::Type type) {
             for (Measurements::Type t : this->getMeasurementTypes()) {
                 if (t == type) {
