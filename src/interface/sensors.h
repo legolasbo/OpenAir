@@ -52,12 +52,12 @@ void SensorApi::options(AsyncWebServerRequest * request) {
     auto repository = DI::GetContainer()->resolve<SensorRepository>();
     auto sensor = repository->getInstance(uuid);
 
-    if (sensor == nullptr) {
-        return internalServerErrorResponse(request, "Unknown uuid was given");
-    }
-
     if (sensor != nullptr) {
         return this->respondJson(sensor->toInterfaceOptions(), request);
+    }
+
+    if (uuid != "") {
+        return internalServerErrorResponse(request, "Unknown uuid was given");
     }
 
     if (!request->hasParam("type")) {
