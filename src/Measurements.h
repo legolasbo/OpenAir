@@ -46,7 +46,7 @@ namespace Measurements {
 
     class Measurement {
         public:
-        virtual ~Measurement() {};
+        virtual ~Measurement() = default;
         virtual MeasurementTypeList getMeasurementTypes() = 0;
 
         bool supportsMeasurementType(Measurements::Type type) {
@@ -61,21 +61,25 @@ namespace Measurements {
 
     class Temperature : public Measurement {
         public:
+        virtual ~Temperature() = default;
         virtual float getTemperature() = 0;
     };
 
     class Humidity : public Measurement {
         public:
+        virtual ~Humidity() = default;
         virtual float getHumidity() = 0;
     };
 
     class DewPoint : public Measurement {
         public:
+        virtual ~DewPoint() = default;
         virtual float getDewPoint() = 0;
     };
 
     class SwitchPosition : public Measurement {
         public:
+        virtual ~SwitchPosition() = default;
         virtual uint8_t getNumberOfPositions() = 0;
         virtual uint8_t getSelectedPosition() = 0;
     };
