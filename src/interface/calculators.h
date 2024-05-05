@@ -89,9 +89,10 @@ void CalculatorApi::create(AsyncWebServerRequest * request) {
         return internalServerErrorResponse(request, "Missing 'type' parameter");
     }
 
-    auto repo = DI::GetContainer()->resolve<SensorRepository>();
+    auto repo = DI::GetContainer()->resolve<CalculatorRepository>();
     auto calculator = repo->create(request->arg("type").c_str());
     this->processFormValues(calculator, request);
+    repo->addInstance(calculator);
 
     DI::GetContainer()->resolve<Configuration>()->save();
     request->redirect("/calculators");
