@@ -12,9 +12,6 @@ export default class CalculatorAdd extends AbstractView {
         const calculatorType = calculatorTypes[this.params.type];
         const calculatorOptions = await getCalculatorOptionsByType(this.params.type);
 
-        calculatorOptions.type.value = this.params.type;
-        delete(calculatorOptions.uuid);
-
         this.setTitle(`Add ${calculatorType} calculator`);
 
         return `
