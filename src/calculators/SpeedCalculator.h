@@ -30,9 +30,16 @@ class SpeedCalculator : public Configurable {
     virtual JsonDocument toInterfaceOptions() {
         JsonDocument doc = Configurable::toInterfaceOptions();
 
-        Log.traceln("Calling type()");
         doc["type"]["type"] = "hidden";
         doc["type"]["value"] = ToMachineName(this->type());
+
+        return doc;
+    }
+
+    virtual JsonDocument toJson() {
+        JsonDocument doc = Configurable::toJson();
+
+        doc["type"] = ToMachineName(this->type());
 
         return doc;
     }
