@@ -185,6 +185,7 @@ class ListOption : public Option {
         virtual JsonDocument toInterfaceOption() {
             auto doc = Option::toInterfaceOption();
 
+            doc["type"] = "select";
             for (auto option : this->options) {
                 std::string label = option.getLabel();
                 if (label == "") {
