@@ -33,11 +33,8 @@ class Configurable {
         Configurable() {
             this->uuid = Configurable::generateUuid();
         }
-        Configurable(std::string uuid) {
-            if (uuid == "") {
-                uuid = Configurable::generateUuid();
-            }
-            this->uuid = uuid;
+        Configurable(const std::string &uuid) {
+            this->uuid = uuid == "" ? Configurable::generateUuid() : uuid;
         }
         virtual ~Configurable() = default;
 
@@ -47,16 +44,16 @@ class Configurable {
 
         virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() = 0;
 
-        bool isAvailableOption(std::string name) {
+        bool isAvailableOption(const std::string &name) {
             auto opts = this->availableOptions();
             return opts.find(name) != opts.end();
         }
 
-        bool isConfiguredOption(std::string name) {
+        bool isConfiguredOption(const std::string &name) {
             return this->options.find(name) != this->options.end();
         }
 
-        std::shared_ptr<Option> getOption(std::string name) {
+        std::shared_ptr<Option> getOption(const std::string &name) {
             if (!this->isAvailableOption(name)) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
                 return std::make_shared<Option>();
@@ -71,7 +68,7 @@ class Configurable {
             return this->options.at(name);
         }
 
-        std::shared_ptr<Option> getDefaultOption(std::string name) {
+        std::shared_ptr<Option> getDefaultOption(const std::string &name) {
             auto opts = this->availableOptions();
             if (opts.find(name) == this->options.end()) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
@@ -81,7 +78,7 @@ class Configurable {
             return opts.at(name);
         }
 
-        bool setOption(std::string name, std::string value) {
+        bool setOption(const std::string &name, const std::string &value) {
             auto opt = this->getDefaultOption(name);
             switch(opt->getType()) {
                 case Option::Type::INTEGER : return this->setOption(name, opt->newValue(atoi(value.c_str())));
@@ -89,7 +86,7 @@ class Configurable {
             return this->setOption(name, opt->newValue(value));
         }
 
-        bool setOption(std::string name, std::shared_ptr<Option> value) {
+        bool setOption(const std::string &name, std::shared_ptr<Option> value) {
             if (!this->isAvailableOption(name)) {
                 Log.warningln("Option %s is not one of the available options.", name.c_str());
                 this->logOptions();

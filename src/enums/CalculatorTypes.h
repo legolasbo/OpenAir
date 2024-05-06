@@ -12,8 +12,8 @@ enum CalculatorType {
 const char* ToString(CalculatorType v) {
     switch (v)
     {
-        case HUMIDITY_CALCULATOR:                return "Humidity";
-        case SWITCH_POSITION_CALCULATOR:          return "Switch position";
+        case HUMIDITY_CALCULATOR:           return "Humidity";
+        case SWITCH_POSITION_CALCULATOR:    return "Switch position";
         default:                            return "[Unknown sensor]";
     }
 }
@@ -21,13 +21,13 @@ const char* ToString(CalculatorType v) {
 const char* ToMachineName(CalculatorType v) {
     switch (v)
     {
-        case HUMIDITY_CALCULATOR:                return "humidity";
-        case SWITCH_POSITION_CALCULATOR:          return "switch";
+        case HUMIDITY_CALCULATOR:           return "humidity";
+        case SWITCH_POSITION_CALCULATOR:    return "switch";
         default:                            return "unknown";
     }
 }
 
-CalculatorType CalculatorTypeFromMachineName(std::string name) {
+CalculatorType CalculatorTypeFromMachineName(const std::string &name) {
     if (name == ToMachineName(HUMIDITY_CALCULATOR)) {
         return HUMIDITY_CALCULATOR;
     }

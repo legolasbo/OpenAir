@@ -23,7 +23,7 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
 
     public:
         Sensor() : Configurable() {}
-        Sensor(std::string uuid) : Configurable(uuid) {}
+        Sensor(const std::string &uuid) : Configurable(uuid) {}
 
         virtual ~Sensor() = default;
         virtual SensorType getSensorType() = 0;

@@ -24,7 +24,7 @@ class Option {
         enum Type {INTEGER, STRING, CONNECTOR, CONNECTION} type;
         virtual ~Option() = default;
         Option() : Option(0) {};
-        Option(std::string v, std::string label = "", bool editable = false) {
+        Option(const std::string & v, const std::string &label = "", bool editable = false) {
             this->s = v;
             this->type = STRING;
             this->editable = editable;
@@ -40,21 +40,21 @@ class Option {
             this->label = label;
         };
         
-        Option(int v, std::string label = "", bool editable = false) {
+        Option(int v, const std::string &label = "", bool editable = false) {
             this->i = v;
             this->type = INTEGER;
             this->editable = editable;
             this->label = label;
         }
 
-        Option(ConnectionType v, std::string label = "", bool editable = false) {
+        Option(ConnectionType v, const std::string &label = "", bool editable = false) {
             this->ct = v;
             this->type = CONNECTION;
             this->editable = editable;
             this->label = label;
         }
 
-        Option(SensorConnector v, std::string label = "", bool editable = false) {
+        Option(SensorConnector v, const std::string &label = "", bool editable = false) {
             this->sc = v;
             this->type = CONNECTOR;
             this->editable = editable;
@@ -151,7 +151,7 @@ class ListOption : public Option {
 
     public:
         template <typename T>
-        ListOption(T value, std::vector<Option> options, std::string label = "", bool editable = false) : Option(value, label, editable) {
+        ListOption(T value, const std::vector<Option> &options, const std::string &label = "", bool editable = false) : Option(value, label, editable) {
             this->options = options;
         }
 
@@ -200,7 +200,7 @@ class BoundedOption : public Option {
         Option upper;
 
     public:
-        BoundedOption(int value, int lower, int upper, std::string label = "", bool editable = false) : Option(min(upper, max(lower, value)), label, editable) {
+        BoundedOption(int value, int lower, int upper, const std::string &label = "", bool editable = false) : Option(min(upper, max(lower, value)), label, editable) {
             this->lower = Option(lower);
             this->upper = Option(upper);
         }

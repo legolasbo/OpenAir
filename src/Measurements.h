@@ -52,7 +52,7 @@ namespace Measurements {
 
         public: 
         Measurement () : _cb(NULL) {}
-        Measurement (MeasurementCallback cb) : Measurement() {
+        Measurement (const MeasurementCallback &cb) : Measurement() {
             this->_cb = cb;
         }
 

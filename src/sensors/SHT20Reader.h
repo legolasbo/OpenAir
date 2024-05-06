@@ -67,14 +67,15 @@ class SHT20Reader : public Sensor {
         }
 
         SHT20Reading takeReading() {
-            return {
-                humidity: sht20.RH, 
-                temperatureDegC: sht20.tempC, 
-                temperatureDegF: sht20.tempF, 
-                dewPointDegC: sht20.dew_pointC, 
-                dewPointDegF: sht20.dew_pointF, 
-                pressure: sht20.vpd_kPa
+            SHT20Reading r = {
+                humidity: this->sht20.RH, 
+                temperatureDegC: this->sht20.tempC, 
+                temperatureDegF: this->sht20.tempF, 
+                dewPointDegC: this->sht20.dew_pointC, 
+                dewPointDegF: this->sht20.dew_pointF, 
+                pressure: this->sht20.vpd_kPa
             };
+            return r;
         }
 
         float getTemperature() {

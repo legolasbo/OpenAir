@@ -8,7 +8,7 @@ class Repository {
     protected:
     std::map<std::string, std::shared_ptr<Type>> instances;
 
-    void registerInstance(std::string uuid, std::shared_ptr<Type> instance) {
+    void registerInstance(const std::string &uuid, std::shared_ptr<Type> instance) {
         if (this->getInstance(uuid) != nullptr) {
             return;
         }
@@ -18,7 +18,7 @@ class Repository {
 
     public:
     virtual ~Repository() = default;
-    virtual std::shared_ptr<Type> create(std::string type) = 0;
+    virtual std::shared_ptr<Type> create(const std::string &type) = 0;
 
     virtual void loadJson(JsonObject definitions) {
         for (JsonPair p : definitions) {
@@ -61,7 +61,7 @@ class Repository {
         return this->getInstance(opt->toStr().c_str());
     }
 
-    std::shared_ptr<Type> getInstance(std::string uuid) {
+    std::shared_ptr<Type> getInstance(const std::string &uuid) {
         for ( auto instance : this->instances) {
             if (instance.first == uuid) {
                 return instance.second;
@@ -70,7 +70,7 @@ class Repository {
         return nullptr;
     }
 
-    void remove(std::string uuid) {
+    void remove(const std::string &uuid) {
         instances.erase(uuid);
     }
 };

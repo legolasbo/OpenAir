@@ -27,7 +27,7 @@ const char* ToMachineName(SensorType v) {
     }
 }
 
-SensorType SensorTypeFromMachineName(std::string name) {
+SensorType SensorTypeFromMachineName(const std::string &name) {
     if (name == ToMachineName(ThreePositionSwitchSensor)) {
         return ThreePositionSwitchSensor;
     }
