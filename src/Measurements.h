@@ -3,6 +3,7 @@
 #include <set>
 
 namespace Measurements {
+    typedef std::function<int(void)> MeasurementCallback;
 
     enum Type {
         TemperatureMeasurement,
@@ -10,6 +11,7 @@ namespace Measurements {
         DewPointMeasurement,
         PressureMeasurement,
         SwitchPositionMeasurement,
+        SwitchPositionCountMeasurement,
     };
 
     class MeasurementTypeList : public std::set<Type> {
@@ -45,43 +47,37 @@ namespace Measurements {
     };
 
     class Measurement {
-        public:
-        virtual ~Measurement() = default;
-        virtual MeasurementTypeList getMeasurementTypes() = 0;
+        protected:
+        MeasurementCallback _cb;
 
-        bool supportsMeasurementType(Measurements::Type type) {
-            for (Measurements::Type t : this->getMeasurementTypes()) {
-                if (t == type) {
-                    return true;
-                }
+        public: 
+        Measurement () : _cb(NULL) {}
+        Measurement (MeasurementCallback cb) : Measurement() {
+            this->_cb = cb;
+        }
+
+        int measure() {
+            if (this->_cb) {
+                return this->_cb();
             }
-            return false;
+
+            return 0;
         }
     };
 
-    class Temperature : public Measurement {
+    class MeasurementProvider {
         public:
-        virtual ~Temperature() = default;
-        virtual float getTemperature() = 0;
-    };
+            virtual MeasurementTypeList getMeasurementTypes() = 0;
+            virtual Measurement provide(Measurements::Type measurementType) = 0;
 
-    class Humidity : public Measurement {
-        public:
-        virtual ~Humidity() = default;
-        virtual float getHumidity() = 0;
-    };
-
-    class DewPoint : public Measurement {
-        public:
-        virtual ~DewPoint() = default;
-        virtual float getDewPoint() = 0;
-    };
-
-    class SwitchPosition : public Measurement {
-        public:
-        virtual ~SwitchPosition() = default;
-        virtual uint8_t getNumberOfPositions() = 0;
-        virtual uint8_t getSelectedPosition() = 0;
+            bool supportsMeasurementType(Measurements::Type type) {
+                for (Measurements::Type t : this->getMeasurementTypes()) {
+                    if (t == type) {
+                        return true;
+                    }
+                }
+                return false;
+            }
     };
 
 };

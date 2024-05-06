@@ -55,6 +55,12 @@ class SensorRepository : public Repository<Sensor> {
             return sensors;
         }
 
+        void loop() {
+            for(auto itr : this->instances) {
+                itr.second->loop();
+            }
+        }
+
         static std::vector<SensorType> knownSensorTypes() {
             return std::vector<SensorType>{
                 SHT20Sensor, 

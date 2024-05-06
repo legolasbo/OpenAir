@@ -14,24 +14,9 @@ struct SHT20Reading {
     float pressure;
 };
 
-class SHT20Reader : public Sensor, 
-                    public Measurements::Temperature,
-                    public Measurements::Humidity,
-                    public Measurements::DewPoint
-                    {
+class SHT20Reader : public Sensor {
     private:
         uFire_SHT20 sht20;
-        u_long lastReadMillis;
-
-        bool shouldMeasure() {
-            u_long now;
-
-            if (now < lastReadMillis) {
-                return true;
-            }
-
-            return lastReadMillis - now >= 1000;
-        }
 
     public:
         static const SensorType sensorType = SHT20Sensor;
@@ -45,6 +30,27 @@ class SHT20Reader : public Sensor,
                 Measurements::Type::TemperatureMeasurement,
                 Measurements::Type::DewPointMeasurement,
             };
+        }
+
+        Measurements::Measurement provide (Measurements::Type mt) {
+            switch (mt) {
+                case Measurements::Type::HumidityMeasurement: return Measurements::Measurement([this]() {
+                    return this->getHumidity();
+                });
+                case Measurements::Type::TemperatureMeasurement: return Measurements::Measurement([this]() {
+                    return this->getTemperature();
+                });
+                case Measurements::Type::DewPointMeasurement: return Measurements::Measurement([this]() {
+                    return this->getDewPoint();
+                });
+                default: return Measurements::Measurement();
+            }
+        }
+
+        void loop() {
+            if (this->shouldMeasure()) {
+                sht20.measure_all();
+            }
         }
 
         std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
@@ -61,9 +67,6 @@ class SHT20Reader : public Sensor,
         }
 
         SHT20Reading takeReading() {
-            if (this->shouldMeasure()) {
-                sht20.measure_all();
-            }
             
             SHT20Reading result = {
                 humidity: sht20.RH, 

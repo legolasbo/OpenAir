@@ -39,6 +39,7 @@ void setup() {
 int calculatedSpeed = 0;
 void loop() {
   webInterface.loop();
+  DI::GetContainer()->resolve<SensorRepository>()->loop();
 
   int newSpeed = 0;
   auto repo = DI::GetContainer()->resolve<CalculatorRepository>();

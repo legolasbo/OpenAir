@@ -9,6 +9,15 @@ class SpeedCalculator : public Configurable {
     virtual int _calculate() = 0;
     virtual const char * name() = 0;
 
+    std::shared_ptr<Sensor> getSensor() {
+        if (!this->isAvailableOption("sensor")) {
+            Log.warningln("Unable to retrieve sensor, because there is no 'sensor' option");
+            return nullptr;
+        }
+        std::string uuid = this->getOption("sensor")->toStr();
+        return DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
+    }
+
     public:
     virtual bool isValid() = 0;
     virtual CalculatorType type() = 0;

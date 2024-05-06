@@ -15,6 +15,12 @@ class UnknownSensor : public Sensor {
             return {};
         }
 
+        void loop() {}
+
+        Measurements::Measurement provide (Measurements::Type mt) {
+            return Measurements::Measurement();
+        }
+
         std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
             return {};
         }

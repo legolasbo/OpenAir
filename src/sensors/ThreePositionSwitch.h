@@ -10,9 +10,10 @@ enum SelectedMode {
   MODE_HIGH = 3
 };
 
-class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition {
+class ThreePositionSwitch : public Sensor {
   private:
     static const int defaultAddress = 32;
+    volatile SelectedMode lastMode = MODE_LOW;
 
     int getAddress() {
       std::shared_ptr<Option> address = this->getOption("address");
@@ -30,6 +31,18 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
       return Measurements::MeasurementTypeList {
         Measurements::Type::SwitchPositionMeasurement
       };
+    }
+
+    Measurements::Measurement provide (Measurements::Type mt) {
+        switch (mt) {
+            case Measurements::Type::SwitchPositionMeasurement: return Measurements::Measurement([this]() {
+                return this->getSelectedPosition();
+            });
+            case Measurements::Type::SwitchPositionCountMeasurement: return Measurements::Measurement([this]() {
+                return this->getNumberOfPositions();
+            });
+            default: return Measurements::Measurement();
+        }
     }
 
     std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
@@ -51,7 +64,13 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
     }
 
     uint8_t getSelectedPosition() {
-        return this->read();
+        return this->lastMode;
+    }
+
+    void loop() {
+      if (this->shouldMeasure()) {
+        this->lastMode = this->read();
+      }
     }
 
     SelectedMode read() {
@@ -62,22 +81,14 @@ class ThreePositionSwitch : public  Sensor, public Measurements::SwitchPosition 
         return SelectedMode::MODE_LOW;
       }
 
-      auto i2c = DI::GetContainer()->resolve<I2CManager>()->fromConnector(conn); 
+      TwoWire &i2c = DI::GetContainer()->resolve<I2CManager>()->fromConnector(conn); 
 
-      i2c.begin();
       SelectedMode mode = MODE_LOW;
-      
-      try {
-        i2c.requestFrom(this->getAddress(), 1);
-        if (i2c.available()) {
-            mode = (SelectedMode) i2c.read();
-        }
-      }
-      catch(const std::exception& e) {
-          Log.errorln("Failed to read Three Position Switch on address %i because: %s", this->getAddress(), e.what());
-      }
-      
-      i2c.end();
+      if (i2c.requestFrom(this->getAddress(), 1)) {
+          int result = max(0, min(3, i2c.read()));
+          mode = (SelectedMode) result;
+      };
+
       return mode;
     }
 };

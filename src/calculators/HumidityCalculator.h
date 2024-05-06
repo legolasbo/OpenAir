@@ -7,15 +7,10 @@
 #include "../repositories/SensorRepository.hpp"
   
 class HumidityCalculator : public SpeedCalculator {  
-    private:
-        std::shared_ptr<Measurements::Humidity> getSensor() {
-            auto sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(this->getOption("sensor"));
-            return sensor->toMeasurement<Measurements::Humidity>();
-        }
 
     protected:
         virtual int _calculate() {
-            return (int) this->getSensor()->getHumidity() - 40;
+            return this->getSensor()->provide(Measurements::HumidityMeasurement).measure();
         }
         virtual const char * name() {
             return "Humidity";
