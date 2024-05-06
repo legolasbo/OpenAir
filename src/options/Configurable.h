@@ -72,13 +72,13 @@ class Configurable {
         }
 
         std::shared_ptr<Option> getDefaultOption(std::string name) {
-            auto availableOptions = this->availableOptions();
-            if (availableOptions.find(name) == this->options.end()) {
+            auto opts = this->availableOptions();
+            if (opts.find(name) == this->options.end()) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
                 return std::make_shared<Option>();
             }
 
-            return availableOptions.at(name);
+            return opts.at(name);
         }
 
         bool setOption(std::string name, std::string value) {
