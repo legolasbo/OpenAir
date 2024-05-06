@@ -20,11 +20,11 @@ class SHT20Reader : public Sensor {
 
     public:
         static const SensorType sensorType = SHT20Sensor;
-        SensorType getSensorType() {
+        SensorType getSensorType() override {
             return SHT20Reader::sensorType;
         }
     
-        Measurements::MeasurementTypeList getMeasurementTypes() {
+        Measurements::MeasurementTypeList getMeasurementTypes() override {
             return Measurements::MeasurementTypeList {
                 Measurements::Type::HumidityMeasurement,
                 Measurements::Type::TemperatureMeasurement,
@@ -32,7 +32,7 @@ class SHT20Reader : public Sensor {
             };
         }
 
-        Measurements::Measurement provide (Measurements::Type mt) {
+        Measurements::Measurement provide (Measurements::Type mt) override {
             switch (mt) {
                 case Measurements::Type::HumidityMeasurement: return Measurements::Measurement([this]() {
                     return this->getHumidity();
@@ -47,13 +47,13 @@ class SHT20Reader : public Sensor {
             }
         }
 
-        void loop() {
+        void loop() override {
             if (this->shouldMeasure()) {
                 sht20.measure_all();
             }
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
             auto options = Sensor::availableOptions();
 
             std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
@@ -62,13 +62,12 @@ class SHT20Reader : public Sensor {
             return options;
         }
 
-        std::vector<ConnectionType> getSupportedConnectionTypes() {
+        std::vector<ConnectionType> getSupportedConnectionTypes() override {
             return {I2C};
         }
 
         SHT20Reading takeReading() {
-            
-            SHT20Reading result = {
+            return {
                 humidity: sht20.RH, 
                 temperatureDegC: sht20.tempC, 
                 temperatureDegF: sht20.tempF, 
@@ -76,8 +75,6 @@ class SHT20Reader : public Sensor {
                 dewPointDegF: sht20.dew_pointF, 
                 pressure: sht20.vpd_kPa
             };
-
-            return result;
         }
 
         float getTemperature() {

@@ -58,7 +58,7 @@ class Repository {
     }
 
     std::shared_ptr<Type> getInstance(std::shared_ptr<Option> opt) {
-        return this->getInstance(opt->toCharPtr());
+        return this->getInstance(opt->toStr().c_str());
     }
 
     std::shared_ptr<Type> getInstance(std::string uuid) {

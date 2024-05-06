@@ -35,26 +35,26 @@ class SwitchPositionCalculator : public SpeedCalculator {
         }
     
     protected:
-        virtual int _calculate() {
+        int _calculate() override {
             auto measurement = this->getSensor()->provide(Measurements::SwitchPositionMeasurement);
             int position = measurement.measure();
             return this->mapPositionToValue(position);
         }
 
-        virtual const char * name() {
+        const char * name() override {
             return "Switch position";
         }
 
     public:
-        virtual CalculatorType type() {
+        CalculatorType type() override {
             return SWITCH_POSITION_CALCULATOR;
         }
 
-        virtual bool isValid() {
+        bool isValid() override {
             return this->getSensor() != nullptr;
         }
 
-        virtual Measurements::MeasurementTypeList supportedMeasurementTypes() {
+        Measurements::MeasurementTypeList supportedMeasurementTypes() override {
             return {Measurements::SwitchPositionMeasurement};
         }
 };

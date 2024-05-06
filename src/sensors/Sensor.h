@@ -34,7 +34,7 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
             return this->getOption("name")->toStr();
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
             std::unordered_map<std::string, std::shared_ptr<Option>> options;
             options.emplace("name", std::make_shared<Option>(ToString(this->getSensorType()), "Name", true));
 
@@ -53,7 +53,7 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
             return options;
         }
 
-        virtual JsonDocument toInterfaceOptions() {
+        JsonDocument toInterfaceOptions() override {
             JsonDocument doc = Configurable::toInterfaceOptions();
 
             doc["type"]["type"] = "hidden";
@@ -62,7 +62,7 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
             return doc;
         }
 
-        virtual JsonDocument toJson() {
+        JsonDocument toJson() override {
             JsonDocument doc = Configurable::toJson();
             
             doc["type"] = ToMachineName(this->getSensorType());

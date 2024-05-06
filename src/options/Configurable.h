@@ -11,11 +11,11 @@ class Configurable {
         void logOptions() {
             Log.traceln("%s: Available options:", typeid(*this).name());
             for (auto &&i : this->availableOptions()) {
-                Log.traceln("%s: %s", i.first.c_str(), i.second->toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second->toStr().c_str());
             }
             Log.traceln("%s: Configured options:", typeid(*this).name());
             for (auto &&i : this->options) {
-                Log.traceln("%s: %s", i.first.c_str(), i.second->toCharPtr());
+                Log.traceln("%s: %s", i.first.c_str(), i.second->toStr().c_str());
             }
         }
 
@@ -64,7 +64,7 @@ class Configurable {
 
             if (this->options.find(name) == this->options.end()) {
                 std::shared_ptr<Option> defaultValue = this->availableOptions().at(name);
-                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue->toCharPtr());
+                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue->toStr().c_str());
                 return defaultValue;
             }
 
@@ -103,7 +103,7 @@ class Configurable {
 
             this->options.erase(name);
             bool success = this->options.emplace(name, value).second;
-            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value->toCharPtr(), success ? "succeeded" : "failed");
+            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value->toStr().c_str(), success ? "succeeded" : "failed");
             return success;
         }
         

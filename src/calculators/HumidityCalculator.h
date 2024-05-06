@@ -9,23 +9,23 @@
 class HumidityCalculator : public SpeedCalculator {  
 
     protected:
-        virtual int _calculate() {
+        int _calculate() override {
             return this->getSensor()->provide(Measurements::HumidityMeasurement).measure();
         }
-        virtual const char * name() {
+        const char * name() override {
             return "Humidity";
         }
 
     public:
-        virtual bool isValid() {
+        bool isValid() override {
             return this->getSensor() != nullptr;
         }
 
-        virtual CalculatorType type() {
+        CalculatorType type() override {
             return HUMIDITY_CALCULATOR;
         }
 
-        virtual Measurements::MeasurementTypeList supportedMeasurementTypes() {
+        Measurements::MeasurementTypeList supportedMeasurementTypes() override {
             return {Measurements::HumidityMeasurement};
         }
 

@@ -6,12 +6,12 @@
 
 class Option {
     private:
-        int i;
-        std::string s;
-        ConnectionType ct;
-        SensorConnector sc;
+        int i = 0;
+        std::string s = "";
+        ConnectionType ct = UNKNOWN_CONNECTION_TYPE;
+        SensorConnector sc = UNKNOWN_CONNECTOR;
 
-        std::string label;
+        std::string label = "";
 
         bool editable = false;
 
@@ -128,10 +128,6 @@ class Option {
             }
         }
 
-        const char * toCharPtr() {
-            return this->toStr().c_str();
-        }
-
         template <typename T>
         std::shared_ptr<Option> newValue(T value) {
             return this->newValue(Option(value));
@@ -159,7 +155,7 @@ class ListOption : public Option {
             this->options = options;
         }
 
-        std::shared_ptr<Option> newValue(Option value) {
+        std::shared_ptr<Option> newValue(Option value) override {
             if (this->type != value.getType()) {
                 return this->newValue(*this);
             }
@@ -182,7 +178,7 @@ class ListOption : public Option {
             return this->newValue(*this);
         }
 
-        virtual JsonDocument toInterfaceOption() {
+        JsonDocument toInterfaceOption() override {
             auto doc = Option::toInterfaceOption();
 
             doc["type"] = "select";
@@ -217,7 +213,7 @@ class BoundedOption : public Option {
             return this->upper;
         }
 
-        std::shared_ptr<Option> newValue(Option value) {
+        std::shared_ptr<Option> newValue(Option value) override {
             if (this->type != value.getType()) {
                 return this->newValue(*this);
             }
@@ -228,7 +224,7 @@ class BoundedOption : public Option {
             }
         }
 
-        virtual JsonDocument toInterfaceOption() {
+        JsonDocument toInterfaceOption() override {
             auto doc = Option::toInterfaceOption();
 
             doc["constrain"]["min"] = this->lower.toInt();

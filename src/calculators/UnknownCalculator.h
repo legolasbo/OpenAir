@@ -7,27 +7,27 @@ class UnknownCalculator : public SpeedCalculator {
     private:
     
     protected:
-        int _calculate() {
+        int _calculate()  override {
             return 0;
         }
-        const char * name() {
+        const char * name() override {
             return "Unknown";
         }
 
     public:
-        virtual bool isValid() {
+        bool isValid() override {
             return false;
         }
 
-        virtual CalculatorType type() {
+        CalculatorType type() override {
             return UNKNOWN_CALCULATOR_TYPE;
         }
 
-        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
             return {};
         };
         
-        virtual Measurements::MeasurementTypeList supportedMeasurementTypes() {
+        Measurements::MeasurementTypeList supportedMeasurementTypes() override {
             return {};
         }
 };

@@ -17,7 +17,7 @@ class CalculatorRepository : public Repository<SpeedCalculator> {
         }
     }
 
-    std::shared_ptr<SpeedCalculator> create(std::string type) {
+    std::shared_ptr<SpeedCalculator> create(std::string type) override {
         return this->create(CalculatorTypeFromMachineName(type));
     }
 

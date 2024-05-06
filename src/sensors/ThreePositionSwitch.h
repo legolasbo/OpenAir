@@ -21,19 +21,17 @@ class ThreePositionSwitch : public Sensor {
     }
                                   
   public:
-    static const SensorType sensorType = ThreePositionSwitchSensor;
-
-    SensorType getSensorType(){
-        return ThreePositionSwitch::sensorType;
+    SensorType getSensorType() override {
+        return ThreePositionSwitchSensor;
     }
 
-    Measurements::MeasurementTypeList getMeasurementTypes() {
+    Measurements::MeasurementTypeList getMeasurementTypes() override {
       return Measurements::MeasurementTypeList {
         Measurements::Type::SwitchPositionMeasurement
       };
     }
 
-    Measurements::Measurement provide (Measurements::Type mt) {
+    Measurements::Measurement provide (Measurements::Type mt) override {
         switch (mt) {
             case Measurements::Type::SwitchPositionMeasurement: return Measurements::Measurement([this]() {
                 return this->getSelectedPosition();
@@ -45,7 +43,7 @@ class ThreePositionSwitch : public Sensor {
         }
     }
 
-    std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+    std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
       auto options = Sensor::availableOptions();
 
       std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
@@ -55,7 +53,7 @@ class ThreePositionSwitch : public Sensor {
       return options;
     }
 
-    std::vector<ConnectionType> getSupportedConnectionTypes() {
+    std::vector<ConnectionType> getSupportedConnectionTypes() override {
         return {I2C};
     }
 
@@ -67,7 +65,7 @@ class ThreePositionSwitch : public Sensor {
         return this->lastMode;
     }
 
-    void loop() {
+    void loop() override {
       if (this->shouldMeasure()) {
         this->lastMode = this->read();
       }

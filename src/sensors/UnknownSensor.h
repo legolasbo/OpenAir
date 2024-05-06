@@ -4,28 +4,25 @@
 
 class UnknownSensor : public Sensor {
     public:
-        ConnectionType getConnectionType() {
-            return ConnectionType::UNKNOWN_CONNECTION_TYPE;
-        }
-        SensorType getSensorType() {
+        SensorType getSensorType() override {
             return SensorType::UNKNOWN_SENSOR_TYPE;
         }
     
-        Measurements::MeasurementTypeList getMeasurementTypes() {
+        Measurements::MeasurementTypeList getMeasurementTypes() override {
             return {};
         }
 
-        void loop() {}
+        void loop() override {}
 
-        Measurements::Measurement provide (Measurements::Type mt) {
+        Measurements::Measurement provide (Measurements::Type mt) override {
             return Measurements::Measurement();
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() {
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
             return {};
         }
 
-        std::vector<ConnectionType> getSupportedConnectionTypes() {
+        std::vector<ConnectionType> getSupportedConnectionTypes() override {
             return {};
         }
 

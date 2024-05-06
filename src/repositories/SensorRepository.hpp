@@ -23,7 +23,7 @@ class SensorRepository : public Repository<Sensor> {
             }
         }
 
-        std::shared_ptr<Sensor> create(std::string type) {
+        std::shared_ptr<Sensor> create(std::string type) override {
             return this->create(SensorTypeFromMachineName(type));
         }
 
