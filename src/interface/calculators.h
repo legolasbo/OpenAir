@@ -114,7 +114,7 @@ void CalculatorApi::list(AsyncWebServerRequest * request) {
 
 void CalculatorApi::read(AsyncWebServerRequest * request) {
     std::string uuid = this->extractUuid(request);
-    auto calculator = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
+    auto calculator = DI::GetContainer()->resolve<CalculatorRepository>()->getInstance(uuid);
     if (calculator == nullptr) {
         return internalServerErrorResponse(request, "Unable to get json without a valid uuid");
     }
