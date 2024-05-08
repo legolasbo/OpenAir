@@ -5,17 +5,29 @@
 #include "../enums/CalculatorTypes.h"
 
 class SpeedCalculator : public Configurable {
+    private:
+    std::shared_ptr<Sensor> sensor = nullptr;
+
+    void setSensor(const std::string &uuid) {
+        this->sensor = DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
+    }
+
     protected:
     virtual int _calculate() = 0;
     virtual const char * name() = 0;
 
     std::shared_ptr<Sensor> getSensor() {
-        if (!this->isAvailableOption("sensor")) {
-            Log.warningln("Unable to retrieve sensor, because there is no 'sensor' option");
-            return nullptr;
+        return this->sensor;
+    }
+
+    bool _setOption(const std::string &name, std::shared_ptr<Option> value) override {
+        bool outcome = Configurable::_setOption(name, value);
+
+        if (name == "sensor") {
+            this->setSensor(value->toStr());
         }
-        std::string uuid = this->getOption("sensor")->toStr();
-        return DI::GetContainer()->resolve<SensorRepository>()->getInstance(uuid);
+
+        return outcome;
     }
 
     public:
@@ -25,14 +37,14 @@ class SpeedCalculator : public Configurable {
 
     std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
         auto supportedSensors = DI::GetContainer()->resolve<SensorRepository>()->getSensorsSupportingMeasurements(this->supportedMeasurementTypes());
-        std::vector<Option> sensorOptions;
+        std::vector<std::shared_ptr<Option>> sensorOptions;
         for (auto s : supportedSensors) {
-            sensorOptions.push_back(Option(s->getUuid(), s->getName()));
+            sensorOptions.push_back(createOption(s->getUuid(), s->getName()));
         }
 
         return {
-            {"name", std::make_shared<Option>(this->name(), "Name", true)},
-            {"sensor", std::make_shared<ListOption>("", sensorOptions, "Sensor", true)},
+            {"name", createOption(this->name(), "Name")},
+            {"sensor", std::make_shared<ListOption<std::string>>("", sensorOptions, "Sensor", true)},
         };
     }
 

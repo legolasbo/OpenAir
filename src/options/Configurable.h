@@ -29,6 +29,13 @@ class Configurable {
         }
         std::string uuid;
 
+        virtual bool _setOption(const std::string &name, std::shared_ptr<Option> value) {
+            this->options.erase(name);
+            bool success = this->options.emplace(name, value).second;
+            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value->toStr().c_str(), success ? "succeeded" : "failed");
+            return success;
+        }
+
     public:
         Configurable() {
             this->uuid = Configurable::generateUuid();
@@ -56,7 +63,7 @@ class Configurable {
         std::shared_ptr<Option> getOption(const std::string &name) {
             if (!this->isAvailableOption(name)) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
-                return std::make_shared<Option>();
+                return std::make_shared<UnknownOption>();
             }
 
             if (this->options.find(name) == this->options.end()) {
@@ -72,7 +79,7 @@ class Configurable {
             auto opts = this->availableOptions();
             if (opts.find(name) == this->options.end()) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
-                return std::make_shared<Option>();
+                return std::make_shared<UnknownOption>();
             }
 
             return opts.at(name);
@@ -80,9 +87,7 @@ class Configurable {
 
         bool setOption(const std::string &name, const std::string &value) {
             auto opt = this->getDefaultOption(name);
-            switch(opt->getType()) {
-                case Option::Type::INTEGER : return this->setOption(name, opt->newValue(atoi(value.c_str())));
-            }
+
             return this->setOption(name, opt->newValue(value));
         }
 
@@ -93,15 +98,13 @@ class Configurable {
                 return false;
             }
 
-            if (this->availableOptions().at(name)->getType() != value->getType()) {
+            auto available = this->availableOptions().at(name);
+            if (typeid(available) != typeid(value)) {
                 Log.warningln("Unable to set option %s to %s. Types don't match", name.c_str(), value->toStr());
                 return false;
             }
 
-            this->options.erase(name);
-            bool success = this->options.emplace(name, value).second;
-            Log.verboseln("Setting option %s to value %s %s", name.c_str(), value->toStr().c_str(), success ? "succeeded" : "failed");
-            return success;
+            return this->_setOption(name, value);
         }
         
         virtual JsonDocument toDetails() {

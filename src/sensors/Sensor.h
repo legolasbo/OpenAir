@@ -36,19 +36,19 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
 
         std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
             std::unordered_map<std::string, std::shared_ptr<Option>> options;
-            options.emplace("name", std::make_shared<Option>(ToString(this->getSensorType()), "Name", true));
+            options.emplace("name", createOption(ToString(this->getSensorType()), "Name", true));
 
             std::vector<ConnectionType> supportedTypes = this->getSupportedConnectionTypes();
             if (supportedTypes.size() == 0) {
                 return options;
             }
 
-            std::vector<Option> supportedTypeOptions;
+            std::vector<std::shared_ptr<Option>> supportedTypeOptions;
             for (ConnectionType t : supportedTypes) {
-                supportedTypeOptions.push_back(Option(t));
+                supportedTypeOptions.push_back(createOption(t));
             }
 
-            options.emplace("connection", std::make_shared<ListOption>(supportedTypes.at(0), supportedTypeOptions, "Connection", true));
+            options.emplace("connection", std::make_shared<ListOption<ConnectionType>>(supportedTypes.at(0), supportedTypeOptions, "Connection", true));
 
             return options;
         }

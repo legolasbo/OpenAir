@@ -57,4 +57,30 @@ class SwitchPositionCalculator : public SpeedCalculator {
         Measurements::MeasurementTypeList supportedMeasurementTypes() override {
             return {Measurements::SwitchPositionMeasurement};
         }
+
+        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
+            auto options = SpeedCalculator::availableOptions();
+
+            auto sensor = this->getSensor();
+            if (sensor && sensor->getMeasurementTypes().includes(Measurements::Type::SwitchPositionCountMeasurement)) {
+                this->initializePositionMap();
+
+                int numpos = sensor->provide(Measurements::SwitchPositionCountMeasurement).measure();
+                // auto group = std::make_shared<OptionGroup>("Position config");
+                for (int i = 1; i <= numpos; i++) {
+                    std::string name = "position_" + i;
+                    options.emplace(name, createOption(this->positionMap[i], "Position " + i));
+                }
+
+                // options.emplace("position_config", group);
+            }
+
+            return options;
+        }
+
+        JsonDocument toInterfaceOptions() override {
+            JsonDocument doc = SpeedCalculator::toInterfaceOptions();
+
+            return doc;
+        }
 };

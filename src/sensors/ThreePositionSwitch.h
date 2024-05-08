@@ -16,8 +16,12 @@ class ThreePositionSwitch : public Sensor {
     volatile SelectedMode lastMode = MODE_LOW;
 
     int getAddress() {
-      std::shared_ptr<Option> address = this->getOption("address");
-      return address->toIntOr(this->defaultAddress);
+      auto opt = this->getOption("address")->as<IntegerOption>();
+      if (opt == nullptr) {
+        Log.errorln("Could not determine address defaulting to %d", this->defaultAddress);
+        return this->defaultAddress;
+      }
+      return opt->getValue();
     }
                                   
   public:
@@ -27,7 +31,8 @@ class ThreePositionSwitch : public Sensor {
 
     Measurements::MeasurementTypeList getMeasurementTypes() override {
       return Measurements::MeasurementTypeList {
-        Measurements::Type::SwitchPositionMeasurement
+        Measurements::Type::SwitchPositionMeasurement,
+        Measurements::Type::SwitchPositionCountMeasurement,
       };
     }
 
@@ -46,8 +51,11 @@ class ThreePositionSwitch : public Sensor {
     std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
       auto options = Sensor::availableOptions();
 
-      std::vector<Option> defaultConnectorOptions = {Option(X4, ToString(X4)), Option(X6, ToString(X6))};
-      options.emplace("connector", std::make_shared<ListOption>(X4, defaultConnectorOptions, "Connector", true));
+      std::vector<std::shared_ptr<Option>> defaultConnectorOptions = {
+        createOption(X4, ToString(X4)), 
+        createOption(X6, ToString(X6))
+      };
+      options.emplace("connector", std::make_shared<ListOption<SensorConnector>>(X4, defaultConnectorOptions, "Connector", true));
       options.emplace("address", std::make_shared<BoundedOption>(this->defaultAddress, 32, 39, "Address", true));
 
       return options;
@@ -72,7 +80,12 @@ class ThreePositionSwitch : public Sensor {
     }
 
     SelectedMode read() {
-      SensorConnector conn = this->getOption("connector")->toConnector();
+      ListOption<SensorConnector>* listOptPtr = this->getOption("connector")->as<ListOption<SensorConnector>>();
+      if (listOptPtr == nullptr) {
+        Log.errorln("Could not cast %s to %s", listOptPtr->typeName().c_str(), typeid(ListOption<SensorConnector>*).name());
+        return SelectedMode::MODE_LOW;
+      }
+      auto conn = listOptPtr->getValue();
 
       if (conn == UNKNOWN_CONNECTOR) {
         Log.errorln("Unable to read three position switch: unknown connector.");
