@@ -48,7 +48,7 @@ class ThreePositionSwitch : public Sensor {
         }
     }
 
-    std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
+    std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
       auto options = Sensor::availableOptions();
 
       std::vector<std::shared_ptr<Option>> defaultConnectorOptions = {

@@ -12,8 +12,6 @@ export default class extends AbstractView {
         const sensorTypes = await getSensorTypes();
         const sensorType = sensorTypes[this.params.type];
         const sensorOptions = await getOptionsForSensorType(this.params.type);
-
-        sensorOptions.type.value = this.params.type;
         
         this.setTitle(`Add ${sensorType} sensor`);
 

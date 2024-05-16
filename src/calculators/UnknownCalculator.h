@@ -23,7 +23,7 @@ class UnknownCalculator : public SpeedCalculator {
             return UNKNOWN_CALCULATOR_TYPE;
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
+        std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
             return {};
         };
         

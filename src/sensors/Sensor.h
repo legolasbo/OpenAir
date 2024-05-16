@@ -34,8 +34,8 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
             return this->getOption("name")->toStr();
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
-            std::unordered_map<std::string, std::shared_ptr<Option>> options;
+        std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
+            std::map<std::string, std::shared_ptr<Option>> options;
             options.emplace("name", createOption(ToString(this->getSensorType()), "Name", true));
 
             std::vector<ConnectionType> supportedTypes = this->getSupportedConnectionTypes();
@@ -56,8 +56,10 @@ class Sensor : public Configurable, public Measurements::MeasurementProvider {
         JsonDocument toInterfaceOptions() override {
             JsonDocument doc = Configurable::toInterfaceOptions();
 
-            doc["type"]["type"] = "hidden";
-            doc["type"]["value"] = ToMachineName(this->getSensorType());
+            JsonObject opt = doc["options"].add<JsonObject>();
+            opt["name"] = "type";
+            opt["info"]["type"] = "hidden";
+            opt["info"]["value"] = ToMachineName(this->getSensorType());
 
             return doc;
         }

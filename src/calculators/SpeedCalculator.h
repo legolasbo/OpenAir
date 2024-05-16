@@ -35,7 +35,7 @@ class SpeedCalculator : public Configurable {
     virtual CalculatorType type() = 0;
     virtual Measurements::MeasurementTypeList supportedMeasurementTypes() = 0;
 
-    std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
+    std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
         auto supportedSensors = DI::GetContainer()->resolve<SensorRepository>()->getSensorsSupportingMeasurements(this->supportedMeasurementTypes());
         std::vector<std::shared_ptr<Option>> sensorOptions;
         for (auto s : supportedSensors) {
@@ -51,8 +51,10 @@ class SpeedCalculator : public Configurable {
     JsonDocument toInterfaceOptions() override {
         JsonDocument doc = Configurable::toInterfaceOptions();
 
-        doc["type"]["type"] = "hidden";
-        doc["type"]["value"] = ToMachineName(this->type());
+        JsonObject opt = doc["options"].add<JsonObject>();
+        opt["name"] = "type";
+        opt["info"]["type"] = "hidden";
+        opt["info"]["value"] = ToMachineName(this->type());
 
         return doc;
     }

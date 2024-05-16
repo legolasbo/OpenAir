@@ -11,7 +11,9 @@ export default class extends AbstractView {
     async getHtml() {
         const options = await getSensorOptions(this.params.uuid);
         const sensorTypes = await getSensorTypes();
-        const sensorType = sensorTypes[options.type.value];
+        const sensorTypeOption = options.find(opt => opt.name == "type");
+        const sensorTypeMachineName = sensorTypeOption.info.value ?? sensorTypeOption.info.value;
+        const sensorType = sensorTypes[sensorTypeMachineName];
         
         this.setTitle(`Edit ${sensorType} sensor`);
 

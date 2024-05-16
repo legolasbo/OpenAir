@@ -18,7 +18,7 @@ class UnknownSensor : public Sensor {
             return Measurements::Measurement();
         }
 
-        std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() override {
+        std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
             return {};
         }
 

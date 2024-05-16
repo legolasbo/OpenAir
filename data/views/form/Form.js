@@ -33,8 +33,8 @@ const renderFormElement = (name, info) => {
 const formFromOptions = (action, options, submitLabel) => {
     return `
     <form action="${action}" method="post">
-    ${Object.entries(options)
-        .map(([name, info]) => renderFormElement(name, info))
+    ${options
+        .map(({name, info}) => renderFormElement(name, info))
         .map(item => `<div class="form-item">${item}</div>`)
         .join("\n")}
     <input type="Submit" value="${submitLabel ? submitLabel : "Submit"}" />

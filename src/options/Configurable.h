@@ -1,12 +1,13 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include "Option.h"
 #include <UUID.h>
 
 class Configurable {
     private:
-        std::unordered_map<std::string, std::shared_ptr<Option>> options;
+        std::map<std::string, std::shared_ptr<Option>> options;
+        std::map<std::string, std::string> delayedOptions;
 
         void logOptions() {
             Log.traceln("%s: Available options:", typeid(*this).name());
@@ -16,6 +17,25 @@ class Configurable {
             Log.traceln("%s: Configured options:", typeid(*this).name());
             for (auto &&i : this->options) {
                 Log.traceln("%s: %s", i.first.c_str(), i.second->toStr().c_str());
+            }
+        }
+
+        void processDelayedOptions(int maxTries) {
+            if(maxTries <= 0) {
+                return;
+            }
+
+            auto currentOptions = delayedOptions;
+            delayedOptions.clear();
+
+            for(auto p : currentOptions) {
+                if (!this->setOption(p.first, p.second)) {
+                    this->delayedOptions.emplace(p.first, p.second);
+                }
+            }
+
+            if (delayedOptions.size()) {
+                processDelayedOptions(--maxTries);
             }
         }
 
@@ -49,7 +69,7 @@ class Configurable {
             return this->uuid;
         }
 
-        virtual std::unordered_map<std::string, std::shared_ptr<Option>> availableOptions() = 0;
+        virtual std::map<std::string, std::shared_ptr<Option>> availableOptions() = 0;
 
         bool isAvailableOption(const std::string &name) {
             auto opts = this->availableOptions();
@@ -77,7 +97,11 @@ class Configurable {
 
         std::shared_ptr<Option> getDefaultOption(const std::string &name) {
             auto opts = this->availableOptions();
-            if (opts.find(name) == this->options.end()) {
+
+            try {
+                return opts.at(name);
+            }
+            catch (std::out_of_range e) {
                 Log.errorln("%s: Unknown option %s", typeid(*this).name(), name.c_str());
                 return std::make_shared<UnknownOption>();
             }
@@ -130,36 +154,40 @@ class Configurable {
         virtual JsonDocument toInterfaceOptions() {
             JsonDocument doc;
 
+            JsonArray options = doc["options"].to<JsonArray>();
+            JsonObject opt = options.add<JsonObject>();
+            opt["name"] = "uuid";
+            opt["info"]["type"] = "hidden";
+            opt["info"]["value"] = this->uuid;
+
             for (auto p : this->availableOptions()) {
-
-                if (this->isConfiguredOption(p.first)) {
-                    doc[p.first] = this->getOption(p.first)->toInterfaceOption();
-                }
-                else {
-                    doc[p.first] = p.second->toInterfaceOption();
-                }
+                JsonObject opt = options.add<JsonObject>();
+                opt["name"] = p.first;
+                auto info = this->isConfiguredOption(p.first) ? this->getOption(p.first) : p.second;
+                opt["info"] = info->toInterfaceOption();
             }
-
-            doc["uuid"]["type"] = "hidden";
-            doc["uuid"]["value"] = this->uuid;
 
             return doc;
         }
 
-        virtual bool configureFromJson(JsonObject doc) {
+        void configureFromJson(JsonObject doc) {
             if (doc.containsKey("uuid")) {
                 this->uuid = doc["uuid"].as<std::string>();
             }
 
             if (!doc.containsKey("options")) {
-                return true;
+                return;
             }
 
             for (const auto& p : doc["options"].as<JsonObject>()) {
                 std::string key = p.key().c_str();
-                this->setOption(key, doc["options"][key].as<std::string>());
+                std::string value = doc["options"][key].as<std::string>();
+                if (!this->setOption(key, value)) {
+                    this->delayedOptions.emplace(key, value);
+                }
             }
-            return true;
+
+            this->processDelayedOptions(this->delayedOptions.size());
         }
 
         virtual JsonDocument toJson() {
