@@ -88,7 +88,6 @@ class Configurable {
 
             if (this->options.find(name) == this->options.end()) {
                 std::shared_ptr<Option> defaultValue = this->availableOptions().at(name);
-                Log.traceln("%s: Accessing unconfigured option %s. Using default value %s", typeid(*this).name(), name.c_str(), defaultValue->toStr().c_str());
                 return defaultValue;
             }
 
