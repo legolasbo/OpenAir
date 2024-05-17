@@ -16,10 +16,18 @@ const mapToRenderer = (type) => {
         case "text": return (name, info) => `<input type="text" name="${name}" ${getElementValueFrom(info)} />`;
         case "hidden": return (name, info) => `<input type="hidden" name="${name}" ${getElementValueFrom(info)} />`;
         case "select": return (name, info) => createRadioButtons(name, info.options, info.value);
-        case "number": return (name, info) => `<input type="number" name="${name}" ${getElementValueFrom(info)} ${getNumberConstraintsFromInfo(info)} />`
-        case "boolean": return (name, info) => `<input type="checkbox" name="${name}" ${getElementValueFrom(info)} ${info.value == 1 ? "checked" : ""} />`
+        case "number": return numberRenderer;
+        case "boolean": return (name, info) => `<input type="checkbox" name="${name}" ${getElementValueFrom(info)} ${info.value == 1 ? "checked" : ""} />`;
         default: return (name, info) => `<strong>Unknown form element type ${type} for ${name}</strong>`;
     }
+}
+
+const numberRenderer = (name, info) => {
+    if (!info.constrain) {
+        return `<input type="number" name="${name}" ${getElementValueFrom(info)} />`
+    }
+    
+    return `<input type="range" name="${name}" id="${name}" ${getElementValueFrom(info)} ${getNumberConstraintsFromInfo(info)}><output id="${name}_output"></output>`
 }
 
 const renderFormElement = (name, info) => {

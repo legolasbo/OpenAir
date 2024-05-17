@@ -45,11 +45,21 @@ const router = async () => {
     const view = new match.route.view(match.result.groups);
     document.querySelector("#app").innerHTML = '<div class="lds-dual-ring"></div>';
     document.querySelector("#app").innerHTML = await view.getHtml();
+    handleRangeInputs();
 }
 const navigateTo = url => {
     history.pushState(null, null, url);
     router();
 };
+const handleRangeInputs = () => document.querySelectorAll("input[type=range]").forEach(el => {
+        if (!el.id) {
+            return;
+        }
+
+        const output = document.querySelector(`#${el.id}_output`);
+        output.textContent = el.value;
+        el.addEventListener("input", (event) => output.textContent = event.target.value);
+    })
 
 document.addEventListener("DOMContentLoaded", () => {
     document.body.addEventListener("click", e => {
