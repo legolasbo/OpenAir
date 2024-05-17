@@ -17,6 +17,7 @@ struct SHT20Reading {
 class SHT20Reader : public Sensor {
     private:
         uFire_SHT20 sht20;
+        bool initialized = false;
 
     public:
         static const SensorType sensorType = SHT20Sensor;
@@ -48,6 +49,22 @@ class SHT20Reader : public Sensor {
         }
 
         void loop() override {
+            if (!this->initialized) {
+                ListOption<SensorConnector>* listOptPtr = this->getOption("connector")->as<ListOption<SensorConnector>>();
+                if (listOptPtr == nullptr) {
+                    Log.errorln("Could not cast %s to %s", listOptPtr->typeName().c_str(), typeid(ListOption<SensorConnector>*).name());
+                    return;
+                }
+
+                auto conn = listOptPtr->getValue();
+                if (conn == UNKNOWN_CONNECTOR) {
+                    Log.errorln("Unable to SHT20 sensor: unknown connector.");
+                    return;
+                }
+
+                TwoWire &i2c = DI::GetContainer()->resolve<I2CManager>()->fromConnector(conn); 
+                sht20.begin(SHT20_RESOLUTION_12BITS, SHT20_I2C, i2c);
+            }
             if (this->shouldMeasure()) {
                 sht20.measure_all();
             }

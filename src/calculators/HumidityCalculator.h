@@ -10,7 +10,9 @@ class HumidityCalculator : public SpeedCalculator {
 
     protected:
         int _calculate() override {
-            return this->getSensor()->provide(Measurements::HumidityMeasurement).measure();
+            int humidity = this->getSensor()->provide(Measurements::HumidityMeasurement).measure();
+            int offset = this->getOption("offset")->as<BoundedOption>()->getValue();
+            return humidity + offset;
         }
         const char * name() override {
             return "Humidity";
@@ -19,6 +21,14 @@ class HumidityCalculator : public SpeedCalculator {
     public:
         bool isValid() override {
             return this->getSensor() != nullptr;
+        }
+
+        std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
+            auto options = SpeedCalculator::availableOptions();
+            
+            options.emplace("offset", new BoundedOption(-30, -100, 100, "Humidity\% + offset = speed\%", true));
+
+            return options;
         }
 
         CalculatorType type() override {
