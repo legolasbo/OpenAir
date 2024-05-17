@@ -6,6 +6,9 @@
 
 class SwitchPositionCalculator : public SpeedCalculator {
     private:
+        char const * timedName = "timed";
+        char const * minPerSecName = "minutes_per_second";
+        char const * manualAfterSecName = "manual_after_seconds";
         std::vector<int> positionMap;
 
         void initializePositionMap() {
@@ -45,11 +48,61 @@ class SwitchPositionCalculator : public SpeedCalculator {
             snprintf(buffer, 100, "Fan speed percentage at position %d", position);
             return std::string(buffer);
         }
+
+        int previousPosition = 1;
+        int timedPosition = 1;
+        int secondsToTime = 0;
+        unsigned long inPositionSince = millis();
+        bool manualMode = true;
+        int getPosition() {
+            auto measurement = this->getSensor()->provide(Measurements::SwitchPositionMeasurement);
+            bool timed = this->getOption(timedName)->as<BooleanOption>()->getValue();
+            int position = measurement.measure();
+
+            if (!timed) {
+                return position;
+            }
+
+
+            unsigned long now = millis();
+            unsigned long millisElapsed = now < inPositionSince ? ULONG_MAX - inPositionSince + now : now - inPositionSince;
+            unsigned long secondsElapsed = millisElapsed / 1000;
+            int manualAfterSeconds = this->getOption(manualAfterSecName)->as<BoundedOption>()->getValue();
+
+            if (position == previousPosition) {
+                if (position == 1) {
+                    if (secondsToTime > secondsElapsed) {
+                        return timedPosition;
+                    }
+                    secondsToTime = 0;
+                    return position;
+                }
+
+                if (!manualMode) {
+                    manualMode = secondsElapsed > manualAfterSeconds;
+                }
+                return position;
+            }
+
+            timedPosition = previousPosition;
+            previousPosition = position;
+            inPositionSince = now;
+            if (manualMode) {
+                manualMode = false;
+                secondsToTime = 0;
+                return position;
+            }
+
+            int minutesPerSecond = this->getOption(minPerSecName)->as<BoundedOption>()->getValue();
+            Log.infoln("Starting timer of %d minutes for position %d", secondsElapsed * minutesPerSecond, timedPosition);
+            secondsToTime = secondsElapsed * minutesPerSecond * 60;
+            return timedPosition;
+
+        }
     
     protected:
         int _calculate() override {
-            auto measurement = this->getSensor()->provide(Measurements::SwitchPositionMeasurement);
-            int position = measurement.measure();
+            int position = this->getPosition();
             std::string optionName = this->getPositionOptionName(position);
             if (!this->isAvailableOption(optionName)) {
                 Log.traceln("Position %d is not a configurable option", position);
@@ -89,6 +142,10 @@ class SwitchPositionCalculator : public SpeedCalculator {
                     options.emplace(this->getPositionOptionName(i), new BoundedOption(positionMap[i], 0, 100, this->getPositionOptionLabel(i), true));
                 }
             }
+
+            options.emplace(timedName, new BooleanOption(true, "Enable timed position", true));
+            options.emplace(minPerSecName, new BoundedOption(10, 1, 60, "Number of minutes per second", true));
+            options.emplace(manualAfterSecName, new BoundedOption(60, 1, 3600, "Speed is considered manual after seconds", true));
 
             return options;
         }

@@ -17,6 +17,7 @@ const mapToRenderer = (type) => {
         case "hidden": return (name, info) => `<input type="hidden" name="${name}" ${getElementValueFrom(info)} />`;
         case "select": return (name, info) => createRadioButtons(name, info.options, info.value);
         case "number": return (name, info) => `<input type="number" name="${name}" ${getElementValueFrom(info)} ${getNumberConstraintsFromInfo(info)} />`
+        case "boolean": return (name, info) => `<input type="checkbox" name="${name}" ${getElementValueFrom(info)} ${info.value == 1 ? "checked" : ""} />`
         default: return (name, info) => `<strong>Unknown form element type ${type} for ${name}</strong>`;
     }
 }

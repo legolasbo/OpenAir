@@ -72,7 +72,7 @@ class StringOption : public Option {
         std::string value;
 
     public:
-        StringOption(const std::string &value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+        explicit StringOption(const std::string &value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
 
         std::string toStr() override {
             return this->value;
@@ -83,7 +83,6 @@ class StringOption : public Option {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New string value");
             return createOption(value, this->getLabel(), this->isEditable());
         }
 
@@ -105,7 +104,7 @@ class IntegerOption : public Option {
         int value;
 
     public:
-        IntegerOption(int value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+        explicit IntegerOption(int value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
 
         std::string toStr() override {
             return std::to_string(this->value);
@@ -116,7 +115,6 @@ class IntegerOption : public Option {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New integer value");
             int val = atoi(value.c_str());
             return createOption(val, this->getLabel(), this->isEditable());
         }
@@ -135,12 +133,46 @@ class IntegerOption : public Option {
 
 };
 
+class BooleanOption : public Option {
+    private:
+        bool value;
+
+    public:
+        explicit BooleanOption(bool value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+
+        std::string toStr() override {
+            return std::to_string(this->value);
+        }
+
+        bool getValue() {
+            return value;
+        }
+
+        std::shared_ptr<Option> newValue(const std::string &value) override {
+            int val = atoi(value.c_str());
+            return std::make_shared<BooleanOption>(val != 0, this->getLabel(), this->isEditable());
+        }
+
+        std::string typeName() override {
+            return typeid(value).name();
+        }
+
+        JsonDocument toInterfaceOption() override {
+            auto doc = Option::toInterfaceOption();
+
+            doc["type"] = "boolean";
+
+            return doc;
+        }
+
+};
+
 class ConnectionTypeOption : public Option {
     private:
         ConnectionType value;
 
     public:
-        ConnectionTypeOption(ConnectionType value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+        explicit ConnectionTypeOption(ConnectionType value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
 
         std::string toStr() override {
             return ToString(this->value);
@@ -151,7 +183,6 @@ class ConnectionTypeOption : public Option {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New ConnectionType value");
             return createOption(ConnectionTypeFromMachineName(value.c_str()), this->getLabel(), this->isEditable());
         }
 
@@ -166,7 +197,7 @@ class SensorConnectorOption : public Option {
         SensorConnector value;
 
     public:
-        SensorConnectorOption(SensorConnector value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+        explicit SensorConnectorOption(SensorConnector value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
 
         std::string toStr() override {
             return ToString(this->value);
@@ -177,7 +208,6 @@ class SensorConnectorOption : public Option {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New SensorConnector value");
             return createOption(SensorConnectorFromMachineName(value.c_str()), this->getLabel(), this->isEditable());
         }
 
@@ -199,7 +229,7 @@ class ListOption : public Option {
         }
 
     public:
-        ListOption(T value, const std::vector<std::shared_ptr<Option>> &options, const std::string &label, bool editable) : Option(label, editable) {
+        explicit ListOption(T value, const std::vector<std::shared_ptr<Option>> &options, const std::string &label, bool editable) : Option(label, editable) {
             bool foundValue = false;
 
             std::vector<std::shared_ptr<Option>> opts;
@@ -214,7 +244,6 @@ class ListOption : public Option {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New List value");
             auto opt = createOption(value);
             return this->newValue(opt);
         }
@@ -272,7 +301,7 @@ class BoundedOption : public IntegerOption {
         int upper;
 
     public:
-        BoundedOption(int value, int lower, int upper, const std::string &label = "", bool editable = false) : IntegerOption(min(upper, max(lower, value)), label, editable) {
+        explicit BoundedOption(int value, int lower, int upper, const std::string &label = "", bool editable = false) : IntegerOption(min(upper, max(lower, value)), label, editable) {
             this->lower = lower;
             this->upper = upper;
         }
@@ -295,7 +324,6 @@ class BoundedOption : public IntegerOption {
         }
 
         std::shared_ptr<Option> newValue(const std::string &value) override {
-            Log.traceln("New Bounded value");
             return std::make_shared<BoundedOption>(atoi(value.c_str()), this->lower, this->upper, this->getLabel(), this->isEditable());
         }
 
@@ -304,7 +332,6 @@ class BoundedOption : public IntegerOption {
         }
         
 };
-
 
 
 std::shared_ptr<Option> createOption(int value, std::string label, bool editable) {
