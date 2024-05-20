@@ -15,9 +15,6 @@ class Web {
     AsyncWebServer server;
     DNSServer dns;
     AsyncWiFiManager wifiManager;
-    SensorApi sensorApi;
-    CalculatorApi calculatorApi;
-
 
     ulong lastCheck = 0;
     void checkWiFi() {
@@ -42,9 +39,7 @@ class Web {
   public:
     Web() :
               server(80) , 
-              wifiManager(&server, &dns),
-              sensorApi(server),
-              calculatorApi(server) {
+              wifiManager(&server, &dns) {
     }
 
     void begin() {
@@ -55,6 +50,9 @@ class Web {
       this->server.onNotFound([](AsyncWebServerRequest * request) {
         request->send(SPIFFS, "/index.html", "text/html", false);
       });
+
+      DI::GetContainer()->resolve<SensorApi>()->configureCallbacks(server);
+      DI::GetContainer()->resolve<CalculatorApi>()->configureCallbacks(server);
 
       ElegantOTA.begin(&this->server);
       this->server.begin();

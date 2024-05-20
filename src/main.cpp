@@ -14,8 +14,6 @@
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 
-Web webInterface;
-
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
@@ -24,7 +22,7 @@ void setup() {
 
 
   DI::GetContainer()->resolve<Configuration>()->load();
-  webInterface.begin();
+  DI::GetContainer()->resolve<Web>()->begin();
 
   Log.traceln("Config:");
   if (Log.getLevel() == LOG_LEVEL_TRACE) {
@@ -38,7 +36,7 @@ void setup() {
 
 int calculatedSpeed = 0;
 void loop() {
-  webInterface.loop();
+  DI::GetContainer()->resolve<Web>()->loop();
   DI::GetContainer()->resolve<SensorRepository>()->loop();
 
   int newSpeed = 0;

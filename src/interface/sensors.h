@@ -7,7 +7,7 @@
 class SensorApi : public API {
     public:
 
-    SensorApi(AsyncWebServer & server) : API(server) {
+    void configureCallbacks (AsyncWebServer & server) override {
 
         server.on("/api/sensors/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(SensorRepository::knownSensorTypesJson(), request);

@@ -5,7 +5,7 @@
 class CalculatorApi : public API {
     public:
 
-    CalculatorApi(AsyncWebServer &server) : API(server) {
+    void configureCallbacks (AsyncWebServer & server) override {
         server.on("/api/calculators/types", HTTP_GET, [this](AsyncWebServerRequest * request) {
             this->respondJson(DI::GetContainer()->resolve<CalculatorRepository>()->availableCalculatorTypes(), request);
         });

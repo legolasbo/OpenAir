@@ -7,7 +7,6 @@
 
 class API {
     protected:
-    AsyncWebServer &server;
 
     void processFormValues(std::shared_ptr<Configurable> conf, AsyncWebServerRequest * request) {
         for (size_t i = 0; i < request->args(); i++) {
@@ -40,6 +39,6 @@ class API {
     }
 
     public:
-    API(AsyncWebServer &server) : server(server) {}
+    virtual void configureCallbacks (AsyncWebServer & server) = 0;
 };
 
