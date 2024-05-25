@@ -9,6 +9,7 @@
 
 #include "sensors.h"
 #include "calculators.h"
+#include "mqtt.h"
 
 class Web {
   private:
@@ -53,6 +54,7 @@ class Web {
 
       DI::GetContainer()->resolve<SensorApi>()->configureCallbacks(server);
       DI::GetContainer()->resolve<CalculatorApi>()->configureCallbacks(server);
+      DI::GetContainer()->resolve<MqttAPI>()->configureCallbacks(server);
 
       ElegantOTA.begin(&this->server);
       this->server.begin();

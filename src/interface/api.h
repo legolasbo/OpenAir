@@ -4,6 +4,7 @@
 #include "../configuration/Configuration.h"
 #include "responses.h"
 #include "../DependencyInjectionContainer.hpp"
+#include "../options/Configurable.h"
 
 class API {
     protected:
@@ -39,6 +40,7 @@ class API {
     }
 
     public:
+    virtual ~API() {}
     virtual void configureCallbacks (AsyncWebServer & server) = 0;
 };
 

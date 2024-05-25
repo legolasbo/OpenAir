@@ -8,21 +8,23 @@ import SensorEdit from './views/sensors/SensorEdit.js';
 import SensorAdd from './views/sensors/SensorAdd.js';
 import CalculatorAdd from './views/calculators/CalcAdd.js';
 import CalculatorEdit from './views/calculators/CalcEdit.js';
+import MQTT from './views/mqtt/MQTT.js';
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:(\w+)/g, '(?<$1>.+)') + "$");
 const router = async () => {
     const routes = [
         { path: "/", view: Dashboard },
-        { path: "/sensors", view: Sensors },
-        { path: "/sensors/add/:type", view: SensorAdd },
-        { path: "/sensors/:uuid/edit", view: SensorEdit },
-        { path: "/sensors/:uuid/delete", view: DeleteView("sensor") },
-        { path: "/sensors/:uuid", view: Sensor },
+        { path: "/mqtt", view: MQTT },
         { path: "/calculators", view: Calculators },
         { path: "/calculators/add/:type", view: CalculatorAdd },
         { path: "/calculators/:uuid/edit", view: CalculatorEdit },
         { path: "/calculators/:uuid/delete", view: DeleteView("calculator") },
         { path: "/calculators/:uuid", view: Calculator },
+        { path: "/sensors", view: Sensors },
+        { path: "/sensors/add/:type", view: SensorAdd },
+        { path: "/sensors/:uuid/edit", view: SensorEdit },
+        { path: "/sensors/:uuid/delete", view: DeleteView("sensor") },
+        { path: "/sensors/:uuid", view: Sensor },
     ];
 
     const potentialMatches = routes.map(route => {

@@ -14,6 +14,7 @@ const getNumberConstraintsFromInfo = (info) => {
 const mapToRenderer = (type) => { 
     switch(type) {
         case "text": return (name, info) => `<input type="text" name="${name}" ${getElementValueFrom(info)} />`;
+        case "password": return (name, info) => `<input type="password" name="${name}" ${getElementValueFrom(info)} />`;
         case "hidden": return (name, info) => `<input type="hidden" name="${name}" ${getElementValueFrom(info)} />`;
         case "select": return (name, info) => createRadioButtons(name, info.options, info.value);
         case "number": return numberRenderer;

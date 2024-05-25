@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include "SPIFFS.h"
 #include "../constants.h"
+#include "../interface/mqtt/MQTT.h"
 #include "../repositories/SensorRepository.hpp"
 #include "../repositories/CalculatorRepository.hpp"
 
@@ -10,6 +11,15 @@ class Configuration {
     private:
         const char * sensorsKey = "sensors";
         const char * calculatorsKey = "calculators";
+        const char * mqttKey = "mqtt";
+
+        void loadMqttConfig(JsonDocument &json) {
+            if (!json.containsKey(mqttKey)) {
+                Log.warningln("No MQTT config present");
+                return;
+            }
+            DI::GetContainer()->resolve<MQTT>()->loadJson(json[mqttKey]);
+        }
 
         template <typename Repo>
         void loadRepo(JsonDocument &json, const char * key) {
@@ -50,6 +60,7 @@ class Configuration {
         }
 
         void fromJson(JsonDocument &json) {
+            this->loadMqttConfig(json);
             this->loadRepo<SensorRepository>(json, sensorsKey);
             this->loadRepo<CalculatorRepository>(json, calculatorsKey);
         }
@@ -80,6 +91,7 @@ class Configuration {
 
             doc[sensorsKey] = DI::GetContainer()->resolve<SensorRepository>()->toJson();
             doc[calculatorsKey] = DI::GetContainer()->resolve<CalculatorRepository>()->toJson();
+            doc[mqttKey] = DI::GetContainer()->resolve<MQTT>()->toJson();
 
             return doc;
         }

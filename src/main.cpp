@@ -14,12 +14,20 @@
 Tachometer tachometer(TACHOMETER);
 Fan fan(PWM_MOTOR_SPEED, tachometer);
 
+TaskHandle_t mqttTask;
+
+void mqttTaskFunc(void *parameter) {
+  auto mqtt = DI::GetContainer()->resolve<MQTT>();
+  while(true) {
+    vTaskDelay(mqtt->runTask());
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
   Log.begin(LOG_LEVEL_TRACE, &Serial);
   Log.setShowLevel(true);
-
 
   DI::GetContainer()->resolve<Configuration>()->load();
   DI::GetContainer()->resolve<Web>()->begin();
@@ -29,6 +37,18 @@ void setup() {
     serializeJsonPretty(DI::GetContainer()->resolve<Configuration>()->toJson(), Serial);
     Serial.println();
   }
+
+
+  xTaskCreatePinnedToCore(
+    mqttTaskFunc, /* Function to implement the task */
+    "MqttTask",   /* Name of the task */
+    10000,        /* Stack size in words */
+    NULL,         /* Task input parameter */
+    // 1,  /* Priority of the task */
+    configMAX_PRIORITIES - 2,
+    &mqttTask, /* Task handle. */
+    0);        /* Core where the task should run */
+
 
   // tachometer.begin();
   // fan.begin();

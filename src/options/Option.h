@@ -3,6 +3,9 @@
 #include <string>
 #include <variant>
 #include <iostream>
+#include "../enums/ConnectionTypes.h"
+#include "../enums/SensorConnectors.h"
+#include "../enums/SensorTypes.h"
 
 class Option {
     private:
