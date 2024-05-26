@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include "SPIFFS.h"
 #include "../constants.h"
-#include "../interface/mqtt/MQTT.h"
+#include "../MQTT.h"
 #include "../repositories/SensorRepository.hpp"
 #include "../repositories/CalculatorRepository.hpp"
 

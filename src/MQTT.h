@@ -5,9 +5,9 @@
 #include <ESPAsyncWebServer.h>
 #include <string>
 #include <WiFi.h>
-#include "../../repositories/SensorRepository.hpp"
-#include "../homeassistant/device.h"
-#include "../homeassistant/discovery.h"
+#include "repositories/SensorRepository.hpp"
+#include "homeassistant/device.h"
+#include "homeassistant/discovery.h"
 
 #define HOMEASSISTANT_STATUS_TOPIC "homeassistant/status"
 #define BASE_TOPIC "openair"

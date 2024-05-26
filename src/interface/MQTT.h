@@ -5,7 +5,7 @@
 #include <string>
 #include <WiFi.h>
 #include "api.h"
-#include "mqtt/MQTT.h"
+#include "../MQTT.h"
 
 class MqttAPI : public API {
     public:
