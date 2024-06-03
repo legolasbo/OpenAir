@@ -4,8 +4,9 @@
 #include "../enums/SensorTypes.h"
 #include "../enums/ConnectionTypes.h"
 #include "../options/Configurable.h"
+#include "../homeassistant/provider.h"
 
-class Sensor : public Configurable, public Measurements::MeasurementProvider {
+class Sensor : public Configurable, public Measurements::MeasurementProvider, public HaSensorProvider {
     private:
         u_long lastReadMillis = 0;
 

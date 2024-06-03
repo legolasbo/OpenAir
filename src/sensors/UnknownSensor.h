@@ -26,5 +26,9 @@ class UnknownSensor : public Sensor {
             return {};
         }
 
+        std::set<std::shared_ptr<HaSensor>> getHaSensors() {
+            return {};
+        }
+
 };
 

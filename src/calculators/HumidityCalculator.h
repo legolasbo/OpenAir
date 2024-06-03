@@ -26,7 +26,7 @@ class HumidityCalculator : public SpeedCalculator {
         std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
             auto options = SpeedCalculator::availableOptions();
             
-            options.emplace("offset", new BoundedOption(-30, -100, 100, "Humidity\% + offset = speed\%", true));
+            options.emplace("offset", std::make_shared<BoundedOption>(-30, -100, 100, "Humidity\% + offset = speed\%", true));
 
             return options;
         }

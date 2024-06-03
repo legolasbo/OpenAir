@@ -6,7 +6,6 @@
 #include <string>
 #include <WiFi.h>
 #include "repositories/SensorRepository.hpp"
-#include "homeassistant/device.h"
 #include "homeassistant/discovery.h"
 
 #define HOMEASSISTANT_STATUS_TOPIC "homeassistant/status"
@@ -21,10 +20,9 @@ class MQTT {
         const int NO_CONFIG = 5000;
         const int RECONNECT = 10000;
 
-        Device device = Device("openair");
         std::set<std::shared_ptr<HaSensor>> haSensors {
-            std::make_shared<IpHaSensor>(device, "ip"),
-            std::make_shared<FreeMemorySensor>(device, "free memory"),
+            std::make_shared<IpHaSensor>("ip", "ip"),
+            std::make_shared<FreeMemoryHaSensor>("free-memory","free memory"),
         };
 
         std::string hostname;
@@ -33,10 +31,16 @@ class MQTT {
         std::string pass;
         espMqttClientAsync client;
         bool connecting = false;
+        bool discoveryPublished = false;
+        std::set<std::string> sensorUuids;
 
         bool connect() {
             if (!WiFi.isConnected()) {
                 Log.warningln("Unable to connect to MQTT because WiFi is unavailable");
+                return false;
+            }
+
+            if (this->hostname == "") {
                 return false;
             }
             
@@ -60,18 +64,34 @@ class MQTT {
         }
 
         bool reConnect() {
-            return this->client.disconnect() ? this->connect() : false;
+            this->client.disconnect();
+            return this->connect();
+        }
+
+        void sendHaSensorDiscovery(std::shared_ptr<HaSensor> sensor) {
+            Log.traceln("Sending %s", sensor->discoveryTopic().c_str());
+            auto payload = sensor->toDiscovery();
+
+            auto size = measureJson(payload) + 1;
+            char buff[size];
+            serializeJson(payload, buff, size);
+            this->client.publish(sensor->discoveryTopic().c_str(), 0, false, buff);
         }
 
         void sendDiscovery() {
             Log.infoln("Sending discovery");
+            this->discoveryPublished = true;
             for(auto ha : this->haSensors) {
-                auto payload = ha->toDiscovery();
+                sendHaSensorDiscovery(ha);
+            }
 
-                auto size = measureJson(payload) + 1;
-                char buff[size];
-                serializeJson(payload, buff, size);
-                this->client.publish(ha->discoveryTopic().c_str(), 0, false, buff);
+            auto sensorRepo = DI::GetContainer()->resolve<SensorRepository>();
+            for (auto uuid : sensorRepo->getUuids()) {
+                this->sensorUuids.emplace(uuid);
+                auto sensor = sensorRepo->getInstance(uuid);
+                for (auto haSensor : sensor->getHaSensors()) {
+                    sendHaSensorDiscovery(haSensor);
+                }
             }
         }
 
@@ -81,7 +101,6 @@ class MQTT {
 
             this->client.publish(AVAILABILITY_TOPIC, 0, true, HA_ONLINE);
             this->client.subscribe(HOMEASSISTANT_STATUS_TOPIC, 0);
-            this->sendDiscovery();
         }
 
         void onDisconnect(espMqttClientTypes::DisconnectReason reason) {
@@ -141,11 +160,29 @@ class MQTT {
             auto uuids = repo->getUuids();
 
             for (auto uuid : uuids) {
-
+                auto sensor = repo->getInstance(uuid);
+                for (auto haSensor : sensor->getHaSensors()) {
+                    this->client.publish(haSensor->stateTopic().c_str(), 0, false, haSensor->toValue().c_str());
+                }
             }
         }
 
+        void processSensorChanges() {
+            if (!this->discoveryPublished)
+                return;
+
+            auto repo = DI::GetContainer()->resolve<SensorRepository>();
+            auto uuids = repo->getUuids();
+            
+            if (this->sensorUuids.size() == uuids.size())
+                return;
+
+            Log.infoln("Sensor configuration changed");
+            this->sendDiscovery();
+        }
+
         void publish() {
+            this->processSensorChanges();
             this->publishDiagnostics();
             this->publishSensors();
         }

@@ -48,6 +48,15 @@ class ThreePositionSwitch : public Sensor {
         }
     }
 
+    std::set<std::shared_ptr<HaSensor>> getHaSensors() {
+      auto device = DI::GetContainer()->resolve<Device>();
+      return {
+        std::make_shared<GenericHaSensor>(this->uuid, this->getName(), [this](){
+          return std::to_string(this->getSelectedPosition());
+        })
+      };
+    }
+
     std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
       auto options = Sensor::availableOptions();
 

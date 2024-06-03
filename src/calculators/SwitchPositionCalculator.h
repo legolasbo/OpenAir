@@ -139,13 +139,13 @@ class SwitchPositionCalculator : public SpeedCalculator {
                 int numpos = sensor->provide(Measurements::SwitchPositionCountMeasurement).measure();
 
                 for (int i = 1; i <= numpos; i++) {
-                    options.emplace(this->getPositionOptionName(i), new BoundedOption(positionMap[i], 0, 100, this->getPositionOptionLabel(i), true));
+                    options.emplace(this->getPositionOptionName(i), std::make_shared<BoundedOption>(positionMap[i], 0, 100, this->getPositionOptionLabel(i), true));
                 }
             }
 
-            options.emplace(timedName, new BooleanOption(true, "Enable timed position", true));
-            options.emplace(minPerSecName, new BoundedOption(10, 1, 60, "Number of minutes per second", true));
-            options.emplace(manualAfterSecName, new BoundedOption(60, 1, 3600, "Speed is considered manual after seconds", true));
+            options.emplace(timedName, std::make_shared<BooleanOption>(true, "Enable timed position", true));
+            options.emplace(minPerSecName, std::make_shared<BoundedOption>(10, 1, 60, "Number of minutes per second", true));
+            options.emplace(manualAfterSecName, std::make_shared<BoundedOption>(60, 1, 3600, "Speed is considered manual after seconds", true));
 
             return options;
         }

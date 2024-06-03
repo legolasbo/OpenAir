@@ -5,31 +5,35 @@
 #include "device.h"
 #include "constants.h"
 
+typedef std::function<std::string(void)> HaSensorCallback;
+
 class HaSensor {
     private:
         std::string discoveryTopicName;
         std::string sensorName;
         std::string sensorMachineName;
+        std::shared_ptr<Device> device;
 
-        Device * device;
     public:
         virtual ~HaSensor() {};
         virtual const char * icon() = 0;
         virtual const char * category() = 0;
         virtual const char * deviceClass() = 0;
         virtual const char * unit() = 0;
+        virtual const std::set<std::string> options() = 0;
+        virtual const int suggestedDisplayPrecision() = 0;
 
-        HaSensor(Device * device, std::string sensorName) {
-            this->device = device;
+        HaSensor(std::string machineName, std::string sensorName) {
+            this->device = DI::GetContainer()->resolve<Device>();
             this->sensorName = sensorName;
-
-            int size = strlen(SENSOR_DISCOVERY_TEMPLATE) + sensorName.size() + device->getName().size();
-            char buff[size];
-            sprintf(buff, SENSOR_DISCOVERY_TEMPLATE, device->getName().c_str(), sensorName.c_str());
-            this->discoveryTopicName = std::string(buff);
-
-            this->sensorMachineName = sensorName;
+            
+            this->sensorMachineName = machineName;
             std::replace(this->sensorMachineName.begin(), this->sensorMachineName.end(), ' ', '-');
+
+            int size = strlen(SENSOR_DISCOVERY_TEMPLATE) + sensorMachineName.size() + device->getName().size();
+            char buff[size];
+            sprintf(buff, SENSOR_DISCOVERY_TEMPLATE, device->getName().c_str(), sensorMachineName.c_str());
+            this->discoveryTopicName = std::string(buff);
         }
 
         virtual std::string discoveryTopic() {
@@ -47,20 +51,38 @@ class HaSensor {
             data["unique_id"] = device->getName() + "-" + sensorMachineName;
             data["object_id"] = device->getName() + "_" + sensorMachineName;
             data["name"] = sensorName;
-            data["icon"] = this->icon();
             data["state_topic"] = this->stateTopic();
-            data["state_class"] = "measurement";
-            data["entity_category"] = this->category();
             data["device"] = device->toJson();
             data["availability_topic"] = "~/availability";
             data["payload_available"] = HA_ONLINE;
             data["payload_not_available"] = HA_OFFLINE;
 
-            if(strlen(this->deviceClass()))
+            if (this->suggestedDisplayPrecision() >= 0)
+                data["suggested_display_precision"] = this->suggestedDisplayPrecision();
+            
+            if(strlen(this->icon()))
+                data["icon"] = this->icon();
+
+            if (strlen(this->category()))
+                data["entity_category"] = this->category();
+
+            if(strlen(this->deviceClass())) {
+                data["state_class"] = "measurement";
                 data["device_class"] = this->deviceClass();
+                if (this->deviceClass() == "enum")
+                    data["state_class"] = "None";
+
+                if (this->options().size()) {
+                    auto options = data.add<JsonArray>();
+                    data["options"] = options;
+                    for (auto option : this->options()) {
+                        options.add(option);
+                    }
+                }
+            }
 
             if (strlen(this->unit()))
-                data["unit"] = this->unit();
+                data["unit_of_measurement"] = this->unit();
 
             return data;
         }
@@ -70,7 +92,7 @@ class HaSensor {
 
 class IpHaSensor : public HaSensor {
     public:
-        IpHaSensor(Device & device, std::string sensorName) : HaSensor(&device, sensorName) {}
+        IpHaSensor(std::string machineName, std::string sensorName) : HaSensor(machineName, sensorName) {}
 
         const char * icon() override {
             return "mdi:network-outline";
@@ -88,14 +110,22 @@ class IpHaSensor : public HaSensor {
             return "";
         }
 
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return -1;
+        }
+
         std::string toValue() override {
             return WiFi.localIP().toString().c_str();
         }
 };
 
-class FreeMemorySensor : public HaSensor {
+class FreeMemoryHaSensor : public HaSensor {
     public:
-        FreeMemorySensor(Device & device, std::string sensorName) : HaSensor(&device, sensorName) {}
+        FreeMemoryHaSensor(std::string machineName, std::string sensorName) : HaSensor(machineName, sensorName) {}
 
 
         const char * icon() override {
@@ -116,5 +146,124 @@ class FreeMemorySensor : public HaSensor {
         
         const char * deviceClass() override {
             return "";
+        }
+
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return -1;
+        }
+};
+
+class GenericHaSensor : public HaSensor {
+    private:
+        HaSensorCallback callback;
+    public:
+        GenericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : HaSensor(machineName, sensorName) {
+            this->callback = valueCallback;
+        }
+
+        const char * icon() override {
+            return "";
+        }
+
+        const char * category() override {
+            return "";
+        }
+
+        std::string toValue() override {
+            return this->callback();
+        }
+
+        const char * unit() override {
+            return "";
+        }
+        
+        const char * deviceClass() override {
+            return "";
+        }
+
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return -1;
+        }
+};
+
+class HumidityHaSensor : public HaSensor {
+    private:
+        HaSensorCallback callback;
+    public:
+        HumidityHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : HaSensor(machineName, sensorName) {
+            this->callback = valueCallback;
+        }
+
+        const char * icon() override {
+            return "mdi:water-percent";
+        }
+
+        const char * category() override {
+            return "";
+        }
+
+        std::string toValue() override {
+            return this->callback();
+        }
+
+        const char * unit() override {
+            return "%";
+        }
+        
+        const char * deviceClass() override {
+            return "humidity";
+        }
+
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return 2;
+        }
+};
+
+class TemperatureHaSensor : public HaSensor {
+    private:
+        HaSensorCallback callback;
+    public:
+        TemperatureHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : HaSensor(machineName, sensorName) {
+            this->callback = valueCallback;
+        }
+
+        const char * icon() override {
+            return "mdi:thermometer";
+        }
+
+        const char * category() override {
+            return "";
+        }
+
+        std::string toValue() override {
+            return this->callback();
+        }
+
+        const char * unit() override {
+            return "°C";
+        }
+        
+        const char * deviceClass() override {
+            return "temperature";
+        }
+
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return 2;
         }
 };

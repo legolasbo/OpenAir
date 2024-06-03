@@ -48,6 +48,20 @@ class SHT20Reader : public Sensor {
             }
         }
 
+        std::set<std::shared_ptr<HaSensor>> getHaSensors() {
+            return {
+                std::make_shared<TemperatureHaSensor>(this->uuid + "-temperature", std::string("Temperature (") + this->getName() + ")", [this](){
+                    return std::to_string(this->getTemperature());
+                }),
+                std::make_shared<TemperatureHaSensor>(this->uuid + "-dew-point", std::string("Dew point (") + this->getName() + ")", [this](){
+                    return std::to_string(this->getDewPoint());
+                }),
+                std::make_shared<HumidityHaSensor>(this->uuid + "-humidity", std::string("Humidity (") + this->getName() + ")", [this](){
+                    return std::to_string(this->getHumidity());
+                }),
+            };
+        }
+
         void loop() override {
             if (!this->initialized) {
                 ListOption<SensorConnector>* listOptPtr = this->getOption("connector")->as<ListOption<SensorConnector>>();
@@ -107,7 +121,7 @@ class SHT20Reader : public Sensor {
         }
 
         float getDewPoint() {
-            return this->takeReading().pressure;
+            return this->takeReading().dewPointDegC;
         }
 
 };

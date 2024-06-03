@@ -5,10 +5,15 @@
 
 class Device {
     private:
-        std::string name;
+        std::string name = "openair";
 
     public:
+        Device() {}
         Device(std::string name) {
+            this->name = name;
+        }
+
+        void setName(std::string name) {
             this->name = name;
         }
 
@@ -19,8 +24,7 @@ class Device {
         JsonDocument toJson() {
             JsonDocument doc;
             
-
-            doc["name"] = "openair";
+            doc["name"] = this->name;
             doc["model"] = "Mini";
             doc["manufacturer"] = "Flamingo Tech";
             doc["sw_version"] = "0.0.1";
