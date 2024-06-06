@@ -9,8 +9,15 @@
 #include "driver/ledc.h"
 #include <soc/pcnt_struct.h>
 
-
 class Tachometer {
+  public:
+    virtual void begin() {}
+    virtual bool loop() {return false;}
+    virtual int16_t RPS() {return 0;}
+    virtual int RPM() {return 0;}
+};
+
+class FanTachometer : public Tachometer {
   private:
     int pin;
     pcnt_unit_t unit;
@@ -30,12 +37,12 @@ class Tachometer {
     }
   
   public:
-    Tachometer(int pin, pcnt_unit_t unit = PCNT_UNIT_0) {
+    FanTachometer(int pin = TACHOMETER, pcnt_unit_t unit = PCNT_UNIT_0) {
       this->pin = pin;
       this->unit = unit;
     }
 
-    void begin() {
+    void begin() override {
       pinMode(this->pin, INPUT_PULLDOWN);
 
       pcnt_config_t conf;
@@ -52,18 +59,18 @@ class Tachometer {
       
       esp_err_t error = pcnt_unit_config(&conf);
       if (error != ESP_OK) {
-        Serial.printf("Configuring counter failed: %s", esp_err_to_name(error));
+        Log.errorln("Configuring counter failed: %s", esp_err_to_name(error));
         return;
       }
 
       error = pcnt_set_filter_value(this->unit, 100);
       if (error != ESP_OK) {
-        Serial.printf("Setting filter failed: %s", esp_err_to_name(error));
+        Log.errorln("Setting filter failed: %s", esp_err_to_name(error));
         return;
       }
       error = pcnt_filter_enable(this->unit);
       if (error != ESP_OK) {
-        Serial.printf("Enabling filter failed: %s", esp_err_to_name(error));
+        Log.errorln("Enabling filter failed: %s", esp_err_to_name(error));
         return;
       }
 
@@ -74,13 +81,13 @@ class Tachometer {
       int16_t count;
       esp_err_t error = pcnt_get_counter_value(this->unit, &count);
       if (error != ESP_OK) {
-        Serial.printf("Failed to read tachometer on pin %d: %s", this->pin, esp_err_to_name(error));
+        Log.errorln("Failed to read tachometer on pin %d: %s", this->pin, esp_err_to_name(error));
         return 0;
       }
       return count;
     }
 
-    bool loop() {
+    bool loop() override {
       if(this->elapsedMicros(this->lastMicros, micros()) < 1000000) {
         return false;
       }
@@ -95,15 +102,34 @@ class Tachometer {
       return true;
     }
 
-    int16_t RPS() {
+    int16_t RPS() override {
       return this->lastMinute[this->lastSecond];
     }
 
-    int RPM() {
+    int RPM() override {
       int sum = 0;
       for (int i = 0; i < 60; i++) {
         sum += this->lastMinute[i];
       }
       return sum;
     }
+};
+
+class MockTachometer : public Tachometer {
+  private:
+    int targetRPM = 1000;
+    int mockRPM = 1000;
+  public:
+    bool loop() override {
+      return true;
+    }
+
+    int16_t RPS() override {
+      return this->RPM()/60;
+    }
+
+    int RPM() override {
+      return 1000;
+    }
+
 };

@@ -25,8 +25,9 @@ public:
 	template<typename T>
 	void registerInstance(std::shared_ptr<T> instance) {
 		const size_t typeId = typeid(T).hash_code();
-		if (instances.find(typeId) == instances.end())
+		if (instances.find(typeId) == instances.end()) {
 			instances.emplace(typeId, instance);
+		}
 	}
 
 	template<typename T>

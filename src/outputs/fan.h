@@ -9,10 +9,11 @@ class Fan {
         int max = 100;
         int cur = 50;
         int pin, startSpeed;
-        Tachometer *tach;
+        std::shared_ptr<Tachometer> tach;
 
 
         void calibrate() {
+            Log.infoln("Calibrating fan....");
             this->startFan();
             while(this->cur > this->min) {
                 int newFanspeed = this->cur / 2;
@@ -25,10 +26,11 @@ class Fan {
                 this->tach->loop();
 
                 if (this->tach->RPS() == 0) {
-                this->min = this->cur + 1;
-                calibrate();
+                    this->min = this->cur + 1;
+                    calibrate();
                 }
             }
+            Log.infoln("Calibration completed. minimum speed: %d", this->min);
         }
 
         void configurePWM() {
@@ -59,35 +61,25 @@ class Fan {
         }
 
         void startFan() {
+            Log.traceln("Starting fan");
             this->setFanSpeed(startSpeed);
         }
 
         void increaseMinimumSpeed() {
+            Log.traceln("Increasing minimum speed");
             this->min = constrain(this->min+1, 10, maximumMinimumSpeed);
         }
 
     public:
-        Fan(int pin, Tachometer &tach, int startSpeed = 100) {
+        Fan(int pin = PWM_MOTOR_SPEED, int startSpeed = 100) {
             this->pin = pin;
-            this->tach = &tach;
             this->startSpeed = constrain(startSpeed, maximumMinimumSpeed, 100);
+            this->tach = DI::GetContainer()->resolve<Tachometer>();
         }
 
         void begin() {
             this->configurePWM();
             this->calibrate();
-
-            do {
-                this->setFanSpeed(this->max);
-                delay(10000);
-                this->setFanSpeed(this->min);
-                delay(10000);
-
-                if (this->tach->RPS() == 0) {
-                    this->increaseMinimumSpeed();
-                }
-            }
-            while (this->min < maximumMinimumSpeed);
         }
 
         void loop() {
@@ -101,12 +93,15 @@ class Fan {
 
         void setFanSpeed(int speed) {
             int speedToSet = constrain(speed, this->min, this->max);
+            if (this->cur == speedToSet)
+                return;
+
             this->cur = speedToSet;
             float perc = float(this->cur) / 100;
             int newDuty = perc * 255;
             ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, newDuty);
             ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-            Serial.printf("Set speed to %d\n", this->cur);
+            Log.traceln("Set speed to %d", this->cur);
         }
 
         int minimumSpeed() {return this->min;}

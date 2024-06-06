@@ -11,9 +11,6 @@
 #include "outputs/fan.h"
 #include "interface/web.h"
 
-Tachometer tachometer(TACHOMETER);
-Fan fan(PWM_MOTOR_SPEED, tachometer);
-
 TaskHandle_t mqttTask;
 
 void mqttTaskFunc(void *parameter) {
@@ -29,12 +26,22 @@ void setup() {
   Log.begin(LOG_LEVEL_TRACE, &Serial);
   Log.setShowLevel(true);
 
-  DI::GetContainer()->resolve<Configuration>()->load();
-  DI::GetContainer()->resolve<Web>()->begin();
+  auto container = DI::GetContainer();
+
+  #ifdef DEVELOPMENT_MODE
+    container->registerInstance<Tachometer>(std::make_shared<MockTachometer>());
+  #elif
+    container->registerInstance<Tachometer>(std::make_shared<FanTachometer>());
+  #endif
+
+  container->resolve<Configuration>()->load();
+  container->resolve<Web>()->begin();
+  container->resolve<Tachometer>()->begin();
+  container->resolve<Fan>()->begin();
 
   Log.traceln("Config:");
   if (Log.getLevel() == LOG_LEVEL_TRACE) {
-    serializeJsonPretty(DI::GetContainer()->resolve<Configuration>()->toJson(), Serial);
+    serializeJsonPretty(container->resolve<Configuration>()->toJson(), Serial);
     Serial.println();
   }
 
@@ -50,17 +57,17 @@ void setup() {
     0);        /* Core where the task should run */
 
 
-  // tachometer.begin();
-  // fan.begin();
 }
 
 int calculatedSpeed = 0;
 void loop() {
-  DI::GetContainer()->resolve<Web>()->loop();
-  DI::GetContainer()->resolve<SensorRepository>()->loop();
+  auto container = DI::GetContainer();
+  container->resolve<Web>()->loop();
+  container->resolve<SensorRepository>()->loop();
+  container->resolve<Fan>()->loop();
 
   int newSpeed = 0;
-  auto repo = DI::GetContainer()->resolve<CalculatorRepository>();
+  auto repo = container->resolve<CalculatorRepository>();
 
   for (std::string uuid : repo->getUuids()) {
     auto instance = repo->getInstance(uuid);
@@ -71,12 +78,7 @@ void loop() {
     newSpeed = max(instance->calculate(), newSpeed);
   }
 
-  if (newSpeed != calculatedSpeed) {
-    calculatedSpeed = newSpeed;
-    Log.traceln("New speed: %d \n", calculatedSpeed);
-  }
+  container->resolve<Fan>()->setFanSpeed(newSpeed);
 
   delay(1000);
-  // fan.setFanSpeed(calculatedSpeed);
-  // fan.loop();
 }

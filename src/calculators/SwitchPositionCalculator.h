@@ -24,7 +24,7 @@ class SwitchPositionCalculator : public SpeedCalculator {
             int defaultIncrement = 100 / numPos;
             this->positionMap.push_back(0);
             for (int i  = 1; i <= numPos; i++) {
-                this->positionMap.push_back(i * defaultIncrement);
+                this->positionMap.push_back(min((i * defaultIncrement) + 1, 100));
             }
         }
 
