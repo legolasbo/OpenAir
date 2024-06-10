@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include "../inputs/tachometer.h"
 
@@ -27,6 +29,10 @@ class Fan {
 
                 if (this->tach->RPS() == 0) {
                     this->min = this->cur + 1;
+                    if (this->min >= maximumMinimumSpeed) {
+                        Log.warningln("Fan does not appear to start. Unable to calibrate");
+                        return;
+                    }
                     calibrate();
                 }
             }
@@ -63,9 +69,13 @@ class Fan {
         void startFan() {
             Log.traceln("Starting fan");
             this->setFanSpeed(startSpeed);
+            delay(5000);
         }
 
         void increaseMinimumSpeed() {
+            if (this->min == maximumMinimumSpeed) {
+                return;
+            }
             Log.traceln("Increasing minimum speed");
             this->min = constrain(this->min+1, 10, maximumMinimumSpeed);
         }

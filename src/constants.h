@@ -1,5 +1,7 @@
 #pragma once
 
+#define VERSION "0.0.1"
+
 /**************************/
 /****   Development    ****/
 /**************************/
@@ -26,9 +28,13 @@
 
 #define LED_STATUS 33
 
-#define PWM_MOTOR_SPEED 15
-
-#define TACHOMETER 14
+#if DEVELOPMENT_MODE
+    #define PWM_MOTOR_SPEED 32
+    #define TACHOMETER 33
+#else
+    #define PWM_MOTOR_SPEED 15
+    #define TACHOMETER 14
+#endif
 
 /**************************/
 /****       WIFI       ****/

@@ -27,7 +27,7 @@ class Device {
             doc["name"] = this->name;
             doc["model"] = "Mini";
             doc["manufacturer"] = "Flamingo Tech";
-            doc["sw_version"] = "0.0.1";
+            doc["sw_version"] = VERSION;
             doc["identifiers"][0] = this->name;
             doc["configuration_url"] = std::string("http://") + WiFi.localIP().toString().c_str();
 

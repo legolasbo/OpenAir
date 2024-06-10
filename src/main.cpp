@@ -28,9 +28,10 @@ void setup() {
 
   auto container = DI::GetContainer();
 
-  #ifdef DEVELOPMENT_MODE
+  #if DEVELOPMENT_MODE
     container->registerInstance<Tachometer>(std::make_shared<MockTachometer>());
-  #elif
+    container->registerInstance<Device>(std::make_shared<Device>("openair-dev"));
+  #else
     container->registerInstance<Tachometer>(std::make_shared<FanTachometer>());
   #endif
 

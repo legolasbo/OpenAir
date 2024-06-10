@@ -116,9 +116,6 @@ class FanTachometer : public Tachometer {
 };
 
 class MockTachometer : public Tachometer {
-  private:
-    int targetRPM = 1000;
-    int mockRPM = 1000;
   public:
     bool loop() override {
       return true;
@@ -129,7 +126,7 @@ class MockTachometer : public Tachometer {
     }
 
     int RPM() override {
-      return 1000;
+      return random(500, 1500);
     }
 
 };

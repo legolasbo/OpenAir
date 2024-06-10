@@ -4,15 +4,110 @@
 #include <WiFi.h>
 #include "device.h"
 #include "constants.h"
+#include "../outputs/fan.h"
 
 typedef std::function<std::string(void)> HaSensorCallback;
+typedef std::function<void(std::string)> HaCommandCallback;
 
-class HaSensor {
+class HaDiscoverable {
+    friend class HaSensor;
+    friend class HaFan;
     private:
         std::string discoveryTopicName;
+        std::shared_ptr<Device> device;
+
+    public:
+        HaDiscoverable() {
+            this->device = DI::GetContainer()->resolve<Device>();
+        }
+
+        virtual std::string discoveryTopic() {
+            return this->discoveryTopicName;
+        }
+
+        virtual JsonDocument toDiscovery() {
+            JsonDocument doc;
+
+            doc["~"] = device->getName();
+            doc["device"] = device->toJson();
+            doc["availability_topic"] = "~/availability";
+            doc["payload_available"] = HA_ONLINE;
+            doc["payload_not_available"] = HA_OFFLINE;
+
+            return doc;
+        };
+};
+
+class HaCommandable : public HaDiscoverable {
+    private:
+        std::map<std::string, HaCommandCallback> commands;
+    public:
+        virtual std::map<std::string, HaCommandCallback> getCommandTopics() = 0;
+};
+
+class HaFan : public HaCommandable {
+    public:
+        HaFan() : HaCommandable() {
+            auto tmp = "homeassistant/fan/%s/hvac/config";
+            auto device = DI::GetContainer()->resolve<Device>();
+            char buff[strlen(tmp) + device->getName().size()];
+            sprintf(buff, tmp, device->getName().c_str());
+            this->discoveryTopicName = buff;
+        }
+
+        std::map<std::string, HaCommandCallback> getCommandTopics() override {
+            return {
+                {
+                    device->getName() + "/hvac/speed/percentage-command",
+                    [this](std::string payload) {
+                        int speed = atoi(payload.c_str());
+                        DI::GetContainer()->resolve<Fan>()->setFanSpeed(speed);
+                        Log.traceln("Percentage command: %s", payload.c_str());
+                    }
+                },
+                {
+                    device->getName() + "/hvac/on-command",
+                    [this](std::string payload) {
+                        Log.traceln("Command: %s", payload.c_str());
+                    }
+                }
+            };
+        }
+
+        JsonDocument  toDiscovery() override {
+            JsonDocument doc = HaDiscoverable::toDiscovery();
+
+            doc["unique_id"] = device->getName() + "-hvac";
+            doc["object_id"] = device->getName() + "_hvac";
+            doc["name"] = "hvac";
+            doc["icon"] = "mdi:hvac";
+            doc["command_topic"] = "~/hvac/on-command";
+            doc["state_topic"] = "~/hvac/on-state";
+            doc["percentage_command_topic"] = "~/hvac/speed/percentage-command";
+            doc["percentage_state_topic"] = "~/hvac/speed/percentage-state";
+
+            return doc;
+        }
+
+        std::string percentageStateTopic() {
+            return device->getName() + "/hvac/speed/percentage-state";
+        }
+
+        std::string toPercentageState() {
+            char buff[sizeof(int)*8+1];
+            itoa(DI::GetContainer()->resolve<Fan>()->currentSpeed(), buff, 10);
+            return buff;
+        }
+
+        std::string stateTopic() {
+            return device->getName() + "/hvac/on-state";
+        }
+};
+
+class HaSensor : public HaDiscoverable {
+    private:
         std::string sensorName;
         std::string sensorMachineName;
-        std::shared_ptr<Device> device;
 
     public:
         virtual ~HaSensor() {};
@@ -23,8 +118,7 @@ class HaSensor {
         virtual const std::set<std::string> options() = 0;
         virtual const int suggestedDisplayPrecision() = 0;
 
-        HaSensor(std::string machineName, std::string sensorName) {
-            this->device = DI::GetContainer()->resolve<Device>();
+        HaSensor(std::string machineName, std::string sensorName) : HaDiscoverable() {
             this->sensorName = sensorName;
             
             this->sensorMachineName = machineName;
@@ -36,26 +130,17 @@ class HaSensor {
             this->discoveryTopicName = std::string(buff);
         }
 
-        virtual std::string discoveryTopic() {
-            return this->discoveryTopicName;
-        }
-
         virtual std::string stateTopic() {
             return device->getName() + "/" + sensorMachineName;
         }
 
-        virtual JsonDocument toDiscovery() {
-            JsonDocument data;
+        JsonDocument toDiscovery() override {
+            JsonDocument data = HaDiscoverable::toDiscovery();
 
-            data["~"] = device->getName();
             data["unique_id"] = device->getName() + "-" + sensorMachineName;
             data["object_id"] = device->getName() + "_" + sensorMachineName;
             data["name"] = sensorName;
             data["state_topic"] = this->stateTopic();
-            data["device"] = device->toJson();
-            data["availability_topic"] = "~/availability";
-            data["payload_available"] = HA_ONLINE;
-            data["payload_not_available"] = HA_OFFLINE;
 
             if (this->suggestedDisplayPrecision() >= 0)
                 data["suggested_display_precision"] = this->suggestedDisplayPrecision();
@@ -191,6 +276,22 @@ class GenericHaSensor : public HaSensor {
 
         const int suggestedDisplayPrecision() override {
             return -1;
+        }
+};
+
+class NumericHaSensor : public GenericHaSensor {
+    public:
+        NumericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : GenericHaSensor(machineName, sensorName, valueCallback) {}
+
+        const int suggestedDisplayPrecision() override {
+            return 0;
+        }
+        JsonDocument toDiscovery() override {
+            JsonDocument doc = GenericHaSensor::toDiscovery();
+
+            doc["state_class"] = "measurement";
+
+            return doc;
         }
 };
 

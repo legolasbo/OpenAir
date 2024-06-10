@@ -1,15 +1,22 @@
 #pragma once
 
 #include <ArduinoJson.h>
+#include <ArduinoLog.h>
 #include <espMqttClientAsync.h>
 #include <ESPAsyncWebServer.h>
 #include <string>
 #include <WiFi.h>
 #include "repositories/SensorRepository.hpp"
 #include "homeassistant/discovery.h"
+#include "inputs/tachometer.h"
+#include "DependencyInjectionContainer.hpp"
 
 #define HOMEASSISTANT_STATUS_TOPIC "homeassistant/status"
-#define BASE_TOPIC "openair"
+#if DEVELOPMENT_MODE
+    #define BASE_TOPIC "openair-dev"
+#else
+    #define BASE_TOPIC "openair"
+#endif
 #define AVAILABILITY_TOPIC BASE_TOPIC "/availability"
 
 
@@ -20,9 +27,19 @@ class MQTT {
         const int NO_CONFIG = 5000;
         const int RECONNECT = 10000;
 
-        std::set<std::shared_ptr<HaSensor>> haSensors {
+        int getRPM() {
+            return DI::GetContainer()->resolve<Tachometer>()->RPM();
+        }
+
+        std::set<std::shared_ptr<HaDiscoverable>> haDiscoverables {
             std::make_shared<IpHaSensor>("ip", "ip"),
             std::make_shared<FreeMemoryHaSensor>("free-memory","free memory"),
+            std::make_shared<NumericHaSensor>("fan-rpm","fan RPM", [this](){
+                char buff[10];
+                itoa(this->getRPM(), buff, 10);
+                return std::string(buff);
+            }),
+            std::make_shared<HaFan>(),
         };
 
         std::string hostname;
@@ -68,7 +85,7 @@ class MQTT {
             return this->connect();
         }
 
-        void sendHaSensorDiscovery(std::shared_ptr<HaSensor> sensor) {
+        void sendHaSensorDiscovery(std::shared_ptr<HaDiscoverable> sensor) {
             Log.traceln("Sending %s", sensor->discoveryTopic().c_str());
             auto payload = sensor->toDiscovery();
 
@@ -76,12 +93,20 @@ class MQTT {
             char buff[size];
             serializeJson(payload, buff, size);
             this->client.publish(sensor->discoveryTopic().c_str(), 0, false, buff);
+
+            auto commandable = dynamic_cast<HaCommandable*>(sensor.get());
+            if (!commandable)
+                return;
+            
+            for (auto pair : commandable->getCommandTopics()) {
+                this->client.subscribe(pair.first.c_str(), 0);
+            }
         }
 
         void sendDiscovery() {
             Log.infoln("Sending discovery");
             this->discoveryPublished = true;
-            for(auto ha : this->haSensors) {
+            for(auto ha : this->haDiscoverables) {
                 sendHaSensorDiscovery(ha);
             }
 
@@ -139,6 +164,23 @@ class MQTT {
             if (strcmp(topic, HOMEASSISTANT_STATUS_TOPIC) == 0) {
                 if (strcmp(HA_ONLINE, strval) == 0) {
                     this->sendDiscovery();
+                    delete[] strval;
+                    return;
+                }
+            }
+
+            for(auto discoverable : this->haDiscoverables) {
+                auto commandable = dynamic_cast<HaCommandable*>(discoverable.get());
+                if (!commandable){
+                    continue;
+                }
+
+                for (auto p : commandable->getCommandTopics()) {
+                    if (strcmp(topic, p.first.c_str()) == 0) {
+                        p.second(strval);
+                        delete[] strval;
+                        return;
+                    }
                 }
             }
 
@@ -150,8 +192,19 @@ class MQTT {
         }
 
         void publishDiagnostics() {
-            for (auto hs : this->haSensors) {
-                this->client.publish(hs->stateTopic().c_str(), 0, false, hs->toValue().c_str());
+            for (auto hs : this->haDiscoverables) {
+                auto sensor = dynamic_cast<HaSensor*>(hs.get());
+                if (sensor) {
+                    this->client.publish(sensor->stateTopic().c_str(), 0, false, sensor->toValue().c_str());
+                    continue;
+                }
+
+                auto fan = dynamic_cast<HaFan*>(hs.get());
+                if (fan) {
+                    this->client.publish(fan->percentageStateTopic().c_str(), 0, false, fan->toPercentageState().c_str());
+                    this->client.publish(fan->stateTopic().c_str(), 0, false, "ON");
+                    continue;
+                }
             }
         }
 
