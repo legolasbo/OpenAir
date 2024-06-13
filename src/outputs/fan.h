@@ -5,6 +5,8 @@
 
 const int maximumMinimumSpeed = 25;
 
+enum FanMode {AUTO, MANUAL};
+
 class Fan {
     private:
         int min = 10;
@@ -12,6 +14,7 @@ class Fan {
         int cur = 50;
         int pin, startSpeed;
         std::shared_ptr<Tachometer> tach;
+        FanMode mode;
 
 
         void calibrate() {
@@ -80,11 +83,29 @@ class Fan {
             this->min = constrain(this->min+1, 10, maximumMinimumSpeed);
         }
 
+        void setFanSpeed(int speed) {
+            int speedToSet = constrain(speed, this->min, this->max);
+            if (this->cur == speedToSet)
+                return;
+
+            this->cur = speedToSet;
+            float perc = float(this->cur) / 100;
+            int newDuty = perc * 255;
+            ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, newDuty);
+            ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+            Log.traceln("Set speed to %d", this->cur);
+        }
+
     public:
         Fan(int pin = PWM_MOTOR_SPEED, int startSpeed = 100) {
             this->pin = pin;
             this->startSpeed = constrain(startSpeed, maximumMinimumSpeed, 100);
             this->tach = DI::GetContainer()->resolve<Tachometer>();
+            this->mode = AUTO;
+        }
+
+        FanMode getMode() {
+            return this->mode;
         }
 
         void begin() {
@@ -101,17 +122,19 @@ class Fan {
             }
         }
 
-        void setFanSpeed(int speed) {
-            int speedToSet = constrain(speed, this->min, this->max);
-            if (this->cur == speedToSet)
-                return;
+        void setManualFanSpeed(int speed) {
+            this->mode = MANUAL;
+            this->setFanSpeed(speed);
+        }
 
-            this->cur = speedToSet;
-            float perc = float(this->cur) / 100;
-            int newDuty = perc * 255;
-            ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, newDuty);
-            ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-            Log.traceln("Set speed to %d", this->cur);
+        void resumeAuto() {
+            this->mode = AUTO;
+        }
+
+        void setAutoFanSpeed(int speed) {
+            if (this->mode == AUTO) {
+                setFanSpeed(speed);
+            }
         }
 
         int minimumSpeed() {return this->min;}

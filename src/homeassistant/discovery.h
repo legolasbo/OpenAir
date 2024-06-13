@@ -61,16 +61,30 @@ class HaFan : public HaCommandable {
                     device->getName() + "/hvac/speed/percentage-command",
                     [this](std::string payload) {
                         int speed = atoi(payload.c_str());
-                        DI::GetContainer()->resolve<Fan>()->setFanSpeed(speed);
+                        DI::GetContainer()->resolve<Fan>()->setManualFanSpeed(speed);
                         Log.traceln("Percentage command: %s", payload.c_str());
                     }
                 },
                 {
                     device->getName() + "/hvac/on-command",
                     [this](std::string payload) {
-                        Log.traceln("Command: %s", payload.c_str());
+                        Log.traceln("Command: %s, resuming auto mode", payload.c_str());
+                        DI::GetContainer()->resolve<Fan>()->resumeAuto();
                     }
-                }
+                },
+                {
+                    device->getName() + "/hvac/mode/mode-command",
+                    [this](std::string payload) {
+                        Log.traceln("mode command: %s", payload.c_str());
+                        auto fan = DI::GetContainer()->resolve<Fan>();
+                        if (payload == "manual") {
+                            fan->setManualFanSpeed(fan->currentSpeed());
+                        }
+                        else {
+                            fan->resumeAuto();
+                        }
+                    }
+                },
             };
         }
 
@@ -85,6 +99,10 @@ class HaFan : public HaCommandable {
             doc["state_topic"] = "~/hvac/on-state";
             doc["percentage_command_topic"] = "~/hvac/speed/percentage-command";
             doc["percentage_state_topic"] = "~/hvac/speed/percentage-state";
+            doc["preset_mode_command_topic"] = "~/hvac/mode/mode-command";
+            doc["preset_mode_state_topic"] = "~/hvac/mode/mode-state";
+            doc["preset_modes"][0] = "auto";
+            doc["preset_modes"][1] = "manual";
 
             return doc;
         }
@@ -97,6 +115,17 @@ class HaFan : public HaCommandable {
             char buff[sizeof(int)*8+1];
             itoa(DI::GetContainer()->resolve<Fan>()->currentSpeed(), buff, 10);
             return buff;
+        }
+
+        std::string modeStateTopic() {
+            return device->getName() + "/hvac/mode/mode-state";
+        }
+
+        std::string toModeState() {
+            switch (DI::GetContainer()->resolve<Fan>()->getMode()) {
+                case MANUAL: return "manual";
+                default: return "auto";
+            }
         }
 
         std::string stateTopic() {

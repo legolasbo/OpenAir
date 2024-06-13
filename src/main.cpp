@@ -79,7 +79,7 @@ void loop() {
     newSpeed = max(instance->calculate(), newSpeed);
   }
 
-  container->resolve<Fan>()->setFanSpeed(newSpeed);
+  container->resolve<Fan>()->setAutoFanSpeed(newSpeed);
 
   delay(1000);
 }

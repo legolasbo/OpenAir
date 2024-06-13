@@ -203,6 +203,7 @@ class MQTT {
                 if (fan) {
                     this->client.publish(fan->percentageStateTopic().c_str(), 0, false, fan->toPercentageState().c_str());
                     this->client.publish(fan->stateTopic().c_str(), 0, false, "ON");
+                    this->client.publish(fan->modeStateTopic().c_str(), 0, false, fan->toModeState().c_str());
                     continue;
                 }
             }
