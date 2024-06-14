@@ -22,8 +22,7 @@ class FanTachometer : public Tachometer {
     int pin;
     pcnt_unit_t unit;
     ulong lastMicros = 0;
-    int16_t lastMinute[60];
-    int lastSecond = 0;
+    int16_t lastSecond = 0;
 
     ulong elapsedMicros(ulong oldMicros, ulong newMicros) {
       if (newMicros < oldMicros) {
@@ -92,26 +91,18 @@ class FanTachometer : public Tachometer {
         return false;
       }
 
-      if (++this->lastSecond > 59) {
-        this->lastSecond = 0;
-      }
-
-      this->lastMinute[this->lastSecond] = this->read();
+      this->lastSecond = this->read();
       pcnt_counter_clear(this->unit);
       this->lastMicros = micros();
       return true;
     }
 
     int16_t RPS() override {
-      return this->lastMinute[this->lastSecond];
+      return this->lastSecond;
     }
 
     int RPM() override {
-      int sum = 0;
-      for (int i = 0; i < 60; i++) {
-        sum += this->lastMinute[i];
-      }
-      return sum;
+      return this->RPS() * 60;
     }
 };
 
