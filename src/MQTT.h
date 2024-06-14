@@ -31,14 +31,23 @@ class MQTT {
             return DI::GetContainer()->resolve<Tachometer>()->RPM();
         }
 
+        int getStalls() {
+            return DI::GetContainer()->resolve<Fan>()->stallCount();
+        }
+
         std::set<std::shared_ptr<HaDiscoverable>> haDiscoverables {
             std::make_shared<IpHaSensor>("ip", "ip"),
             std::make_shared<FreeMemoryHaSensor>("free-memory","free memory"),
             std::make_shared<NumericHaSensor>("fan-rpm","fan RPM", [this](){
-                char buff[10];
+                char buff[sizeof(int)*8+1];
                 itoa(this->getRPM(), buff, 10);
                 return std::string(buff);
-            }),
+            }, true),
+            std::make_shared<NumericHaSensor>("fan-stalls","fan stalls", [this](){
+                char buff[sizeof(int)*8+1];
+                itoa(this->getStalls(), buff, 10);
+                return std::string(buff);
+            }, true),
             std::make_shared<HaFan>(),
         };
 

@@ -23,17 +23,18 @@ void mqttTaskFunc(void *parameter) {
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
-  Log.begin(LOG_LEVEL_TRACE, &Serial);
-  Log.setShowLevel(true);
-
   auto container = DI::GetContainer();
 
+
   #if DEVELOPMENT_MODE
+    Log.begin(LOG_LEVEL_TRACE, &Serial);
     container->registerInstance<Tachometer>(std::make_shared<MockTachometer>());
     container->registerInstance<Device>(std::make_shared<Device>("openair-dev"));
   #else
+    Log.begin(LOG_LEVEL_INFO, &Serial);
     container->registerInstance<Tachometer>(std::make_shared<FanTachometer>());
   #endif
+  Log.setShowLevel(true);
 
   container->resolve<Configuration>()->load();
   container->resolve<Web>()->begin();

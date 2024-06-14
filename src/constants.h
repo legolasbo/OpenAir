@@ -5,8 +5,7 @@
 /**************************/
 /****   Development    ****/
 /**************************/
-#define DEVELOPMENT_MODE true
-#define DISABLE_LOGGING true
+#define DEVELOPMENT_MODE false
 
 /**************************/
 /****      SPIFFS      ****/

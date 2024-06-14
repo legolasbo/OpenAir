@@ -309,8 +309,12 @@ class GenericHaSensor : public HaSensor {
 };
 
 class NumericHaSensor : public GenericHaSensor {
+    private:
+        bool diagnostic = false;
     public:
-        NumericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : GenericHaSensor(machineName, sensorName, valueCallback) {}
+        NumericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback, bool diagnostic = false) : GenericHaSensor(machineName, sensorName, valueCallback) {
+            this->diagnostic = diagnostic;
+        }
 
         const int suggestedDisplayPrecision() override {
             return 0;
@@ -319,6 +323,9 @@ class NumericHaSensor : public GenericHaSensor {
             JsonDocument doc = GenericHaSensor::toDiscovery();
 
             doc["state_class"] = "measurement";
+            if (this->diagnostic) {
+                doc["entity_category"] = "diagnostic";
+            }
 
             return doc;
         }

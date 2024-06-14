@@ -14,6 +14,7 @@ class Fan {
         int cur = 50;
         int pin, startSpeed;
         std::shared_ptr<Tachometer> tach;
+        int numStalls = 0;
         FanMode mode;
 
 
@@ -116,10 +117,16 @@ class Fan {
         void loop() {
             this->tach->loop();
             if (this->tach->RPM() == 0) {
+                this->numStalls++;
+                Log.warningln("Stall detected: restarting fan");
                 this->increaseMinimumSpeed();
                 this->startFan();
                 delay(2000);
             }
+        }
+
+        int stallCount() {
+            return this->numStalls;
         }
 
         void setManualFanSpeed(int speed) {
