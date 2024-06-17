@@ -12,6 +12,8 @@ typedef std::function<void(std::string)> HaCommandCallback;
 class HaDiscoverable {
     friend class HaSensor;
     friend class HaFan;
+    friend class HaFanSpeed;
+
     private:
         std::string discoveryTopicName;
         std::shared_ptr<Device> device;
@@ -202,6 +204,31 @@ class HaSensor : public HaDiscoverable {
         }
 
         virtual std::string toValue() = 0;
+};
+
+class HaFanSpeed : public HaDiscoverable {
+    public:
+
+        HaFanSpeed() : HaDiscoverable() {
+            int size = strlen(SENSOR_DISCOVERY_TEMPLATE) + strlen("percentage-state") + device->getName().size();
+            char buff[size];
+            sprintf(buff, SENSOR_DISCOVERY_TEMPLATE, device->getName().c_str(), "percentage-state");
+            this->discoveryTopicName = std::string(buff);
+        }
+
+        JsonDocument toDiscovery() override {
+            JsonDocument doc = HaDiscoverable::toDiscovery();
+
+            doc["unique_id"] = device->getName() + "-hvac-speed";
+            doc["object_id"] = device->getName() + "_hvac_speed";
+            doc["name"] = "hvac speed";
+            doc["icon"] = "mdi:percent-box-outline";
+            doc["state_topic"] = "~/hvac/speed/percentage-state";
+            doc["entity_category"] = "diagnostic";
+            doc["unit_of_measurement"] = "%";
+
+            return doc;
+        }
 };
 
 class IpHaSensor : public HaSensor {

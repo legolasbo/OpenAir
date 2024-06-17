@@ -10,6 +10,7 @@
 #include "homeassistant/discovery.h"
 #include "inputs/tachometer.h"
 #include "DependencyInjectionContainer.hpp"
+#include <queue>
 
 #define HOMEASSISTANT_STATUS_TOPIC "homeassistant/status"
 #if DEVELOPMENT_MODE
@@ -26,6 +27,7 @@ class MQTT {
         const int NO_WIFI = 5000;
         const int NO_CONFIG = 5000;
         const int RECONNECT = 10000;
+        std::queue<std::shared_ptr<HaDiscoverable>> discoveryQueue;
 
         int getRPM() {
             return DI::GetContainer()->resolve<Tachometer>()->RPM();
@@ -36,6 +38,7 @@ class MQTT {
         }
 
         std::set<std::shared_ptr<HaDiscoverable>> haDiscoverables {
+            std::make_shared<HaFanSpeed>(),
             std::make_shared<IpHaSensor>("ip", "ip"),
             std::make_shared<FreeMemoryHaSensor>("free-memory","free memory"),
             std::make_shared<NumericHaSensor>("fan-rpm","fan RPM", [this](){
@@ -80,7 +83,7 @@ class MQTT {
             }
 
             Log.infoln("Connecting to MQTT server at %s:%d with username `%s`", this->hostname.c_str(), this->port, this->user.c_str());
-            client.setClientId("OpenAir");
+            client.setClientId(DI::GetContainer()->resolve<Device>()->getName().c_str());
             client.setServer(this->hostname.c_str(), this->port);
             client.setCredentials(this->user.c_str(), this->pass.c_str());
             client.setWill(AVAILABILITY_TOPIC, 0, true, HA_OFFLINE);
@@ -113,10 +116,10 @@ class MQTT {
         }
 
         void sendDiscovery() {
-            Log.infoln("Sending discovery");
+            Log.infoln("Queing discovery");
             this->discoveryPublished = true;
             for(auto ha : this->haDiscoverables) {
-                sendHaSensorDiscovery(ha);
+                this->discoveryQueue.emplace(ha);
             }
 
             auto sensorRepo = DI::GetContainer()->resolve<SensorRepository>();
@@ -124,7 +127,7 @@ class MQTT {
                 this->sensorUuids.emplace(uuid);
                 auto sensor = sensorRepo->getInstance(uuid);
                 for (auto haSensor : sensor->getHaSensors()) {
-                    sendHaSensorDiscovery(haSensor);
+                    this->discoveryQueue.emplace(haSensor);
                 }
             }
         }
@@ -245,6 +248,7 @@ class MQTT {
         }
 
         void publish() {
+            this->client.publish(AVAILABILITY_TOPIC, 0, true, HA_ONLINE);
             this->processSensorChanges();
             this->publishDiagnostics();
             this->publishSensors();
@@ -291,6 +295,13 @@ class MQTT {
         }
 
         TickType_t runTask() {
+            if (this->discoveryQueue.size() > 0) {
+                auto item = this->discoveryQueue.front();
+                this->sendHaSensorDiscovery(item);
+                this->discoveryQueue.pop();
+                return PUBLISH_INTERVAL;
+            }
+
             if (!this->connect())
                 return RECONNECT;
 
