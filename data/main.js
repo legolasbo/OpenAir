@@ -9,6 +9,8 @@ import SensorAdd from './views/sensors/SensorAdd.js';
 import CalculatorAdd from './views/calculators/CalcAdd.js';
 import CalculatorEdit from './views/calculators/CalcEdit.js';
 import MQTT from './views/mqtt/MQTT.js';
+import FileSystem from './views/diagnostics/FS.js';
+import Upload from './views/diagnostics/FSUpload.js';
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:(\w+)/g, '(?<$1>.+)') + "$");
 const router = async () => {
@@ -25,6 +27,9 @@ const router = async () => {
         { path: "/sensors/:uuid/edit", view: SensorEdit },
         { path: "/sensors/:uuid/delete", view: DeleteView("sensor") },
         { path: "/sensors/:uuid", view: Sensor },
+        { path: "/filesystem", view: FileSystem },
+        { path: "/filesystem/delete", view: DeleteView("file") },
+        { path: "/filesystem/upload", view: Upload },
     ];
 
     const potentialMatches = routes.map(route => {
@@ -47,6 +52,9 @@ const router = async () => {
     const view = new match.route.view(match.result.groups);
     document.querySelector("#app").innerHTML = '<div class="lds-dual-ring"></div>';
     document.querySelector("#app").innerHTML = await view.getHtml();
+    if (view.bindHandlers) {
+        view.bindHandlers();
+    }
     handleRangeInputs();
 }
 const navigateTo = url => {
