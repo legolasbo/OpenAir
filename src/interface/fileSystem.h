@@ -25,7 +25,7 @@ class FileSystem : public API {
                     path = path.substring(5);
                 }
 
-                Log.infoln("Upload start: %s", path);
+                Log.infoln("Upload start: %s", path.c_str());
                 request->_tempFile = SPIFFS.open(path, "w");
             }
 

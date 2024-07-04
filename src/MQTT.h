@@ -11,6 +11,7 @@
 #include "inputs/tachometer.h"
 #include "DependencyInjectionContainer.hpp"
 #include <queue>
+#include <set>
 
 #define HOMEASSISTANT_STATUS_TOPIC "homeassistant/status"
 #if DEVELOPMENT_MODE
@@ -24,18 +25,13 @@
 class MQTT {
     private:
         const int PUBLISH_INTERVAL = 1000;
+        const int SUBSCRIBE_INTERVAL = 100;
         const int NO_WIFI = 5000;
         const int NO_CONFIG = 5000;
         const int RECONNECT = 10000;
         std::queue<std::shared_ptr<HaDiscoverable>> discoveryQueue;
-
-        int getRPM() {
-            return DI::GetContainer()->resolve<Tachometer>()->RPM();
-        }
-
-        int getStalls() {
-            return DI::GetContainer()->resolve<Fan>()->stallCount();
-        }
+        std::queue<std::string> subscriptionQueue;
+        std::set<std::string> sensorTopics;
 
         std::set<std::shared_ptr<HaDiscoverable>> haDiscoverables {
             std::make_shared<HaFanSpeed>(),
@@ -62,6 +58,14 @@ class MQTT {
         bool connecting = false;
         bool discoveryPublished = false;
         std::set<std::string> sensorUuids;
+
+        int getRPM() {
+            return DI::GetContainer()->resolve<Tachometer>()->RPM();
+        }
+
+        int getStalls() {
+            return DI::GetContainer()->resolve<Fan>()->stallCount();
+        }
 
         bool connect() {
             if (!WiFi.isConnected()) {
@@ -138,6 +142,10 @@ class MQTT {
 
             this->client.publish(AVAILABILITY_TOPIC, 0, true, HA_ONLINE);
             this->client.subscribe(HOMEASSISTANT_STATUS_TOPIC, 0);
+
+            for (std::string topic : this->sensorTopics) {
+                this->client.subscribe(topic.c_str(), 0);
+            }
         }
 
         void onDisconnect(espMqttClientTypes::DisconnectReason reason) {
@@ -275,26 +283,65 @@ class MQTT {
         }
 
         void setHostname(const std::string &hostname) {
+            if (this->hostname == hostname) {
+                return;
+            }
             this->hostname = hostname;
             this->reConnect();
         }
 
         void setPort (int port) {
+            if (this->port == port) {
+                return;
+            }
             this->port = port;
             this->reConnect();
         }
 
         void setUser(const std::string &user) {
+            if (this->user == user) {
+                return;
+            }
             this->user = user;
             this->reConnect();
         }
 
         void setPass(const std::string &pass) {
+            if (this->pass == pass) {
+                return;
+            }
             this->pass = pass;
             this->reConnect();
         }
 
+        void addSensorTopic(const std::string &topic) {
+            if (topic == "") {
+                return;
+            }
+
+            int sizeBefore = this->sensorTopics.size();
+            Log.traceln("Adding sensor topic %s", topic.c_str());
+            this->sensorTopics.emplace(topic);
+
+            if (this->sensorTopics.size() != sizeBefore) {
+                this->subscriptionQueue.emplace(topic);
+            }
+        }
+
+        void removeSensorTopic(const std::string &topic) {
+            Log.traceln("Removing topic %s", topic.c_str());
+            this->client.unsubscribe(topic.c_str());
+            this->sensorTopics.erase(topic);
+        }
+
+        std::set<std::string> getSensorTopics() {
+            return this->sensorTopics;
+        }
+
         TickType_t runTask() {
+            if (!this->connect())
+                return RECONNECT;
+
             if (this->discoveryQueue.size() > 0) {
                 auto item = this->discoveryQueue.front();
                 this->sendHaSensorDiscovery(item);
@@ -302,8 +349,13 @@ class MQTT {
                 return PUBLISH_INTERVAL;
             }
 
-            if (!this->connect())
-                return RECONNECT;
+            if (this->subscriptionQueue.size() > 0) {
+                std::string item = this->subscriptionQueue.front();
+                this->client.subscribe(item.c_str(), 0);
+                this->subscriptionQueue.pop();
+                Log.infoln("Subscribing to %s", item.c_str());
+                return SUBSCRIBE_INTERVAL; 
+            }
 
             this->publish();
             return PUBLISH_INTERVAL;
@@ -318,6 +370,11 @@ class MQTT {
                 this->setUser(json["user"].as<std::string>());
             if(json.containsKey("pass"))
                 this->setPass(json["pass"].as<std::string>());
+            if(json["sensorTopics"].is<JsonArray>()) {
+                for (auto item : json["sensorTopics"].as<JsonArray>()) {
+                    this->addSensorTopic(item.as<std::string>());
+                }
+            }
         }
 
         JsonDocument toJson() {
@@ -327,6 +384,10 @@ class MQTT {
             doc["port"] = this->port;
             doc["user"] = this->user;
             doc["pass"] = this->pass;
+            int i = 0;
+            for (std::string topic : this->sensorTopics) {
+                doc["sensorTopics"][i++] = topic;
+            }
 
             return doc;
         }
