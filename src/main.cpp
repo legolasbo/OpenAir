@@ -69,6 +69,7 @@ void loop() {
   container->resolve<Fan>()->loop();
 
   int newSpeed = 0;
+  std::shared_ptr<SpeedCalculator> governor = nullptr;
   auto repo = container->resolve<CalculatorRepository>();
 
   for (std::string uuid : repo->getUuids()) {
@@ -77,10 +78,16 @@ void loop() {
       continue;
     }
 
-    newSpeed = max(instance->calculate(), newSpeed);
+    int calculated = instance->calculate();
+    if (calculated > newSpeed) {
+      newSpeed = calculated;
+      governor = instance;
+    }
   }
 
-  container->resolve<Fan>()->setAutoFanSpeed(newSpeed);
+  auto fan = container->resolve<Fan>();
+  fan->setAutoFanSpeed(newSpeed);
+  fan->setGovernorName(governor->getOption("name")->toStr());
 
   delay(1000);
 }

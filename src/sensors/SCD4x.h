@@ -28,7 +28,6 @@ class SCD4x : public Sensor {
                 Measurements::Type::CO2Measurement,
                 Measurements::Type::HumidityMeasurement,
                 Measurements::Type::TemperatureMeasurement,
-                Measurements::Type::DewPointMeasurement,
             };
         }
 
@@ -132,7 +131,6 @@ class SCD4x : public Sensor {
             bool isDataReady = false;
             error = scd4x.getDataReadyFlag(isDataReady);
             if (error) {
-                Log.warningln("Error trying to execute getDataReadyFlag(): ");
                 errorToString(error, errorMessage, 256);
                 Log.warningln(errorMessage);
                 return false;

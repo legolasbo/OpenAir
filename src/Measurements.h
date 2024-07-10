@@ -15,6 +15,21 @@ namespace Measurements {
         CO2Measurement,
     };
 
+
+    const char* ToString(Type t) {
+        switch (t)
+        {
+            case CO2Measurement:                    return "Co2";
+            case DewPointMeasurement:               return "Dew point";
+            case HumidityMeasurement:               return "Humidity";
+            case PressureMeasurement:               return "Pressure";
+            case SwitchPositionMeasurement:         return "Switch position";
+            case SwitchPositionCountMeasurement:    return "Switch position count";
+            case TemperatureMeasurement:            return "Temperature";
+            default:                                return "[Unknown measurement type]";
+        }
+    }
+
     class MeasurementTypeList : public std::set<Type> {
         public:
         MeasurementTypeList() : std::set<Type>(){}

@@ -301,8 +301,10 @@ class FreeMemoryHaSensor : public HaSensor {
 class GenericHaSensor : public HaSensor {
     private:
         HaSensorCallback callback;
+        bool diagnostic;
     public:
-        GenericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : HaSensor(machineName, sensorName) {
+        GenericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback, bool diagnostic = false) : HaSensor(machineName, sensorName) {
+            this->diagnostic = diagnostic;
             this->callback = valueCallback;
         }
 
@@ -311,6 +313,9 @@ class GenericHaSensor : public HaSensor {
         }
 
         const char * category() override {
+            if (this->diagnostic) {
+                return "diagnostic";
+            }
             return "";
         }
 
@@ -336,12 +341,8 @@ class GenericHaSensor : public HaSensor {
 };
 
 class NumericHaSensor : public GenericHaSensor {
-    private:
-        bool diagnostic = false;
     public:
-        NumericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback, bool diagnostic = false) : GenericHaSensor(machineName, sensorName, valueCallback) {
-            this->diagnostic = diagnostic;
-        }
+        NumericHaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback, bool diagnostic = false) : GenericHaSensor(machineName, sensorName, valueCallback, diagnostic) {}
 
         const int suggestedDisplayPrecision() override {
             return 0;
@@ -350,9 +351,6 @@ class NumericHaSensor : public GenericHaSensor {
             JsonDocument doc = GenericHaSensor::toDiscovery();
 
             doc["state_class"] = "measurement";
-            if (this->diagnostic) {
-                doc["entity_category"] = "diagnostic";
-            }
 
             return doc;
         }

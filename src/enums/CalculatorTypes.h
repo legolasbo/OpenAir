@@ -4,14 +4,24 @@
 #include <string.h> 
 
 enum CalculatorType {
+    CO2_CALCULATOR,
     HUMIDITY_CALCULATOR,
     SWITCH_POSITION_CALCULATOR,
     UNKNOWN_CALCULATOR_TYPE,
 };
 
+std::vector<CalculatorType> KnownCalculatorTypes() {
+    return {
+        CO2_CALCULATOR,
+        HUMIDITY_CALCULATOR,
+        SWITCH_POSITION_CALCULATOR,
+    };
+}
+
 const char* ToString(CalculatorType v) {
     switch (v)
     {
+        case CO2_CALCULATOR:                return "Co2";
         case HUMIDITY_CALCULATOR:           return "Humidity";
         case SWITCH_POSITION_CALCULATOR:    return "Switch position";
         default:                            return "[Unknown sensor]";
@@ -21,6 +31,7 @@ const char* ToString(CalculatorType v) {
 const char* ToMachineName(CalculatorType v) {
     switch (v)
     {
+        case CO2_CALCULATOR:                return "co2";
         case HUMIDITY_CALCULATOR:           return "humidity";
         case SWITCH_POSITION_CALCULATOR:    return "switch";
         default:                            return "unknown";
@@ -28,19 +39,11 @@ const char* ToMachineName(CalculatorType v) {
 }
 
 CalculatorType CalculatorTypeFromMachineName(const std::string &name) {
-    if (name == ToMachineName(HUMIDITY_CALCULATOR)) {
-        return HUMIDITY_CALCULATOR;
-    }
-    if (name == ToMachineName(SWITCH_POSITION_CALCULATOR)) {
-        return SWITCH_POSITION_CALCULATOR;
+    for(auto type : KnownCalculatorTypes()) {
+        if (name == ToMachineName(type)) {
+            return type;
+        }
     }
 
     return UNKNOWN_CALCULATOR_TYPE;
-}
-
-std::vector<CalculatorType> KnownCalculatorTypes() {
-    return {
-        HUMIDITY_CALCULATOR,
-        SWITCH_POSITION_CALCULATOR,
-    };
 }

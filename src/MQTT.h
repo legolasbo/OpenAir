@@ -47,6 +47,9 @@ class MQTT {
                 itoa(this->getStalls(), buff, 10);
                 return std::string(buff);
             }, true),
+            std::make_shared<GenericHaSensor>("governor", "Current speed governor", [this](){
+                return this->getGovernor();
+            }, true),
             std::make_shared<HaFan>(),
         };
 
@@ -65,6 +68,10 @@ class MQTT {
 
         int getStalls() {
             return DI::GetContainer()->resolve<Fan>()->stallCount();
+        }
+
+        std::string getGovernor() {
+            return DI::GetContainer()->resolve<Fan>()->governor();
         }
 
         bool connect() {

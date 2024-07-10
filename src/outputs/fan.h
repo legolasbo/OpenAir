@@ -16,6 +16,7 @@ class Fan {
         std::shared_ptr<Tachometer> tach;
         int numStalls = 0;
         FanMode mode;
+        std::string governorName = "";
 
 
         void calibrate() {
@@ -142,6 +143,17 @@ class Fan {
             if (this->mode == AUTO) {
                 setFanSpeed(speed);
             }
+        }
+
+        void setGovernorName(std::string name) {
+            this->governorName = name;
+        }
+
+        std::string governor() {
+            if (this->mode == AUTO) {
+                return this->governorName;
+            }
+            return "Manual";
         }
 
         int minimumSpeed() {return this->min;}

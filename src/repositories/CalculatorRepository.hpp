@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../calculators/Co2Calculator.h"
 #include "../calculators/HumidityCalculator.h"
 #include "../calculators/SwitchPositionCalculator.h"
 #include "../calculators/UnknownCalculator.h"
@@ -11,8 +12,9 @@ class CalculatorRepository : public Repository<SpeedCalculator> {
 
     std::shared_ptr<SpeedCalculator> create(CalculatorType type) {
         switch (type) {
-            case HUMIDITY_CALCULATOR: return std::make_shared<HumidityCalculator>();
-            case SWITCH_POSITION_CALCULATOR: return std::make_shared<SwitchPositionCalculator>();
+            case CO2_CALCULATOR:                return std::make_shared<Co2Calculator>();
+            case HUMIDITY_CALCULATOR:           return std::make_shared<HumidityCalculator>();
+            case SWITCH_POSITION_CALCULATOR:    return std::make_shared<SwitchPositionCalculator>();
             default: return std::make_shared<UnknownCalculator>();
         }
     }
