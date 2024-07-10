@@ -12,6 +12,7 @@ namespace Measurements {
         PressureMeasurement,
         SwitchPositionMeasurement,
         SwitchPositionCountMeasurement,
+        CO2Measurement,
     };
 
     class MeasurementTypeList : public std::set<Type> {

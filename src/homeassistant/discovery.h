@@ -431,3 +431,40 @@ class TemperatureHaSensor : public HaSensor {
             return 2;
         }
 };
+
+class CO2HaSensor : public HaSensor {
+    private:
+        HaSensorCallback callback;
+    public:
+        CO2HaSensor(std::string machineName, std::string sensorName, HaSensorCallback valueCallback) : HaSensor(machineName, sensorName) {
+            this->callback = valueCallback;
+        }
+
+        const char * icon() override {
+            return "mdi:molecule-co2";
+        }
+
+        const char * category() override {
+            return "";
+        }
+
+        std::string toValue() override {
+            return this->callback();
+        }
+
+        const char * unit() override {
+            return "ppm";
+        }
+        
+        const char * deviceClass() override {
+            return "carbon_dioxide";
+        }
+
+        const std::set<std::string> options() override {
+            return {};
+        }
+
+        const int suggestedDisplayPrecision() override {
+            return 0;
+        }
+};
