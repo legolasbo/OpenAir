@@ -6,6 +6,7 @@ enum ConnectionType {
     UNKNOWN_CONNECTION_TYPE,
     I2C,
     UART,
+    MQTT_CONNECTION,
 };
 
 const char* ToMachineName(ConnectionType v) {
@@ -13,6 +14,7 @@ const char* ToMachineName(ConnectionType v) {
     {
         case I2C:     return "i2c";
         case UART:    return "uart";
+        case MQTT_CONNECTION:    return "mqtt";
         default:      return "[unknown connection type]";
     }
 }
@@ -27,6 +29,9 @@ ConnectionType ConnectionTypeFromMachineName(const char * name) {
     }
     if (strcmp(name, ToMachineName(UART)) == 0) {
         return UART;
+    }
+    if (strcmp(name, ToMachineName(MQTT_CONNECTION)) == 0) {
+        return MQTT_CONNECTION;
     }
     
     return UNKNOWN_CONNECTION_TYPE;

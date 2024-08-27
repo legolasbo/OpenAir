@@ -6,6 +6,7 @@ namespace Measurements {
     typedef std::function<int(void)> MeasurementCallback;
 
     enum Type {
+        UNKNOWN,
         TemperatureMeasurement,
         HumidityMeasurement,
         DewPointMeasurement,
@@ -28,6 +29,44 @@ namespace Measurements {
             case TemperatureMeasurement:            return "Temperature";
             default:                                return "[Unknown measurement type]";
         }
+    }
+
+    const char* ToMachineName(Type t) {
+        switch (t) {
+            case CO2Measurement:                    return "measurement_co2";
+            case DewPointMeasurement:               return "measurement_dew-point";
+            case HumidityMeasurement:               return "measurement_humidity";
+            case PressureMeasurement:               return "measurement_pressure";
+            case SwitchPositionMeasurement:         return "measurement_switch-position";
+            case SwitchPositionCountMeasurement:    return "measurement_switch-position-count";
+            case TemperatureMeasurement:            return "measurement_temperature";
+            default:                                return "measurement_unknown";
+        }
+    }
+
+    const Type FromMachineName(const char* name) {
+        if (strcmp(name, ToMachineName(CO2Measurement)) == 0) {
+            return CO2Measurement;
+        }
+        if (strcmp(name, ToMachineName(DewPointMeasurement)) == 0) {
+            return DewPointMeasurement;
+        }
+        if (strcmp(name, ToMachineName(HumidityMeasurement)) == 0) {
+            return HumidityMeasurement;
+        }
+        if (strcmp(name, ToMachineName(PressureMeasurement)) == 0) {
+            return PressureMeasurement;
+        }
+        if (strcmp(name, ToMachineName(SwitchPositionMeasurement)) == 0) {
+            return SwitchPositionMeasurement;
+        }
+        if (strcmp(name, ToMachineName(SwitchPositionCountMeasurement)) == 0) {
+            return SwitchPositionCountMeasurement;
+        }
+        if (strcmp(name, ToMachineName(TemperatureMeasurement)) == 0) {
+            return TemperatureMeasurement;
+        }
+        return UNKNOWN;
     }
 
     class MeasurementTypeList : public std::set<Type> {

@@ -7,6 +7,7 @@
 #include "../I2CManager.h"
 #include "../sensors/SHT20Reader.h"
 #include "../sensors/SCD4x.h"
+#include "../sensors/MqttSensor.h"
 #include "../sensors/ThreePositionSwitch.h"
 #include "../sensors/UnknownSensor.h"
 #include "Repository.hpp"
@@ -18,6 +19,7 @@ class SensorRepository : public Repository<Sensor> {
 
         std::shared_ptr<Sensor> create(SensorType type) {
             switch (type) {
+                case MqttSensor: return std::make_shared<MQTTSensor>();
                 case SHT20Sensor: return std::make_shared<SHT20Reader>();
                 case SCD4xSensor: return std::make_shared<SCD4x>();
                 case ThreePositionSwitchSensor: return std::make_shared<ThreePositionSwitch>();
@@ -65,6 +67,7 @@ class SensorRepository : public Repository<Sensor> {
 
         static std::vector<SensorType> knownSensorTypes() {
             return std::vector<SensorType>{
+                MqttSensor,
                 SHT20Sensor, 
                 SCD4xSensor, 
                 ThreePositionSwitchSensor,

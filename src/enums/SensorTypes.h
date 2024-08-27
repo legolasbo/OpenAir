@@ -8,6 +8,7 @@ enum SensorType {
     ThreePositionSwitchSensor,
     SHT20Sensor,
     SCD4xSensor,
+    MqttSensor,
 };
 
 const char* ToString(SensorType v) {
@@ -16,6 +17,7 @@ const char* ToString(SensorType v) {
         case ThreePositionSwitchSensor:     return "Three position switch";
         case SHT20Sensor:                   return "SHT20 temperature/humidity sensor";
         case SCD4xSensor:                   return "SCD4x co2/temperature/humidity sensor";
+        case MqttSensor:                    return "MQTT sensor";
         default:                            return "[Unknown sensor]";
     }
 }
@@ -26,6 +28,7 @@ const char* ToMachineName(SensorType v) {
         case ThreePositionSwitchSensor:     return "3possw";
         case SHT20Sensor:                   return "sht20";
         case SCD4xSensor:                   return "scd4x";
+        case MqttSensor:                    return "mqtt";
         default:                            return "unknown";
     }
 }
@@ -39,6 +42,9 @@ SensorType SensorTypeFromMachineName(const std::string &name) {
     }
     if (name == ToMachineName(SCD4xSensor)) {
         return SCD4xSensor;
+    }
+    if (name == ToMachineName(MqttSensor)) {
+        return MqttSensor;
     }
 
     return UNKNOWN_SENSOR_TYPE;

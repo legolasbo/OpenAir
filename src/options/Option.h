@@ -52,6 +52,8 @@ std::shared_ptr<Option> createOption(int value, std::string label = "", bool edi
 std::shared_ptr<Option> createOption(const std::string &value, std::string label = "", bool editable = true);
 std::shared_ptr<Option> createOption(ConnectionType value, std::string label = "", bool editable = true);
 std::shared_ptr<Option> createOption(SensorConnector value, std::string label = "", bool editable = true);
+std::shared_ptr<Option> createOption(SensorType value, std::string label = "Sensor type", bool editable = true);
+std::shared_ptr<Option> createOption(Measurements::Type value, std::string label = "Measurement type", bool editable = true);
 
 class UnknownOption : public Option {
     public:
@@ -170,6 +172,54 @@ class BooleanOption : public Option {
 
 };
 
+class SensorTypeOption : public Option {
+    private:
+        SensorType value;
+    
+    public:
+        explicit SensorTypeOption(SensorType value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+
+        std::string toStr() override {
+            return ToMachineName(this->value);
+        }
+
+        SensorType getValue() {
+            return this->value;
+        }
+
+        std::shared_ptr<Option> newValue(const std::string &value) override {
+            return createOption(SensorTypeFromMachineName(value.c_str()), this->getLabel(), this->isEditable());
+        }
+
+        std::string typeName() override {
+            return typeid(value).name();
+        }
+};
+
+class MeasurementTypeOption : public Option {
+    private:
+        Measurements::Type value;
+    
+    public:
+        explicit MeasurementTypeOption(Measurements::Type value, const std::string &label, bool editable) : Option(label, editable), value(value) {}
+
+        std::string toStr() override {
+            return ToMachineName(this->value);
+        }
+
+        Measurements::Type getValue() {
+            return this->value;
+        }
+
+        std::shared_ptr<Option> newValue(const std::string &value) override {
+            return createOption(Measurements::FromMachineName(value.c_str()), this->getLabel(), this->isEditable());
+        }
+
+        std::string typeName() override {
+            return typeid(value).name();
+        }
+};
+
 class ConnectionTypeOption : public Option {
     private:
         ConnectionType value;
@@ -265,6 +315,12 @@ class ListOption : public Option {
             if (auto o = dynamic_cast<SensorConnectorOption*>(optptr)) {
                 return this->create(o->getValue());
             }
+            if (auto o = dynamic_cast<MeasurementTypeOption*>(optptr)) {
+                return this->create(o->getValue());
+            }
+            if (auto o = dynamic_cast<SensorTypeOption*>(optptr)) {
+                return this->create(o->getValue());
+            }
 
             return this->create(this->value);
         }
@@ -351,6 +407,16 @@ std::shared_ptr<Option> createOption(const std::string &value, std::string label
         return createOption(conn, label, editable);
     }
 
+    auto st = SensorTypeFromMachineName(value.c_str());
+    if (st != UNKNOWN_SENSOR_TYPE) {
+        return createOption(st, label, editable);
+    }
+
+    auto mt = Measurements::FromMachineName(value.c_str());
+    if (mt != Measurements::Type::UNKNOWN) {
+        return createOption(mt, label, editable);
+    }
+
     return std::make_shared<StringOption>(value, label, editable);
 }
 std::shared_ptr<Option> createOption(ConnectionType value, std::string label, bool editable) {
@@ -358,4 +424,10 @@ std::shared_ptr<Option> createOption(ConnectionType value, std::string label, bo
 }
 std::shared_ptr<Option> createOption(SensorConnector value, std::string label, bool editable) {
     return std::make_shared<SensorConnectorOption>(value, label, editable);
+}
+std::shared_ptr<Option> createOption(SensorType value, std::string label, bool editable) {
+    return std::make_shared<SensorTypeOption>(value, label, editable);
+}
+std::shared_ptr<Option> createOption(Measurements::Type value, std::string label, bool editable) {
+    return std::make_shared<MeasurementTypeOption>(value, label, editable);
 }

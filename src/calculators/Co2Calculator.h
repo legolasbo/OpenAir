@@ -21,7 +21,11 @@ class Co2Calculator : public SpeedCalculator {
 
     public:
         bool isValid() override {
-            return this->getSensor() != nullptr;
+            if (this->getSensor() == nullptr) {
+                return false;
+            }
+
+            return this->getSensor()->getMeasurementTypes().intersects(this->supportedMeasurementTypes());
         }
 
         std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
