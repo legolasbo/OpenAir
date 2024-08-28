@@ -28,18 +28,6 @@ class MqttAPI : public API {
                         mqtt->setUser(request->arg(i).c_str());
                     if (argName == "pass")
                         mqtt->setPass(request->arg(i).c_str());
-                    if (argName == "sensorTopics[]")
-                        topics.emplace(request->arg(i).c_str());
-                }
-
-                for (std::string topic : mqtt->getSensorTopics()) {
-                    if (topics.find(topic) == topics.end()) {
-                        mqtt->removeSensorTopic(topic);
-                    }
-                }
-
-                for (std::string topic : topics) {
-                    mqtt->addSensorTopic(topic);
                 }
 
                 request->redirect("/mqtt");

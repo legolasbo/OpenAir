@@ -27,10 +27,6 @@ export default class MQTT extends AbstractView {
                 name: "pass", 
                 info: {type: "password", label: "Password", value: js.pass}
             },
-            {
-                name: "sensorTopics",
-                info: {type: "texts", label: "Sensor topics", value: js.sensorTopics ? js.sensorTopics : []}
-            }
         ];
 
         return `
