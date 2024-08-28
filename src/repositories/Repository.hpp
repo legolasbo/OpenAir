@@ -2,9 +2,13 @@
 
 #include <map>
 #include <vector>
+#include "RepositorySubscriber.hpp"
 
 template <typename Type>
 class Repository {
+    private:
+        std::set<std::shared_ptr<RepositorySubscriber<Type>>> subscribers;
+
     protected:
     std::map<std::string, std::shared_ptr<Type>> instances;
 
@@ -13,12 +17,23 @@ class Repository {
             return;
         }
         this->instances.emplace(uuid, instance);
+
+        for (auto s : this->subscribers) {
+            s->instanceAdded(instance);
+        }
     }
 
 
     public:
     virtual ~Repository() = default;
     virtual std::shared_ptr<Type> create(const std::string &type) = 0;
+
+    void registerSubscriber(std::shared_ptr<RepositorySubscriber<Type>> s) {
+        this->subscribers.emplace(s);
+        for (auto i : this->instances) {
+            s->instanceAdded(i.second);
+        }
+    }
 
     virtual void loadJson(JsonObject definitions) {
         for (JsonPair p : definitions) {
@@ -53,8 +68,8 @@ class Repository {
         return uuids;
     }
 
-    void addInstance(std::shared_ptr<Type> instance) {
-        this->instances.emplace(instance->getUuid(), instance);
+    virtual void addInstance(std::shared_ptr<Type> instance) {
+        this->registerInstance(instance->getUuid(), instance);
     }
 
     std::shared_ptr<Type> getInstance(std::shared_ptr<Option> opt) {
@@ -70,8 +85,14 @@ class Repository {
         return nullptr;
     }
 
-    void remove(const std::string &uuid) {
+    virtual void remove(const std::string &uuid) {
+        auto instance = this->getInstance(uuid);
+
         instances.erase(uuid);
+
+        for (auto s : this->subscribers) {
+            s->instanceRemoved(instance);
+        }
     }
 };
 

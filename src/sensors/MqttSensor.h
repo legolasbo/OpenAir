@@ -3,7 +3,6 @@
 #include "Sensor.h"
 #include "../MQTT.h"
 
-
 class MQTTSensor : public Sensor {
     private:
         bool initialized = false;
@@ -13,6 +12,28 @@ class MQTTSensor : public Sensor {
         static const SensorType sensorType = SensorType::MqttSensor;
         SensorType getSensorType() override {
             return MQTTSensor::sensorType;
+        }
+
+        void onMessage(std::string payload) {
+            StringOption * key = this->getOption("json_key")->as<StringOption>();
+            if (!key->getValue().length()) {
+                this->value = std::atof(payload.c_str());
+                return;
+            }
+
+            JsonDocument doc;
+            DeserializationError err = deserializeJson(doc, payload);
+            if (err.code() != ArduinoJson::V704PB2::DeserializationError::Ok) {
+                Log.errorln("Unable to deserialize payload %s. Reason: %s", payload.c_str(), err.c_str());
+                return;
+            }
+            
+            if (!doc.containsKey(key->getValue())) {
+                Log.errorln("Unknown key '%s'", key->getValue().c_str());
+                return;
+            }
+
+            this->value = doc[key->getValue()].as<float>();
         }
 
         std::string getTopic() {

@@ -7,6 +7,7 @@
 #include <string>
 #include <WiFi.h>
 #include "repositories/SensorRepository.hpp"
+#include "repositories/RepositorySubscriber.hpp"
 #include "homeassistant/discovery.h"
 #include "inputs/tachometer.h"
 #include "DependencyInjectionContainer.hpp"
@@ -22,7 +23,7 @@
 #define AVAILABILITY_TOPIC BASE_TOPIC "/availability"
 
 
-class MQTT {
+class MQTT : public RepositorySubscriber<Sensor> {
     private:
         const int PUBLISH_INTERVAL = 1000;
         const int SUBSCRIBE_INTERVAL = 100;
@@ -32,6 +33,8 @@ class MQTT {
         std::queue<std::shared_ptr<HaDiscoverable>> discoveryQueue;
         std::queue<std::string> subscriptionQueue;
         std::set<std::string> sensorTopics;
+        std::set<std::shared_ptr<MQTTSensor>> subscribers;
+        std::set<std::string> subscriptions;
 
         std::set<std::shared_ptr<HaDiscoverable>> haDiscoverables {
             std::make_shared<HaFanSpeed>(),
@@ -153,6 +156,8 @@ class MQTT {
             for (std::string topic : this->sensorTopics) {
                 this->client.subscribe(topic.c_str(), 0);
             }
+
+            this->resubscribe();
         }
 
         void onDisconnect(espMqttClientTypes::DisconnectReason reason) {
@@ -186,11 +191,18 @@ class MQTT {
             char* strval = new char[len + 1];
             memcpy(strval, payload, len);
             strval[len] = '\0';
-            Log.traceln("MQTT message received on topic %s with payload %s", topic, strval);
 
             if (strcmp(topic, HOMEASSISTANT_STATUS_TOPIC) == 0) {
                 if (strcmp(HA_ONLINE, strval) == 0) {
                     this->sendDiscovery();
+                    delete[] strval;
+                    return;
+                }
+            }
+
+            for (std::shared_ptr<MQTTSensor> s : this->subscribers) {
+                if (strcmp(topic, s->getTopic().c_str()) == 0) {
+                    s->onMessage(strval);
                     delete[] strval;
                     return;
                 }
@@ -269,9 +281,45 @@ class MQTT {
             this->publishSensors();
         }
 
+        void subscribe(std::shared_ptr<MQTTSensor> sensor) {
+            if (!sensor) {
+                return;
+            }
+
+            Log.traceln("Subscribing %s -> %s", sensor->getName().c_str(), sensor->getTopic().c_str());
+            std::string topic = sensor->getTopic();
+            if (!topic.size()) {
+                Log.errorln("Skipping subscription of sensor %s because topic is empty", sensor->getUuid().c_str());
+                return;
+            }
+            this->client.subscribe(topic.c_str(), 1);
+            this->subscriptions.emplace(topic);
+        }
+
+        void unsubscribe(std::shared_ptr<MQTTSensor> sensor) {
+            if (!sensor) {
+                return;
+            }
+
+            Log.traceln("Removing subscription for %s", sensor->getName().c_str());
+            this->subscribers.erase(sensor);
+            this->resubscribe();
+        }
+
+        void resubscribe() {
+            Log.traceln("Resubscribing");
+            for (std::string s : this->subscriptions) {
+                this->client.unsubscribe(s.c_str());
+            }
+            this->subscriptions.clear();
+
+            for (std::shared_ptr<MQTTSensor> s : this->subscribers) {
+                subscribe(s);
+            }
+        }
+
     public:
         MQTT() {
-
             client.onConnect([this](bool sessionPresent){
                 this->onConnect(sessionPresent);
             });
@@ -287,6 +335,27 @@ class MQTT {
             client.onPublish([this](uint16_t packetId) {
                 this->onPublish(packetId);
             });
+
+            auto sensorRepo = DI::GetContainer()->resolve<SensorRepository>();
+            sensorRepo->registerSubscriber(std::shared_ptr<RepositorySubscriber<Sensor>>(this));
+        }
+
+        void instanceAdded(std::shared_ptr<Sensor> sensor) override {
+            auto mqttSensor = std::dynamic_pointer_cast<MQTTSensor>(sensor);
+            if (!mqttSensor) {
+                return;
+            }
+
+            this->addSubscriber(mqttSensor);
+        }
+
+        void instanceRemoved(std::shared_ptr<Sensor> sensor) override {
+            auto mqttSensor = std::dynamic_pointer_cast<MQTTSensor>(sensor);
+            if (!mqttSensor) {
+                return;
+            }
+
+            this->removeSubscriber(mqttSensor);
         }
 
         void setHostname(const std::string &hostname) {
@@ -319,6 +388,15 @@ class MQTT {
             }
             this->pass = pass;
             this->reConnect();
+        }
+
+        void addSubscriber(std::shared_ptr<MQTTSensor> sensor) {
+            this->subscribers.emplace(sensor);
+            this->subscribe(sensor);
+        }
+
+        void removeSubscriber(std::shared_ptr<MQTTSensor> sensor) {
+            this->unsubscribe(sensor);
         }
 
         void addSensorTopic(const std::string &topic) {
