@@ -108,6 +108,16 @@ class Configurable {
             return opts.at(name);
         }
 
+        bool setOption(const std::string &name, const std::map<std::string, std::string> values) {
+            auto opt = this->getDefaultOption(name);
+            auto mvo = dynamic_cast<MultiValueOption*>(opt.get());
+            if (!mvo) {
+                return false;
+            }
+
+            return this->setOption(name, mvo->newValues(values));
+        }
+
         bool setOption(const std::string &name, const std::string &value) {
             auto opt = this->getDefaultOption(name);
 
@@ -180,10 +190,19 @@ class Configurable {
 
             for (const auto& p : doc["options"].as<JsonObject>()) {
                 std::string key = p.key().c_str();
-                std::string value = doc["options"][key].as<std::string>();
-                if (!this->setOption(key, value)) {
-                    this->delayedOptions.emplace(key, value);
+                if (!doc["options"][key].size()) {
+                    std::string value = doc["options"][key].as<std::string>();
+                    if (!this->setOption(key, value)) {
+                        this->delayedOptions.emplace(key, value);
+                    }
+                    continue;
                 }
+
+                std::map<std::string, std::string> values;
+                for (const auto& p2 : doc["options"][key].as<JsonObject>()) {
+                    values.emplace(p2.key().c_str(), doc["options"][key][p2.key().c_str()].as<std::string>());
+                }
+                this->setOption(key, values);
             }
 
             this->processDelayedOptions(this->delayedOptions.size());
@@ -195,7 +214,13 @@ class Configurable {
             doc["uuid"] = this->uuid;
 
             for (auto p : this->options) {
-                doc["options"][p.first] = p.second->toStr();
+                auto mvp = dynamic_cast<MultiValueOption*>(p.second.get());
+                if (!mvp) {
+                    doc["options"][p.first] = p.second->toStr();
+                    continue;
+                }
+                
+                doc["options"][p.first] = mvp->toJson();
             }
 
             return doc;

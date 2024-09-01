@@ -20,6 +20,7 @@ const mapToRenderer = (type) => {
         case "number": return numberRenderer;
         case "boolean": return (name, info) => `<input type="checkbox" name="${name}" ${getElementValueFrom(info)} ${info.value == 1 ? "checked" : ""} />`;
         case "texts": return textsRenderer;
+        case "range": return rangeRenderer;
         default: return (name, info) => `<strong>Unknown form element type ${type} for ${name}</strong>`;
     }
 }
@@ -51,6 +52,15 @@ document
   .insertAdjacentElement('beforebegin', item)
             ">Add</button>
         </fieldset>
+    `;
+}
+
+const rangeRenderer = (name, info) => {
+    return `
+        <div id="${name}Set" class="dual-range-input">
+            <input type="range" name="${name}[lower]" min="${info.lowerBound}" max="${info.upperBound}" value="${info.lower ? info.lower : info.lowerBound}" class="range-start" id="${name}-lower">
+            <input type="range" name="${name}[upper]" min="${info.lowerBound}" max="${info.upperBound}" value="${info.upper ? info.upper : info.upperBound}" class="range-end" id="${name}-higher">
+        </div>
     `;
 }
 

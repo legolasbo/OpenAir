@@ -2,6 +2,7 @@
 
 #include "../calculators/Co2Calculator.h"
 #include "../calculators/HumidityCalculator.h"
+#include "../calculators/MappingCalculator.h"
 #include "../calculators/SwitchPositionCalculator.h"
 #include "../calculators/UnknownCalculator.h"
 #include "../enums/CalculatorTypes.h"
@@ -14,6 +15,7 @@ class CalculatorRepository : public Repository<SpeedCalculator> {
         switch (type) {
             case CO2_CALCULATOR:                return std::make_shared<Co2Calculator>();
             case HUMIDITY_CALCULATOR:           return std::make_shared<HumidityCalculator>();
+            case MAPPING_CALCULATOR:            return std::make_shared<MappingCalculator>();
             case SWITCH_POSITION_CALCULATOR:    return std::make_shared<SwitchPositionCalculator>();
             default: return std::make_shared<UnknownCalculator>();
         }

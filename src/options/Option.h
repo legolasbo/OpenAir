@@ -48,6 +48,12 @@ class Option {
 
 };
 
+class MultiValueOption {
+    public:
+        virtual std::shared_ptr<Option> newValues(const std::map<std::string, std::string> &values) = 0;
+        virtual JsonDocument toJson() = 0;
+};
+
 std::shared_ptr<Option> createOption(int value, std::string label = "", bool editable = true);
 std::shared_ptr<Option> createOption(const std::string &value, std::string label = "", bool editable = true);
 std::shared_ptr<Option> createOption(ConnectionType value, std::string label = "", bool editable = true);
@@ -388,6 +394,90 @@ class BoundedOption : public IntegerOption {
 
         std::string typeName() override {
             return typeid(this->getValue()).name();
+        }
+        
+};
+
+class RangeOption : public Option, public MultiValueOption {
+    private:
+        int _lowerBound, _lower, _upper, _upperBound;
+
+    public:
+        explicit RangeOption(int lowerBound, int lower, int upper, int upperBound, const std::string &label = "") : Option(label, true) {
+            this->_lowerBound = min(lowerBound, upperBound);
+            this->_upperBound = max(lowerBound, upperBound);
+            this->_lower = max(lowerBound, lower);
+            this->_upper = min(upperBound, upper);
+        }
+
+        int lowerBound() {
+            return this->_lowerBound;
+        }
+
+        int upperBound() {
+            return this->_upperBound;
+        }
+
+        int lower() {
+            return this->_lower;
+        }
+
+        int upper () {
+            return this->_upper;
+        }
+
+        
+        JsonDocument toInterfaceOption() override {
+            JsonDocument doc = Option::toInterfaceOption();
+
+            doc["type"] = "range";
+            doc.remove("value");
+            doc["lowerBound"] = this->_lowerBound;
+            doc["lower"] = this->_lower;
+            doc["upper"] = this->_upper;
+            doc["upperBound"] = this->_upperBound;
+
+            return doc;
+        }
+
+        std::shared_ptr<Option> newValues(const std::map<std::string, std::string> &values) override {
+            int lower = this->_lower;
+            int upper = this->_upper;
+
+            for (auto i : values) {
+                if (i.first == "lower") {
+                    lower = atoi(i.second.c_str());
+                    continue;
+                }
+                if (i.first == "upper") {
+                    upper = atoi(i.second.c_str());
+                }
+            }
+
+            return std::make_shared<RangeOption>(this->_lowerBound, lower, upper, this->_upperBound, this->getLabel());
+        }
+
+        std::shared_ptr<Option> newValue(const std::string &value) override {
+            return std::make_shared<RangeOption>(this->_lowerBound, this->_lower, this->_upper, this->_upperBound, this->getLabel());
+        }
+
+        std::string typeName() override {
+            return "range";
+        }
+
+        std::string toStr() override {
+            char out[100];
+            sprintf(out, "Range: %d -> %d", this->_lower, this->_upper);
+            return out;
+        }
+
+        JsonDocument toJson() override {
+            JsonDocument doc;
+
+            doc["lower"] = this->_lower;
+            doc["upper"] = this->_upper;
+
+            return doc;
         }
         
 };

@@ -87,7 +87,9 @@ void loop() {
 
   auto fan = container->resolve<Fan>();
   fan->setAutoFanSpeed(newSpeed);
-  fan->setGovernorName(governor->getOption("name")->toStr());
+  if (governor) {
+    fan->setGovernorName(governor->getOption("name")->toStr());
+  }
 
   delay(1000);
 }

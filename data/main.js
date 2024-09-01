@@ -11,6 +11,7 @@ import CalculatorEdit from './views/calculators/CalcEdit.js';
 import MQTT from './views/mqtt/MQTT.js';
 import FileSystem from './views/diagnostics/FS.js';
 import Upload from './views/diagnostics/FSUpload.js';
+import DualRangeInput from './libs/dual_range_input.js';
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:(\w+)/g, '(?<$1>.+)') + "$");
 const router = async () => {
@@ -55,6 +56,8 @@ const router = async () => {
     if (view.bindHandlers) {
         view.bindHandlers();
     }
+
+    handleDualRangeInputs();
     handleRangeInputs();
 }
 const navigateTo = url => {
@@ -67,8 +70,18 @@ const handleRangeInputs = () => document.querySelectorAll("input[type=range]").f
         }
 
         const output = document.querySelector(`#${el.id}_output`);
+        if (!output) {
+            return;
+        }
         output.textContent = el.value;
         el.addEventListener("input", (event) => output.textContent = event.target.value);
+    })
+
+const handleDualRangeInputs = () => document.querySelectorAll(".dual-range-input").forEach(el => {
+        if (!el.id) {
+            return;
+        }
+        DualRangeInput(`#${el.id}`);
     })
 
 document.addEventListener("DOMContentLoaded", () => {
