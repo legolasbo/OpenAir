@@ -99,7 +99,7 @@ class Fan {
         }
 
     public:
-        Fan(int pin = PWM_MOTOR_SPEED, int startSpeed = 100) {
+        Fan(int pin = PWM_MOTOR_SPEED, int startSpeed = maximumMinimumSpeed) {
             this->pin = pin;
             this->startSpeed = constrain(startSpeed, maximumMinimumSpeed, 100);
             this->tach = DI::GetContainer()->resolve<Tachometer>();
