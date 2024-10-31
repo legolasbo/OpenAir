@@ -128,7 +128,7 @@ class MQTT : public RepositorySubscriber<Sensor> {
             }
         }
 
-        void sendDiscovery() {
+        void queueDiscovery() {
             Log.infoln("Queing discovery");
             this->discoveryPublished = true;
             for(auto ha : this->haDiscoverables) {
@@ -189,7 +189,7 @@ class MQTT : public RepositorySubscriber<Sensor> {
 
             if (strcmp(topic, HOMEASSISTANT_STATUS_TOPIC) == 0) {
                 if (strcmp(HA_ONLINE, strval) == 0) {
-                    this->sendDiscovery();
+                    this->queueDiscovery();
                     delete[] strval;
                     return;
                 }
@@ -251,6 +251,7 @@ class MQTT : public RepositorySubscriber<Sensor> {
                 auto sensor = repo->getInstance(uuid);
                 for (auto haSensor : sensor->getHaSensors()) {
                     this->client.publish(haSensor->stateTopic().c_str(), 0, false, haSensor->toValue().c_str());
+                    vTaskDelay(1);
                 }
             }
         }
@@ -266,13 +267,15 @@ class MQTT : public RepositorySubscriber<Sensor> {
                 return;
 
             Log.infoln("Sensor configuration changed");
-            this->sendDiscovery();
+            this->queueDiscovery();
         }
 
         void publish() {
             this->client.publish(AVAILABILITY_TOPIC, 0, true, HA_ONLINE);
             this->processSensorChanges();
+            vTaskDelay(1);
             this->publishDiagnostics();
+            vTaskDelay(1);
             this->publishSensors();
         }
 

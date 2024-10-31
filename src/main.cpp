@@ -16,7 +16,7 @@ TaskHandle_t mqttTask;
 void mqttTaskFunc(void *parameter) {
   auto mqtt = DI::GetContainer()->resolve<MQTT>();
   while(true) {
-    vTaskDelay(mqtt->runTask());
+    vTaskDelay(mqtt->runTask() / portTICK_PERIOD_MS);
   }
 }
 

@@ -6,6 +6,7 @@
 /****   Development    ****/
 /**************************/
 #define DEVELOPMENT_MODE false
+#define DEVELOPMENT_MODE true
 
 /**************************/
 /****      SPIFFS      ****/
