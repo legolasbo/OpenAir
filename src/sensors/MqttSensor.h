@@ -7,6 +7,8 @@ class MQTTSensor : public Sensor {
     private:
         bool initialized = false;
         float value = 0.0f;
+        bool newPayload = false;
+        std::string payload;
 
     public:
         static const SensorType sensorType = SensorType::MqttSensor;
@@ -15,6 +17,16 @@ class MQTTSensor : public Sensor {
         }
 
         void onMessage(std::string payload) {
+            this->payload = payload;
+            this->newPayload = true;
+        }
+
+        void processPayload() {
+            if (!this->newPayload) {
+                return;
+            }
+            this->newPayload = false;
+
             StringOption * key = this->getOption("json_key")->as<StringOption>();
             if (!key->getValue().length()) {
                 this->value = std::atof(payload.c_str());
@@ -101,15 +113,16 @@ class MQTTSensor : public Sensor {
         }
 
         void initialize() {
-
             this->initialized = true;
+            this->payload = "";
+            this->newPayload = false;
         }
 
         void loop() override {
             if (!this->initialized) {
                 this->initialize();
             }
-
+            this->processPayload();
         }
 
         std::map<std::string, std::shared_ptr<Option>> availableOptions() override {
